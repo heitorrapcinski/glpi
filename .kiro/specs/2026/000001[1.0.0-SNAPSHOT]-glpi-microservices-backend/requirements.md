@@ -6,7 +6,7 @@ This document defines the functional and non-functional requirements for rebuild
 
 The target system is a production-ready, cloud-native backend exposing REST APIs for all ITSM operations. It is built with Java 21, Spring Boot 3.x, MongoDB, and Apache Kafka, following Hexagonal Architecture (Ports & Adapters) and Domain-Driven Design (DDD) principles. The frontend is out of scope; this spec covers backend services only.
 
-The MVP covers nine bounded contexts: Identity & Access Management, Ticket Management, Problem Management, Change Management, Asset/CMDB, SLA/OLA Management, Notification, Knowledge Base, and API Gateway.
+The MVP covers nine bounded contexts: Identity & Access Management, Ticket Management, Problem Management, Change Management, Asset/CMDB, SLA/OLA Management, Notification, Knowledge Base, and API Gateway. Observability, performance benchmarking, and automated testing are out of scope for this MVP.
 
 ---
 
@@ -38,12 +38,10 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 - **Domain_Event**: An immutable record of something that happened within a bounded context, published to Kafka.
 - **JWT**: JSON Web Token used for stateless authentication.
 - **RBAC**: Role-Based Access Control.
-- **EARS**: Easy Approach to Requirements Syntax — the pattern used for all acceptance criteria.
 - **Aggregate**: A DDD cluster of domain objects treated as a single unit for data changes.
 - **Repository**: A DDD pattern providing collection-like access to aggregates via MongoDB.
 - **Port**: A Hexagonal Architecture interface defining how the application interacts with the outside world.
 - **Adapter**: A Hexagonal Architecture implementation of a Port (e.g., REST controller, Kafka producer).
-- **Priority_Matrix**: The ITIL matrix that derives ticket priority from impact and urgency values (1=Very Low to 6=Very High).
 
 ---
 
@@ -289,7 +287,6 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 6. THE SLA_Service SHALL support Holiday entries linked to a calendar, each containing: name, date, and is_recurring flag.
 7. WHEN computing an SLA deadline, THE SLA_Service SHALL exclude non-business hours and holidays defined in the associated calendar.
 8. THE SLA_Service SHALL expose a computeDeadline(startDate, durationSeconds, calendarId) operation that returns the deadline date accounting for business hours.
-9. FOR ALL valid (startDate, durationSeconds, calendarId) inputs, parsing the computed deadline and re-computing the remaining duration SHALL yield a value within 1 second of the original duration (round-trip property).
 
 ---
 
@@ -437,22 +434,7 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 
 ---
 
-### Requirement 23: Non-Functional Requirements — Performance
-
-**User Story:** As a system operator, I want the backend to handle high request volumes with low latency, so that the system remains responsive under production load.
-
-#### Acceptance Criteria
-
-1. THE System SHALL respond to 95% of GET requests for single resources within 200ms under a load of 500 concurrent users.
-2. THE System SHALL respond to 95% of POST/PUT requests within 500ms under a load of 500 concurrent users.
-3. THE System SHALL support a minimum throughput of 1000 requests per second across all services combined.
-4. THE Ticket_Service SHALL process ticket creation (including SLA computation and Kafka event publication) within 1 second end-to-end.
-5. THE SLA_Service SHALL complete the SLA deadline computation for a single ticket within 50ms.
-6. THE System SHALL use Java 21 virtual threads (Project Loom) for all I/O-bound operations to maximize throughput without blocking platform threads.
-
----
-
-### Requirement 24: Non-Functional Requirements — Scalability
+### Requirement 23: Non-Functional Requirements — Scalability
 
 **User Story:** As a system operator, I want each microservice to scale independently, so that I can allocate resources based on actual demand per service.
 
@@ -466,7 +448,7 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 
 ---
 
-### Requirement 25: Non-Functional Requirements — Security
+### Requirement 24: Non-Functional Requirements — Security
 
 **User Story:** As a security officer, I want the backend to enforce security best practices at every layer, so that sensitive data is protected and unauthorized access is prevented.
 
@@ -483,22 +465,7 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 
 ---
 
-### Requirement 26: Non-Functional Requirements — Availability and Observability
-
-**User Story:** As a system operator, I want the backend to be highly available and observable, so that I can detect and resolve issues quickly.
-
-#### Acceptance Criteria
-
-1. THE System SHALL expose Spring Boot Actuator health endpoints at /actuator/health for each service, returning the health of MongoDB and Kafka connections.
-2. THE System SHALL expose Prometheus-compatible metrics at /actuator/prometheus for each service, including: request count, request latency (p50, p95, p99), error rate, Kafka consumer lag, and MongoDB connection pool usage.
-3. THE System SHALL emit structured JSON logs with the following fields: timestamp, level, service, traceId, spanId, userId, message.
-4. THE System SHALL propagate distributed trace IDs (W3C Trace Context) across all service-to-service calls and Kafka messages.
-5. THE System SHALL implement circuit breakers on all inter-service HTTP calls with a configurable failure threshold (default: 50% failure rate over 10 seconds).
-6. WHEN a circuit breaker opens, THE System SHALL return a fallback response (HTTP 503 with a descriptive error) rather than propagating the failure.
-
----
-
-### Requirement 27: Non-Functional Requirements — Containerization
+### Requirement 25: Non-Functional Requirements — Containerization
 
 **User Story:** As a DevOps engineer, I want each microservice to be containerized with Docker and orchestrated with Docker Compose for local development, so that the full stack can be started with a single command.
 
@@ -512,7 +479,7 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 
 ---
 
-### Requirement 28: ITIL Compliance — Status Transition Rules
+### Requirement 26: ITIL Compliance — Status Transition Rules
 
 **User Story:** As an ITIL process owner, I want status transitions to be enforced according to ITIL best practices, so that the system prevents invalid workflow states.
 
@@ -527,7 +494,7 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 
 ---
 
-### Requirement 29: ITIL Compliance — Priority Matrix
+### Requirement 27: ITIL Compliance — Priority Matrix
 
 **User Story:** As a support technician, I want the system to automatically compute ticket priority from impact and urgency, so that tickets are consistently prioritized according to ITIL standards.
 
@@ -538,55 +505,6 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 3. THE Ticket_Service SHALL allow the priority matrix to be overridden per entity by an administrator with the appropriate rights.
 4. WHEN urgency or impact is updated on a ticket, THE Ticket_Service SHALL automatically recompute the priority unless the priority was manually overridden by a user with CHANGEPRIORITY right.
 5. THE Ticket_Service SHALL support masking urgency and impact values per entity (urgency_mask, impact_mask bitfields) to restrict which values are available to users.
-
----
-
-### Requirement 30: Correctness Properties for Property-Based Testing
-
-**User Story:** As a quality engineer, I want property-based tests to verify the correctness of core domain logic, so that edge cases and invariants are systematically validated.
-
-#### Acceptance Criteria
-
-**Priority Matrix Properties**
-
-1. FOR ALL valid (urgency, impact) pairs where urgency ∈ [1,5] and impact ∈ [1,5], THE Ticket_Service priority computation SHALL return a value in the range [1,6].
-2. FOR ALL valid (urgency, impact) pairs, THE Ticket_Service priority computation SHALL be monotonically non-decreasing: if urgency2 ≥ urgency1 and impact2 ≥ impact1, then priority(urgency2, impact2) ≥ priority(urgency1, impact1).
-3. FOR ALL valid priority matrix configurations, THE Ticket_Service SHALL produce the same priority for the same (urgency, impact) pair regardless of the order in which the matrix was configured (idempotence).
-
-**SLA Deadline Computation Properties**
-
-4. FOR ALL valid (startDate, durationSeconds, calendarId) inputs where durationSeconds > 0, THE SLA_Service computeDeadline operation SHALL return a deadline strictly after the startDate.
-5. FOR ALL valid (startDate, durationSeconds, calendarId) inputs, THE SLA_Service SHALL satisfy the round-trip property: computeRemainingBusinessSeconds(startDate, computeDeadline(startDate, durationSeconds, calendarId), calendarId) SHALL equal durationSeconds within a tolerance of 1 second.
-6. FOR ALL valid calendar configurations, THE SLA_Service deadline computation SHALL be idempotent: computing the deadline twice with the same inputs SHALL return the same result.
-7. FOR ALL valid (startDate, durationSeconds, calendarId) inputs where durationSeconds2 > durationSeconds1, THE SLA_Service SHALL satisfy the ordering property: computeDeadline(startDate, durationSeconds2, calendarId) > computeDeadline(startDate, durationSeconds1, calendarId).
-
-**Status Transition Properties**
-
-8. FOR ALL valid ticket status transitions, THE Ticket_Service SHALL satisfy the invariant: a ticket in CLOSED status SHALL NOT transition directly to SOLVED without passing through INCOMING or ASSIGNED.
-9. FOR ALL sequences of valid status transitions applied to a ticket, THE Ticket_Service SHALL satisfy the invariant: the ticket's status history SHALL be a valid path in the allowed transition graph.
-10. FOR ALL ticket status values, THE Ticket_Service SHALL satisfy the idempotence property: applying the same status transition twice SHALL result in the same final state as applying it once (no duplicate events).
-
-**Actor Management Properties**
-
-11. FOR ALL valid actor addition operations on a ticket, THE Ticket_Service SHALL satisfy the invariant: the set of actors after addition SHALL be a superset of the actors before addition.
-12. FOR ALL valid actor removal operations on a ticket, THE Ticket_Service SHALL satisfy the invariant: the removed actor SHALL NOT appear in the actor list after removal.
-13. FOR ALL sequences of actor add/remove operations, THE Ticket_Service SHALL satisfy the confluence property: the final actor set SHALL be the same regardless of the order in which independent add/remove operations are applied.
-
-**Entity Hierarchy Properties**
-
-14. FOR ALL valid entity trees, THE Identity_Service SHALL satisfy the invariant: the completeName of any entity SHALL be the concatenation of all ancestor names separated by " > ", ending with the entity's own name.
-15. FOR ALL valid entity trees, THE Identity_Service SHALL satisfy the invariant: no entity SHALL be its own ancestor (no cycles in the entity tree).
-16. FOR ALL entity configuration inheritance chains, THE Identity_Service SHALL satisfy the round-trip property: resolving an inherited configuration value and then setting it explicitly SHALL produce the same effective value as setting it directly.
-
-**Notification Deduplication Properties**
-
-17. FOR ALL domain events published to Kafka, THE Notification_Service SHALL satisfy the idempotence property: processing the same event twice (due to at-least-once delivery) SHALL result in exactly one notification being dispatched per target.
-
-**JSON Serialization Round-Trip Properties**
-
-18. FOR ALL valid Ticket domain objects, THE Ticket_Service SHALL satisfy the round-trip property: serialize(deserialize(serialize(ticket))) SHALL equal serialize(ticket) (JSON serialization idempotence).
-19. FOR ALL valid SLA domain objects, THE SLA_Service SHALL satisfy the round-trip property: deserialize(serialize(sla)) SHALL produce an SLA object equal to the original (field-by-field equality).
-20. FOR ALL valid domain events published to Kafka, THE System SHALL satisfy the round-trip property: deserializing the Kafka message payload SHALL produce a domain event object equal to the one that was serialized before publishing.
 
 ---
 
@@ -616,11 +534,8 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 | 20 | REST API Sub-Resources | Ticket/Problem/Change/Asset Services | Functional |
 | 21 | Kafka Topics | All Services | Functional |
 | 22 | MongoDB Document Models | All Services | Data |
-| 23 | Performance | All Services | Non-Functional |
-| 24 | Scalability | All Services | Non-Functional |
-| 25 | Security | All Services | Non-Functional |
-| 26 | Availability and Observability | All Services | Non-Functional |
-| 27 | Containerization | All Services | Non-Functional |
-| 28 | ITIL Status Transitions | Ticket/Problem/Change Services | ITIL Compliance |
-| 29 | ITIL Priority Matrix | Ticket_Service | ITIL Compliance |
-| 30 | Correctness Properties (PBT) | All Services | Quality |
+| 23 | Scalability | All Services | Non-Functional |
+| 24 | Security | All Services | Non-Functional |
+| 25 | Containerization | All Services | Non-Functional |
+| 26 | ITIL Status Transitions | Ticket/Problem/Change Services | ITIL Compliance |
+| 27 | ITIL Priority Matrix | Ticket_Service | ITIL Compliance |
