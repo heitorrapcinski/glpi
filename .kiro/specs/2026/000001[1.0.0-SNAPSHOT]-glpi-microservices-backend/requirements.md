@@ -508,6 +508,59 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 
 ---
 
+### Requirement 28: API Documentation
+
+**User Story:** As a new developer joining the project, I want comprehensive API documentation automatically generated and served by each microservice, so that I can understand and integrate with the backend without reading source code.
+
+#### Acceptance Criteria
+
+1. THE System SHALL generate OpenAPI 3.0 specification documents for all REST endpoints in each microservice using SpringDoc OpenAPI.
+2. THE System SHALL serve an interactive Swagger UI at GET /swagger-ui.html for each microservice, allowing developers to explore and test endpoints directly from the browser.
+3. THE System SHALL serve the raw OpenAPI JSON specification at GET /v3/api-docs for each microservice.
+4. THE API_Gateway SHALL aggregate all downstream OpenAPI specifications and expose a unified Swagger UI at GET /swagger-ui.html listing all services.
+5. EACH endpoint in the OpenAPI specification SHALL include: HTTP method, path, summary, description, request body schema (where applicable), query parameter descriptions, response schemas for all possible HTTP status codes, and required authentication/authorization notes.
+6. THE System SHALL document all domain event schemas (Kafka message payloads) in a dedicated section of each service's OpenAPI specification or in a separate AsyncAPI document.
+7. THE System SHALL include example request and response bodies for all CRUD endpoints in the OpenAPI specification.
+8. THE System SHALL document all error response schemas with error codes and descriptions (e.g., INVALID_STATUS_TRANSITION, TOKEN_EXPIRED).
+9. THE System SHALL provide a README.md at the root of each microservice module describing: service purpose, local setup instructions, environment variables, available endpoints summary, and Kafka topics produced/consumed.
+10. THE System SHALL provide a root-level README.md describing the overall architecture, microservice list, how to start the full stack with Docker Compose, and links to each service's documentation.
+
+---
+
+### Requirement 29: Database Seeding — Initial Data
+
+**User Story:** As a developer setting up the system for the first time, I want the MongoDB databases to be automatically seeded with the default GLPI data on first startup, so that the system is immediately usable without manual configuration.
+
+#### Acceptance Criteria
+
+1. THE System SHALL provide a database seeder component per microservice that runs on application startup when the target collection is empty.
+2. THE Identity_Service seeder SHALL create the following default profiles matching the GLPI legacy defaults:
+   - id=1, name="Self-Service", interface="helpdesk", is_default=true
+   - id=2, name="Observer", interface="central", is_default=false
+   - id=3, name="Admin", interface="central", is_default=false
+   - id=4, name="Super-Admin", interface="central", is_default=false
+   - id=5, name="Hotliner", interface="helpdesk", is_default=false
+   - id=6, name="Technician", interface="central", is_default=false
+   - id=7, name="Supervisor", interface="central", is_default=false
+   - id=8, name="Read-Only", interface="central", is_default=false
+3. THE Identity_Service seeder SHALL create the following default users:
+   - id=2, username="glpi", password=bcrypt("glpi"), profile=Super-Admin, active=true (main admin account)
+   - id=3, username="post-only", password=bcrypt("postonly"), profile=Self-Service, active=true
+   - id=4, username="tech", password=bcrypt("tech"), profile=Technician, active=true
+   - id=5, username="normal", password=bcrypt("normal"), profile=Observer, active=true
+4. THE Identity_Service seeder SHALL create the root entity (id=0, name="Root Entity", parentId=null, level=1) as the top of the entity hierarchy.
+5. THE SLA_Service seeder SHALL create a default calendar (id=1, name="Default", entityId=0, isRecursive=true) with business hours Monday through Friday from 08:00 to 20:00.
+6. THE Ticket_Service seeder SHALL seed the default priority matrix configuration: `{"1":{"1":1,"2":1,"3":2,"4":2,"5":2},"2":{"1":1,"2":2,"3":2,"4":3,"5":3},"3":{"1":2,"2":2,"3":3,"4":4,"5":4},"4":{"1":2,"2":3,"3":4,"4":4,"5":5},"5":{"1":2,"2":3,"3":4,"4":5,"5":5}}` as the system-wide default.
+7. THE Asset_Service seeder SHALL create the following default asset states: "In Stock", "In Use", "Maintenance", "Retired", "Disposed".
+8. THE Asset_Service seeder SHALL create a default root location (id=0, name="Root Location", parentId=null, level=1).
+9. THE Knowledge_Service seeder SHALL create a default root knowledge base category (id=0, name="Root", parentId=null).
+10. THE Notification_Service seeder SHALL create default notification templates for the following events: ticket.created, ticket.solved, ticket.closed, ticket.validation.requested, problem.created, problem.solved, change.created, change.validation.approved.
+11. THE System SHALL provide a Docker Compose profile named "seed" that runs all seeders in the correct dependency order (Identity → SLA → Ticket → Asset → Knowledge → Notification).
+12. WHEN a seeder detects that the target collection already contains data, THE System SHALL skip seeding to prevent duplicate data on restart.
+13. THE System SHALL log each seeding operation with the collection name, number of documents inserted, and completion timestamp.
+
+---
+
 ## Summary of Requirements
 
 | # | Requirement | Service | Type |
@@ -539,3 +592,5 @@ The MVP covers nine bounded contexts: Identity & Access Management, Ticket Manag
 | 25 | Containerization | All Services | Non-Functional |
 | 26 | ITIL Status Transitions | Ticket/Problem/Change Services | ITIL Compliance |
 | 27 | ITIL Priority Matrix | Ticket_Service | ITIL Compliance |
+| 28 | API Documentation | All Services | Developer Experience |
+| 29 | Database Seeding — Initial Data | All Services | Developer Experience |
