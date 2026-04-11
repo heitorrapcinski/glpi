@@ -1,0 +1,67 @@
+GLPI Fork — Third-Party Notices and Credits
+============================================
+
+This project is a fork of GLPI, an open-source IT Asset Management and
+Service Desk software. All original work is credited to the GLPI Project
+and its contributors.
+
+-------------------------------------------------------------------------------
+Original Project
+-------------------------------------------------------------------------------
+
+  Name:       GLPI — Gestionnaire Libre de Parc Informatique
+  License:    GNU General Public License v3.0 or later (GPL-3.0-or-later)
+  Homepage:   https://www.glpi-project.org/
+  Repository: https://github.com/glpi-project/glpi
+  Forum:      https://forum.glpi-project.org/
+  Issues:     https://github.com/glpi-project/glpi/issues
+  Docs:       https://github.com/glpi-project/doc
+
+-------------------------------------------------------------------------------
+Original Copyright
+-------------------------------------------------------------------------------
+
+  Copyright (C) 2015-2024 Teclib' and contributors.
+  Copyright (C) 2003-2014 by the INDEPNET Development Team.
+
+  GLPI is free software; you can redistribute it and/or modify it under the
+  terms of the GNU General Public License as published by the Free Software
+  Foundation; either version 2 of the License, or (at your option) any later
+  version.
+
+  GLPI is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+  details.
+
+  You should have received a copy of the GNU General Public License along
+  with GLPI. If not, see <https://www.gnu.org/licenses/>.
+
+-------------------------------------------------------------------------------
+Modifications
+-------------------------------------------------------------------------------
+
+  This fork introduces modifications and additions on top of the original
+  GLPI codebase. The original source code is preserved unmodified under the
+  `.legacy/` directory for reference. All new and modified code is located
+  outside of `.legacy/`.
+
+  Modified by: [Your Name / Organization]
+  Fork started: 2026
+
+-------------------------------------------------------------------------------
+Upstream Baseline
+-------------------------------------------------------------------------------
+
+  The `.legacy/` directory contains the upstream GLPI source code as it
+  existed at the time this fork was created (based on the 11.0.x branch).
+  It is kept read-only as a reference baseline and must not be modified.
+
+-------------------------------------------------------------------------------
+License
+-------------------------------------------------------------------------------
+
+  This fork is distributed under the same license as the original project:
+  GNU General Public License v3.0 or later (GPL-3.0-or-later).
+
+  See the LICENSE file in this repository for the full license text.
