@@ -9,7 +9,7 @@ All specs must follow a strict naming pattern to ensure traceability and version
 ## Directory Name Format
 
 ```
-{year}/{sequential}[{version}]-{short-description}
+{year}.{sequential}.[{version}]-{short-description}
 ```
 
 ### Components
@@ -24,7 +24,7 @@ All specs must follow a strict naming pattern to ensure traceability and version
 ### Full Example
 
 ```
-.kiro/specs/2026/000001[1.0.0-SNAPSHOT]-user-authentication/
+.kiro/specs/2026/2026.000001.[1.0.0-SNAPSHOT]-user-authentication/
 ```
 
 ## Version Control Rules
@@ -46,7 +46,7 @@ All specs must follow a strict naming pattern to ensure traceability and version
 Each task inside `tasks.md` must be identified using the following pattern:
 
 ```
-{year}/{sequential}-{task-number}
+{year}.{sequential}-{task-number}
 ```
 
 | Component | Format | Example |
@@ -58,16 +58,16 @@ Each task inside `tasks.md` must be identified using the following pattern:
 ### Example
 
 ```
-2026/000001-0001 - Setup database schema
-2026/000001-0002 - Implement authentication service
-2026/000001-0003 - Create API endpoints
+2026.000001-0001 - Setup database schema
+2026.000001-0002 - Implement authentication service
+2026.000001-0003 - Create API endpoints
 ```
 
 Sub-tasks follow the same parent task ID with a dot suffix:
 
 ```
-2026/000001-0001.1 - Create users table
-2026/000001-0001.2 - Create sessions table
+2026.000001-0001.1 - Create users table
+2026.000001-0001.2 - Create sessions table
 ```
 
 ## Required Files

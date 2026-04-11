@@ -11,15 +11,15 @@ Every spec (feature or bugfix) must follow a strict Git workflow from branch cre
 Create a branch at the start of every new spec using the spec identifier:
 
 ```
-feature/{year}/{sequential}[{version}]-{short-description}
-bugfix/{year}/{sequential}[{version}]-{short-description}
+feature/{year}/{year}.{sequential}.[{version}]-{short-description}
+bugfix/{year}/{year}.{sequential}.[{version}]-{short-description}
 ```
 
 ### Examples
 
 ```
-feature/2026/000001[1.0.0-SNAPSHOT]-user-authentication
-bugfix/2026/000002[1.0.1-SNAPSHOT]-fix-login-crash
+feature/2026/2026.000001.[1.0.0-SNAPSHOT]-user-authentication
+bugfix/2026/2026.000002.[1.0.1-SNAPSHOT]-fix-login-crash
 ```
 
 ## Workflow Steps
@@ -30,10 +30,10 @@ Before any implementation begins, create and checkout the branch:
 
 ```powershell
 # Windows (PowerShell)
-git checkout -b feature/2026/000001[1.0.0-SNAPSHOT]-short-description
+git checkout -b feature/2026/2026.000001.[1.0.0-SNAPSHOT]-short-description
 
 # Linux/macOS (Bash)
-git checkout -b feature/2026/000001[1.0.0-SNAPSHOT]-short-description
+git checkout -b feature/2026/2026.000001.[1.0.0-SNAPSHOT]-short-description
 ```
 
 ### 2. During Implementation — Normal commits per task
@@ -41,7 +41,7 @@ git checkout -b feature/2026/000001[1.0.0-SNAPSHOT]-short-description
 Commit after each task completion using the task ID as reference:
 
 ```
-2026/000001-0001: <short description of what was done>
+2026.000001-0001: <short description of what was done>
 ```
 
 ### 3. Final Task in tasks.md — Version Control Task
@@ -49,7 +49,7 @@ Commit after each task completion using the task ID as reference:
 The **last task** of every `tasks.md` must always be a version control task with the following sub-tasks:
 
 ```markdown
-- [ ] {year}/{sequential}-XXXX - Version control and release
+- [ ] {year}.{sequential}-XXXX - Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
   - [ ] Commit the version bump: "release: {version} - {short-description}"
@@ -73,13 +73,13 @@ Common files to check: `composer.json`, `package.json`, `pom.xml`, `build.gradle
 ```powershell
 # Windows (PowerShell)
 git checkout main
-git merge --no-ff feature/2026/000001[1.0.0-SNAPSHOT]-short-description
+git merge --no-ff feature/2026/2026.000001.[1.0.0-SNAPSHOT]-short-description
 git tag -a "1.0.0" -m "release: 1.0.0 - short-description"
 git push origin main --tags
 
 # Linux/macOS (Bash)
 git checkout main
-git merge --no-ff feature/2026/000001[1.0.0-SNAPSHOT]-short-description
+git merge --no-ff feature/2026/2026.000001.[1.0.0-SNAPSHOT]-short-description
 git tag -a "1.0.0" -m "release: 1.0.0 - short-description"
 git push origin main --tags
 ```
