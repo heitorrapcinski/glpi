@@ -18,6 +18,3 @@ All original work belongs to the GLPI Project contributors. See [NOTICE](./NOTIC
 
 This project is licensed under the GNU General Public License v3.0 or later — see the [LICENSE](./LICENSE) file for details.
 
-## Fork Changes
-
-> TODO: Describe the purpose and changes introduced by this fork.
