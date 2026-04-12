@@ -18,6 +18,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("GLPI Notification Service API")
                         .description("Event-driven notification management")
-                        .version("1.0.0"));
+                        .version("1.0.1-SNAPSHOT"));
     }
 }

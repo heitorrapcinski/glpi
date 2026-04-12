@@ -18,6 +18,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("GLPI Knowledge Service API")
                         .description("Knowledge base article and category management")
-                        .version("1.0.0"));
+                        .version("1.0.1-SNAPSHOT"));
     }
 }

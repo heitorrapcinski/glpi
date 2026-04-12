@@ -18,6 +18,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("GLPI Asset Service API")
                         .description("CMDB asset and license management")
-                        .version("1.0.0"));
+                        .version("1.0.1-SNAPSHOT"));
     }
 }

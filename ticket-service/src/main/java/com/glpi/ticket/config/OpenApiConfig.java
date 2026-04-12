@@ -18,6 +18,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("GLPI Ticket Service API")
                         .description("ITIL Incident and Service Request management")
-                        .version("1.0.0"));
+                        .version("1.0.1-SNAPSHOT"));
     }
 }
