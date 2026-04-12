@@ -743,33 +743,33 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Implement NoSQL injection prevention: use parameterized MongoDB queries, never concatenate user input into query strings
     - _Requirements: 24.3, 24.4, 24.5_
 
-- [-] 19. Finalize Docker Compose and integration wiring
-  - [ ] 19.1 Complete `docker-compose.yml` with all service definitions
+- [x] 19. Finalize Docker Compose and integration wiring
+  - [x] 19.1 Complete `docker-compose.yml` with all service definitions
     - Add full service definitions for all 9 microservices with correct port mappings, environment variables, and `depends_on` for MongoDB and Kafka
     - Configure MongoDB with one database per service (via `SPRING_DATA_MONGODB_DATABASE` env var)
     - Configure Kafka topics with correct names matching the Kafka Topic Map
     - Add `seed` profile that runs all seeders in dependency order: Identity → SLA → Ticket → Asset → Knowledge → Notification
     - _Requirements: 25.2, 25.4, 25.5, 29.11_
-  - [ ] 19.2 Update parent `pom.xml` and verify all modules build
+  - [x] 19.2 Update parent `pom.xml` and verify all modules build
     - Ensure `mvn clean package -DskipTests` succeeds for all modules from the root
     - Verify all inter-module dependencies (e.g., `common` module) are correctly declared
     - _Requirements: 25.1_
-  - [ ] 19.3 Wire SLA escalation end-to-end
+  - [x] 19.3 Wire SLA escalation end-to-end
     - Verify `EscalationScheduler` in SLA Service correctly calls Ticket Service HTTP client
     - Verify Ticket Service `SlaEscalationConsumer` correctly handles `reassign` and `change_priority` actions
     - Verify Notification Service `SlaEventConsumer` correctly handles `send_notification` action
     - _Requirements: 15.3, 15.4, 15.5_
-  - [ ] 19.4 Wire Notification Service end-to-end
+  - [x] 19.4 Wire Notification Service end-to-end
     - Verify all Kafka consumers in Notification Service correctly consume events from all topics
     - Verify notification target resolution works for all actor types
     - Verify DLQ routing works when consumer fails after 3 retries
     - _Requirements: 16.1, 16.2, 21.6_
 
-- [~] 20. Final checkpoint — Full stack integration
+- [x] 20. Final checkpoint — Full stack integration
   - Ensure all tests pass across all services. Verify `docker compose up` starts the full stack successfully. Verify seeders run correctly on first startup and are idempotent on restart. Ask the user if questions arise.
 
 
-- [~] 21. Version control and release
+- [-] 21. Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
     - Find and replace `1.0.0-SNAPSHOT` → `1.0.0` in all `pom.xml` files (parent + all 9 service modules + `common`)

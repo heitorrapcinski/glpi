@@ -20,6 +20,6 @@ public class OpenApiConfig {
                         .title("GLPI Microservices API")
                         .description("Unified API documentation for all GLPI microservices. " +
                                 "Use the dropdown to switch between service specs.")
-                        .version("1.0.0-SNAPSHOT"));
+                        .version("1.0.0"));
     }
 }

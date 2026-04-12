@@ -18,6 +18,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("GLPI Change Service API")
                         .description("ITIL Change management")
-                        .version("1.0.0-SNAPSHOT"));
+                        .version("1.0.0"));
     }
 }
