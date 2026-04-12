@@ -48,6 +48,13 @@ public class UserRepositoryAdapter implements UserRepository {
         return mongoRepo.existsByUsernameAndAuthType(username, authType);
     }
 
+    @Override
+    public List<User> findAll() {
+        return mongoRepo.findAll().stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     // --- Mapping ---
 
     private User toDomain(UserDocument doc) {

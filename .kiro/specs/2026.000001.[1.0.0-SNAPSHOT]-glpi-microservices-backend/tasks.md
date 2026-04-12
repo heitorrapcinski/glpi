@@ -13,17 +13,17 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
 
 ## Tasks
 
-- [ ] 1. Bootstrap project structure and shared infrastructure
-  - [ ] 1.1 Create Git branch `feature-2026.000001`
+- [x] 1. Bootstrap project structure and shared infrastructure
+  - [x] 1.1 Create Git branch `feature-2026.000001`
     - Run: `git checkout -b feature-2026.000001`
     - This must be the very first action before any code is written
     - _Requirements: version-control-workflow_
-  - [ ] 1.2 Create Maven multi-module parent `pom.xml`
+  - [x] 1.2 Create Maven multi-module parent `pom.xml`
     - Define `groupId=com.glpi`, `artifactId=glpi-microservices-backend`, `version=1.0.0-SNAPSHOT`
     - Declare all 9 service modules + `common` as `<modules>`
     - Set Java 21 compiler source/target, Spring Boot 3.x BOM, dependency management for MongoDB, Kafka, JJWT, SpringDoc, jqwik, JUnit 5, Mockito
     - _Requirements: 25.1_
-  - [ ] 1.3 Create `common` module with shared domain event envelope
+  - [x] 1.3 Create `common` module with shared domain event envelope
     - Implement `DomainEventEnvelope` record: `eventId`, `eventType`, `aggregateId`, `aggregateType`, `occurredAt`, `version`, `payload`
     - Implement `ErrorResponse` record: `timestamp`, `status`, `errorCode`, `message`, `details`, `traceId`
     - Implement `PagedResponse<T>` record: `content`, `totalElements`, `totalPages`, `currentPage`, `pageSize`
@@ -32,28 +32,28 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 36: Domain event envelope completeness**
     - **Validates: Requirements 21.2**
     - Use jqwik `@ForAll` to generate random `DomainEventEnvelope` instances and assert all 6 fields are non-null and valid
-  - [ ] 1.5 Create `docker-compose.yml` with all infrastructure services
+  - [x] 1.5 Create `docker-compose.yml` with all infrastructure services
     - Define services: MongoDB 7.x (port 27017), Kafka 3.x (port 9092), Zookeeper (port 2181)
     - Add placeholder service entries for all 9 microservices with correct port mappings (8080–8088)
     - Configure environment variables for DB URIs, Kafka brokers, JWT keys with documented defaults
     - Add `seed` Docker Compose profile for running seeders in dependency order
     - _Requirements: 25.2, 25.4, 25.5, 29.11_
-  - [ ] 1.6 Create root-level `.gitignore` and `.dockerignore`
+  - [x] 1.6 Create root-level `.gitignore` and `.dockerignore`
     - `.gitignore`: `target/`, `*.jar`, `.env`, `*.key`, `*.pem`, `.idea/`, `.vscode/`
     - `.dockerignore`: `.git/`, `.kiro/`, `target/`, `*.md`, `.env`, `tests/`
     - _Requirements: ignore-files-policy_
-  - [ ] 1.7 Create root-level `README.md`
+  - [x] 1.7 Create root-level `README.md`
     - Document overall architecture, microservice list with ports, how to start with `docker compose up`, links to each service README
     - _Requirements: 28.10_
 
 
-- [ ] 2. Implement Identity Service — domain model and user lifecycle
-  - [ ] 2.1 Scaffold Identity Service Maven module with hexagonal package structure
+- [x] 2. Implement Identity Service — domain model and user lifecycle
+  - [x] 2.1 Scaffold Identity Service Maven module with hexagonal package structure
     - Create `identity-service/pom.xml` with Spring Boot, MongoDB, Kafka, JJWT, SpringDoc, jqwik dependencies
     - Create package tree: `domain/model`, `domain/port/in`, `domain/port/out`, `domain/service`, `application/usecase`, `adapter/in/rest`, `adapter/out/persistence`, `adapter/out/messaging`, `config`
     - Create `IdentityServiceApplication.java` main class
     - _Requirements: 25.1_
-  - [ ] 2.2 Implement `User` aggregate and value objects
+  - [x] 2.2 Implement `User` aggregate and value objects
     - Implement `User` aggregate with all fields from the User document schema: `id`, `username`, `passwordHash`, `authType`, `emails`, `isActive`, `isDeleted`, `entityId`, `profileId`, `personalToken`, `apiToken`, `totpSecret`, `twoFactorEnabled`, `passwordHistory`, `failedLoginAttempts`, `lockedUntil`, `createdAt`, `updatedAt`
     - Implement `AuthType` enum: `DB_GLPI=1`, `LDAP=2`, `OAUTH2=4`
     - Implement `Email` value object with `email` and `isDefault` fields
@@ -63,13 +63,13 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 1: User mandatory fields invariant**
     - **Validates: Requirements 1.1, 22.1**
     - Use jqwik to generate valid `CreateUserCommand` instances and assert stored `User` always has non-null `username`, `passwordHash`, `emails`, `isActive`, `createdAt`
-  - [ ] 2.4 Implement `UserRepository` driven port and MongoDB adapter
+  - [x] 2.4 Implement `UserRepository` driven port and MongoDB adapter
     - Define `UserRepository` interface: `findByUsername`, `findById`, `save`, `delete`, `existsByUsernameAndAuthType`
     - Implement `MongoUserRepository` using Spring Data MongoDB
     - Create `UserDocument` MongoDB document class with all fields
     - Create MongoDB indexes: `username` (unique), `entityId`, `isActive`, `isDeleted`
     - _Requirements: 22.1, 22.9_
-  - [ ] 2.5 Implement `CreateUserUseCase` with password hashing and duplicate rejection
+  - [x] 2.5 Implement `CreateUserUseCase` with password hashing and duplicate rejection
     - Implement `CreateUserService` enforcing: bcrypt hash (cost ≥ 12), duplicate username rejection (HTTP 409 / `DUPLICATE_USERNAME`), password complexity validation (HTTP 422 / `PASSWORD_COMPLEXITY_VIOLATION`)
     - Implement `PasswordHistoryPort` interface and MongoDB adapter storing last 5 hashes
     - Reject reuse of any of the last 5 passwords (HTTP 422 / `PASSWORD_HISTORY_VIOLATION`)
@@ -86,7 +86,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 40: Password stored as bcrypt hash**
     - **Validates: Requirements 24.1**
     - Use jqwik to generate arbitrary plaintext passwords, assert stored `passwordHash` is a valid bcrypt string with cost ≥ 12 and never equals the plaintext
-  - [ ] 2.9 Implement user deactivation and account lockout
+  - [x] 2.9 Implement user deactivation and account lockout
     - Implement `DeactivateUserUseCase`: set `isActive=false`; subsequent auth attempts return HTTP 401 / `ACCOUNT_INACTIVE`
     - Implement account lockout: after 5 consecutive failed logins within 10 minutes, set `lockedUntil = now + 15 minutes`, publish `AccountLocked` domain event to `identity.users`
     - _Requirements: 1.5, 24.7_
@@ -98,7 +98,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 41: Account lockout after failed attempts**
     - **Validates: Requirements 24.7**
     - Use jqwik to simulate 5 consecutive failed logins within 10 minutes and assert subsequent attempts return HTTP 401 and `AccountLocked` event is published
-  - [ ] 2.12 Implement personal API token generation and authentication
+  - [x] 2.12 Implement personal API token generation and authentication
     - Implement `GenerateApiTokenUseCase`: generate UUID-based token, encrypt with AES-256, store in `personalToken`
     - Implement API token authentication path in `AuthenticateUserUseCase`
     - _Requirements: 1.6, 1.7_
@@ -106,7 +106,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 4: API token uniqueness**
     - **Validates: Requirements 1.6**
     - Use jqwik to generate N users, generate tokens for all, assert all N tokens are pairwise distinct
-  - [ ] 2.14 Implement user purge and `UserPurged` event publication
+  - [x] 2.14 Implement user purge and `UserPurged` event publication
     - Implement `PurgeUserUseCase`: hard-delete user document, publish `UserPurged` event to `identity.users` Kafka topic via `EventPublisherPort`
     - Implement `KafkaEventPublisher` adapter for `EventPublisherPort`
     - _Requirements: 1.11, 21.1, 21.2_
@@ -116,7 +116,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Use jqwik to purge arbitrary users and assert `UserPurged` event on `identity.users` contains correct `userId` and non-null `occurredAt`
 
 
-- [ ] 3. Implement Identity Service — Entity hierarchy and RBAC
+- [-] 3. Implement Identity Service — Entity hierarchy and RBAC
   - [ ] 3.1 Implement `Entity` aggregate and repository
     - Implement `Entity` aggregate with fields: `id`, `name`, `parentId`, `level`, `completeName`, `config` (embedded with all CONFIG_PARENT fields), `createdAt`, `updatedAt`
     - Define `EntityRepository` interface and `MongoEntityRepository` adapter
@@ -174,7 +174,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Use jqwik to run the seeder twice and assert collection size remains unchanged on the second run
 
 
-- [ ] 4. Implement Identity Service — Authentication, JWT, and 2FA
+- [~] 4. Implement Identity Service — Authentication, JWT, and 2FA
   - [ ] 4.1 Implement JWT RS256 token issuance and validation
     - Implement `AuthenticateUserUseCase`: validate credentials, check `isActive`, check `lockedUntil`, verify TOTP if `twoFactorEnabled`, issue JWT (exp=1h) + refresh token (exp=7d) signed with RS256 key pair
     - JWT payload must contain: `sub`, `entity_id`, `profile_id`, `rights`, `iat`, `exp`
@@ -236,11 +236,11 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `README.md`: service purpose, local setup, environment variables, endpoints summary, Kafka topics
     - _Requirements: 25.1, 25.3, 28.9_
 
-- [ ] 5. Checkpoint — Identity Service
+- [~] 5. Checkpoint — Identity Service
   - Ensure all Identity Service tests pass. Verify JWT issuance, user CRUD, entity hierarchy, profile RBAC, and seeder work end-to-end. Ask the user if questions arise.
 
 
-- [ ] 6. Implement API Gateway
+- [~] 6. Implement API Gateway
   - [ ] 6.1 Scaffold API Gateway Maven module
     - Create `api-gateway/pom.xml` with Spring Cloud Gateway, Spring Security, JJWT, SpringDoc dependencies
     - Create `ApiGatewayApplication.java` main class
@@ -293,7 +293,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - _Requirements: 25.1, 25.3, 28.9_
 
 
-- [ ] 7. Implement SLA Service
+- [~] 7. Implement SLA Service
   - [ ] 7.1 Scaffold SLA Service Maven module with hexagonal structure
     - Create `sla-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
@@ -341,7 +341,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
 
-- [ ] 8. Implement Ticket Service — core domain and lifecycle
+- [~] 8. Implement Ticket Service — core domain and lifecycle
   - [ ] 8.1 Scaffold Ticket Service Maven module with hexagonal structure
     - Create `ticket-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
@@ -412,7 +412,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Use jqwik to generate tickets with `isDeleted=true` and assert they never appear in default `GET /tickets` results
 
 
-- [ ] 9. Implement Ticket Service — followups, tasks, solutions, validations, and SLA
+- [~] 9. Implement Ticket Service — followups, tasks, solutions, validations, and SLA
   - [ ] 9.1 Implement followup, task, and solution use cases
     - Implement `AddFollowupUseCase`: add `ITILFollowup` (content, authorId, isPrivate, source, createdAt) to ticket; if ticket is CLOSED/SOLVED and author is requester, reopen to INCOMING and publish `TicketReopened` event; publish `TicketFollowupAdded` event
     - Implement `AddTaskUseCase`: add `ITILTask` (content, assignedUserId, plannedStart, plannedEnd, duration, status, isPrivate); publish `TicketTaskCompleted` event when `status=DONE`
@@ -465,11 +465,11 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [ ] 10. Checkpoint — SLA and Ticket Services
+- [~] 10. Checkpoint — SLA and Ticket Services
   - Ensure all SLA and Ticket Service tests pass. Verify deadline computation, priority matrix, status transitions, followup/solution/validation workflows, and SLA timer pause/resume. Ask the user if questions arise.
 
 
-- [ ] 11. Implement Problem Service
+- [~] 11. Implement Problem Service
   - [ ] 11.1 Scaffold Problem Service Maven module with hexagonal structure
     - Create `problem-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
@@ -503,7 +503,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [ ] 12. Implement Change Service
+- [~] 12. Implement Change Service
   - [ ] 12.1 Scaffold Change Service Maven module with hexagonal structure
     - Create `change-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
@@ -539,11 +539,11 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [ ] 13. Checkpoint — Problem and Change Services
+- [~] 13. Checkpoint — Problem and Change Services
   - Ensure all Problem and Change Service tests pass. Verify lifecycle events, status transitions, validation workflows, and cross-service linking. Ask the user if questions arise.
 
 
-- [ ] 14. Implement Asset Service
+- [~] 14. Implement Asset Service
   - [ ] 14.1 Scaffold Asset Service Maven module with hexagonal structure
     - Create `asset-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
@@ -596,7 +596,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
 
-- [ ] 15. Implement Notification Service
+- [~] 15. Implement Notification Service
   - [ ] 15.1 Scaffold Notification Service Maven module with hexagonal structure
     - Create `notification-service/pom.xml` with Spring Boot, MongoDB, Kafka, Spring Retry, JavaMail, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
@@ -646,7 +646,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 19.1, 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [ ] 16. Implement Knowledge Service
+- [~] 16. Implement Knowledge Service
   - [ ] 16.1 Scaffold Knowledge Service Maven module with hexagonal structure
     - Create `knowledge-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
@@ -696,11 +696,11 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [ ] 17. Checkpoint — Asset, Notification, and Knowledge Services
+- [~] 17. Checkpoint — Asset, Notification, and Knowledge Services
   - Ensure all Asset, Notification, and Knowledge Service tests pass. Verify license compliance, Kafka event consumption, notification delivery with retry, and article visibility rules. Ask the user if questions arise.
 
 
-- [ ] 18. Cross-cutting concerns — REST API contracts and pagination
+- [~] 18. Cross-cutting concerns — REST API contracts and pagination
   - [ ] 18.1 Implement consistent pagination across all services
     - Implement `PagedResponse<T>` wrapper in `common` module (already defined in task 1.3)
     - Ensure all collection endpoints in all services return `PagedResponse<T>` with `totalElements`, `totalPages`, `currentPage`, `pageSize`
@@ -743,7 +743,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Implement NoSQL injection prevention: use parameterized MongoDB queries, never concatenate user input into query strings
     - _Requirements: 24.3, 24.4, 24.5_
 
-- [ ] 19. Finalize Docker Compose and integration wiring
+- [~] 19. Finalize Docker Compose and integration wiring
   - [ ] 19.1 Complete `docker-compose.yml` with all service definitions
     - Add full service definitions for all 9 microservices with correct port mappings, environment variables, and `depends_on` for MongoDB and Kafka
     - Configure MongoDB with one database per service (via `SPRING_DATA_MONGODB_DATABASE` env var)
@@ -765,11 +765,11 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Verify DLQ routing works when consumer fails after 3 retries
     - _Requirements: 16.1, 16.2, 21.6_
 
-- [ ] 20. Final checkpoint — Full stack integration
+- [~] 20. Final checkpoint — Full stack integration
   - Ensure all tests pass across all services. Verify `docker compose up` starts the full stack successfully. Verify seeders run correctly on first startup and are idempotent on restart. Ask the user if questions arise.
 
 
-- [ ] 21. Version control and release
+- [~] 21. Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
     - Find and replace `1.0.0-SNAPSHOT` → `1.0.0` in all `pom.xml` files (parent + all 9 service modules + `common`)

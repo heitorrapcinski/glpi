@@ -159,6 +159,16 @@ public class User {
         this.updatedAt = Instant.now();
     }
 
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
+        this.updatedAt = Instant.now();
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+        this.updatedAt = Instant.now();
+    }
+
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
