@@ -5,7 +5,7 @@
 
 This plan converts the design into incremental coding tasks organized by bounded context. Each task builds on the previous ones, ending with full integration. The implementation language is **Java 21** with Spring Boot 3.x, Maven multi-module, MongoDB, Apache Kafka, and Spring Cloud Gateway, as defined in the design document.
 
-Commit format after each task: `2026.000001-{XXXX}: <short description>`
+Commit format after each task: `2026.000001: <short description>`
 
 Tasks marked with `*` are optional (property-based and unit tests) and can be skipped for a faster MVP. All other tasks are mandatory.
 
