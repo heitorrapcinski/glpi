@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         info = @Info(
                 title = "GLPI Identity Service API",
-                version = "1.0.1-SNAPSHOT",
+                version = "1.0.1",
                 description = "Identity & Access Management: users, entities, profiles, groups, authentication, JWT, and 2FA",
                 contact = @Contact(name = "GLPI Backend Team")
         ),

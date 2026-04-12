@@ -19,13 +19,13 @@
   - [x] 2.11 Verify infrastructure services (zookeeper, kafka, mongodb) and seeder services are unchanged
   - [x] 2.12 Commit: `2026.000002.2: fix microservice build contexts to use root directory`
 
-- [-] 3. Validate the fix
-  - [-] 3.1 Run `docker compose config` and verify all 8 microservices resolve `build.context` to `.` and `build.dockerfile` to `<service>/Dockerfile`
-  - [~] 3.2 Verify port mappings, environment variables, and depends_on are preserved in the resolved config
-  - [~] 3.3 Commit: `2026.000002.3: validate docker-compose build context fix`
+- [x] 3. Validate the fix
+  - [x] 3.1 Run `docker compose config` and verify all 8 microservices resolve `build.context` to `.` and `build.dockerfile` to `<service>/Dockerfile`
+  - [x] 3.2 Verify port mappings, environment variables, and depends_on are preserved in the resolved config
+  - [x] 3.3 Commit: `2026.000002.3: validate docker-compose build context fix`
 
-- [ ] 4. Version control and release
-  - [~] 4.1 Ensure all previous tasks are complete and tests pass
+- [-] 4. Version control and release
+  - [-] 4.1 Ensure all previous tasks are complete and tests pass
   - [~] 4.2 Remove SNAPSHOT suffix from all version references in the codebase
   - [~] 4.3 Commit the version bump: "release: 1.0.1 - docker-compose-build-fix"
   - [~] 4.4 Merge branch into main/master

@@ -18,6 +18,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("GLPI Problem Service API")
                         .description("ITIL Problem management")
-                        .version("1.0.1-SNAPSHOT"));
+                        .version("1.0.1"));
     }
 }

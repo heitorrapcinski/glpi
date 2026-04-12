@@ -46,7 +46,7 @@ Manages knowledge base articles with visibility rules, FAQ flags, revision histo
 ```bash
 # From project root
 mvn -pl common,knowledge-service -am package -DskipTests
-java -jar knowledge-service/target/knowledge-service-1.0.1-SNAPSHOT.jar
+java -jar knowledge-service/target/knowledge-service-1.0.1.jar
 ```
 
 ## API Documentation
