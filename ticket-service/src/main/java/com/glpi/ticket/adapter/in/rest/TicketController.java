@@ -6,6 +6,7 @@ import com.glpi.ticket.domain.port.in.*;
 import com.glpi.ticket.domain.port.out.TicketRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,7 +67,7 @@ public class TicketController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new ticket")
-    public Ticket createTicket(@RequestBody CreateTicketCommand command) {
+    public Ticket createTicket(@Valid @RequestBody CreateTicketCommand command) {
         return createTicketUseCase.createTicket(command);
     }
 
@@ -74,10 +75,14 @@ public class TicketController {
     @Operation(summary = "List all non-deleted tickets (paginated)")
     public PagedResponse<Ticket> listTickets(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<Ticket> tickets = ticketRepository.findAllNotDeleted(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<Ticket> tickets = ticketRepository.findAllNotDeleted(page, clampedSize);
         long total = ticketRepository.countAllNotDeleted();
-        return PagedResponse.of(tickets, total, page, size);
+        return PagedResponse.of(tickets, total, page, clampedSize);
     }
 
     @GetMapping("/{id}")
@@ -288,4 +293,18 @@ public class TicketController {
 
     /** Simple request body for validation approve/refuse. */
     public record ValidationUpdateRequest(String action, String comment) {}
+
+    // ---- Bulk Operations ----
+
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Bulk create tickets (max 100 items)")
+    public List<Ticket> bulkCreateTickets(@Valid @RequestBody List<CreateTicketCommand> commands) {
+        if (commands.size() > 100) {
+            throw new IllegalArgumentException("Bulk operations are limited to 100 items");
+        }
+        return commands.stream()
+                .map(createTicketUseCase::createTicket)
+                .toList();
+    }
 }

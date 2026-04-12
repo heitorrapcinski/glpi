@@ -7,6 +7,7 @@ import com.glpi.asset.domain.port.out.ItemSoftwareVersionRepository;
 import com.glpi.common.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,18 +49,22 @@ public class AssetController {
     public PagedResponse<Asset> listByType(
             @PathVariable String type,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
         AssetType assetType = AssetType.valueOf(type);
-        List<Asset> assets = assetRepository.findByType(assetType, page, size);
+        List<Asset> assets = assetRepository.findByType(assetType, page, clampedSize);
         long total = assetRepository.countByType(assetType);
-        return PagedResponse.of(assets, total, page, size);
+        return PagedResponse.of(assets, total, page, clampedSize);
     }
 
     @PostMapping("/{type}")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new asset of the given type")
     public Asset createAsset(@PathVariable String type,
-                             @RequestBody CreateAssetCommand command) {
+                             @Valid @RequestBody CreateAssetCommand command) {
         AssetType assetType = AssetType.valueOf(type);
         return createAssetUseCase.createAsset(new CreateAssetCommand(
                 assetType, command.name(), command.entityId(),
@@ -151,5 +156,19 @@ public class AssetController {
         // In production, this would call Ticket Service via HTTP
         assetRepository.findById(id).orElseThrow(() -> new AssetNotFoundException(id));
         return ResponseEntity.ok(List.of());
+    }
+
+    // ---- Bulk Operations ----
+
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Bulk create assets (max 100 items)")
+    public List<Asset> bulkCreateAssets(@Valid @RequestBody List<CreateAssetCommand> commands) {
+        if (commands.size() > 100) {
+            throw new IllegalArgumentException("Bulk operations are limited to 100 items");
+        }
+        return commands.stream()
+                .map(createAssetUseCase::createAsset)
+                .toList();
     }
 }

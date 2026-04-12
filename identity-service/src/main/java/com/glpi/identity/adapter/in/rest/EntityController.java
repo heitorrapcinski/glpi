@@ -39,17 +39,20 @@ public class EntityController {
     @Operation(summary = "List entities (paginated)")
     public ResponseEntity<PagedResponse<EntityResponse>> listEntities(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "name") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
         List<Entity> all = entityRepository.findAll();
         int total = all.size();
-        int fromIndex = Math.min(page * size, total);
-        int toIndex = Math.min(fromIndex + size, total);
+        int fromIndex = Math.min(page * clampedSize, total);
+        int toIndex = Math.min(fromIndex + clampedSize, total);
         List<EntityResponse> content = all.subList(fromIndex, toIndex).stream()
                 .map(this::toResponse)
                 .toList();
 
-        return ResponseEntity.ok(PagedResponse.of(content, total, page, size));
+        return ResponseEntity.ok(PagedResponse.of(content, total, page, clampedSize));
     }
 
     @PostMapping

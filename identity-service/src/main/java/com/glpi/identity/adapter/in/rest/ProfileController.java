@@ -40,17 +40,20 @@ public class ProfileController {
     @Operation(summary = "List profiles (paginated)")
     public ResponseEntity<PagedResponse<ProfileResponse>> listProfiles(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "name") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
         List<Profile> all = profileRepository.findAll();
         int total = all.size();
-        int fromIndex = Math.min(page * size, total);
-        int toIndex = Math.min(fromIndex + size, total);
+        int fromIndex = Math.min(page * clampedSize, total);
+        int toIndex = Math.min(fromIndex + clampedSize, total);
         List<ProfileResponse> content = all.subList(fromIndex, toIndex).stream()
                 .map(this::toResponse)
                 .toList();
 
-        return ResponseEntity.ok(PagedResponse.of(content, total, page, size));
+        return ResponseEntity.ok(PagedResponse.of(content, total, page, clampedSize));
     }
 
     @PostMapping

@@ -11,6 +11,7 @@ import com.glpi.identity.domain.port.out.PasswordHistoryPort;
 import com.glpi.identity.domain.port.out.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class CreateUserService implements CreateUserUseCase {
     }
 
     @Override
+    @Transactional
     public UserResponse createUser(CreateUserCommand command) {
         // 1. Validate password complexity
         validatePasswordComplexity(command.password());

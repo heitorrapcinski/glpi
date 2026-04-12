@@ -696,11 +696,11 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [-] 17. Checkpoint — Asset, Notification, and Knowledge Services
+- [x] 17. Checkpoint — Asset, Notification, and Knowledge Services
   - Ensure all Asset, Notification, and Knowledge Service tests pass. Verify license compliance, Kafka event consumption, notification delivery with retry, and article visibility rules. Ask the user if questions arise.
 
 
-- [~] 18. Cross-cutting concerns — REST API contracts and pagination
+- [-] 18. Cross-cutting concerns — REST API contracts and pagination
   - [ ] 18.1 Implement consistent pagination across all services
     - Implement `PagedResponse<T>` wrapper in `common` module (already defined in task 1.3)
     - Ensure all collection endpoints in all services return `PagedResponse<T>` with `totalElements`, `totalPages`, `currentPage`, `pageSize`

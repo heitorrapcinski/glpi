@@ -37,10 +37,14 @@ public class LicenseController {
     @Operation(summary = "List all software licenses (paginated)")
     public PagedResponse<SoftwareLicense> listLicenses(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<SoftwareLicense> licenses = licenseRepository.findAll(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "name") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<SoftwareLicense> licenses = licenseRepository.findAll(page, clampedSize);
         long total = licenseRepository.countAll();
-        return PagedResponse.of(licenses, total, page, size);
+        return PagedResponse.of(licenses, total, page, clampedSize);
     }
 
     @PostMapping

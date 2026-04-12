@@ -7,6 +7,7 @@ import com.glpi.problem.domain.port.out.ProblemRepository;
 import com.glpi.problem.domain.service.AddSolutionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,7 @@ public class ProblemController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new problem")
-    public Problem createProblem(@RequestBody CreateProblemCommand command) {
+    public Problem createProblem(@Valid @RequestBody CreateProblemCommand command) {
         return createProblemUseCase.createProblem(command);
     }
 
@@ -65,10 +66,14 @@ public class ProblemController {
     @Operation(summary = "List all problems (paginated)")
     public PagedResponse<Problem> listProblems(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<Problem> problems = problemRepository.findAll(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<Problem> problems = problemRepository.findAll(page, clampedSize);
         long total = problemRepository.countAll();
-        return PagedResponse.of(problems, total, page, size);
+        return PagedResponse.of(problems, total, page, clampedSize);
     }
 
     @GetMapping("/{id}")
@@ -238,4 +243,18 @@ public class ProblemController {
 
     /** Request body for ticket linking. */
     public record TicketLinkRequest(String ticketId) {}
+
+    // ---- Bulk Operations ----
+
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Bulk create problems (max 100 items)")
+    public List<Problem> bulkCreateProblems(@Valid @RequestBody List<CreateProblemCommand> commands) {
+        if (commands.size() > 100) {
+            throw new IllegalArgumentException("Bulk operations are limited to 100 items");
+        }
+        return commands.stream()
+                .map(createProblemUseCase::createProblem)
+                .toList();
+    }
 }

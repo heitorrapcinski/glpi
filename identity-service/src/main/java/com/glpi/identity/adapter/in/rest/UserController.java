@@ -69,19 +69,21 @@ public class UserController {
     @Operation(summary = "List users (paginated)")
     public ResponseEntity<PagedResponse<UserResponse>> listUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "50") int size,
             @RequestParam(defaultValue = "createdAt") String sort,
-            @RequestParam(defaultValue = "asc") String order) {
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
 
         List<User> all = userRepository.findAll();
         int total = all.size();
-        int fromIndex = Math.min(page * size, total);
-        int toIndex = Math.min(fromIndex + size, total);
+        int fromIndex = Math.min(page * clampedSize, total);
+        int toIndex = Math.min(fromIndex + clampedSize, total);
         List<UserResponse> content = all.subList(fromIndex, toIndex).stream()
                 .map(this::toResponse)
                 .toList();
 
-        return ResponseEntity.ok(PagedResponse.of(content, total, page, size));
+        return ResponseEntity.ok(PagedResponse.of(content, total, page, clampedSize));
     }
 
     @GetMapping("/{id}")

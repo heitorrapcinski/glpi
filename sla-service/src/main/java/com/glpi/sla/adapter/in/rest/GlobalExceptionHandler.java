@@ -6,9 +6,12 @@ import com.glpi.sla.domain.model.OlaNotFoundException;
 import com.glpi.sla.domain.model.SlaNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,6 +44,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(400, "BAD_REQUEST", ex.getMessage(), traceId()));
+    }
+
+    // --- 422 Validation Error ---
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        List<String> details = ex.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .toList();
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponse.withDetails(422, "VALIDATION_ERROR",
+                        "Request validation failed", details, traceId()));
     }
 
     // --- 500 Internal Server Error ---

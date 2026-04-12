@@ -3,10 +3,14 @@ package com.glpi.ticket.adapter.in.rest;
 import com.glpi.common.ErrorResponse;
 import com.glpi.ticket.domain.model.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+
+import java.util.List;
 
 /**
  * Global exception handler mapping domain exceptions to HTTP responses.
@@ -55,6 +59,16 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
         return ErrorResponse.of(400, "BAD_REQUEST", ex.getMessage(),
                 request.getHeader("X-Request-Id"));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ErrorResponse handleValidation(MethodArgumentNotValidException ex, WebRequest request) {
+        List<String> details = ex.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .toList();
+        return ErrorResponse.withDetails(422, "VALIDATION_ERROR",
+                "Request validation failed", details, request.getHeader("X-Request-Id"));
     }
 
     @ExceptionHandler(Exception.class)

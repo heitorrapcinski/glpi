@@ -44,10 +44,14 @@ public class NotificationController {
     @Operation(summary = "List all notification templates (paginated)")
     public PagedResponse<NotificationTemplate> listTemplates(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<NotificationTemplate> templates = templateRepository.findAll(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "eventName") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<NotificationTemplate> templates = templateRepository.findAll(page, clampedSize);
         long total = templateRepository.countAll();
-        return PagedResponse.of(templates, total, page, size);
+        return PagedResponse.of(templates, total, page, clampedSize);
     }
 
     @PostMapping("/templates")
@@ -78,9 +82,13 @@ public class NotificationController {
     @Operation(summary = "List queued notifications (paginated)")
     public PagedResponse<QueuedNotification> listQueue(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<QueuedNotification> notifications = queuedNotificationRepository.findAll(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<QueuedNotification> notifications = queuedNotificationRepository.findAll(page, clampedSize);
         long total = queuedNotificationRepository.countAll();
-        return PagedResponse.of(notifications, total, page, size);
+        return PagedResponse.of(notifications, total, page, clampedSize);
     }
 }

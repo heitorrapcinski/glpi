@@ -37,11 +37,15 @@ public class CalendarController {
     @Operation(summary = "List all calendars (paginated)")
     public PagedResponse<Calendar> list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
         List<Calendar> all = calendarRepository.findAll();
-        int from = Math.min(page * size, all.size());
-        int to = Math.min(from + size, all.size());
-        return PagedResponse.of(all.subList(from, to), all.size(), page, size);
+        int from = Math.min(page * clampedSize, all.size());
+        int to = Math.min(from + clampedSize, all.size());
+        return PagedResponse.of(all.subList(from, to), all.size(), page, clampedSize);
     }
 
     @PostMapping

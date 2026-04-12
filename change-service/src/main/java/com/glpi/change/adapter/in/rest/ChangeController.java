@@ -7,6 +7,7 @@ import com.glpi.change.domain.service.AddSolutionService;
 import com.glpi.common.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,7 @@ public class ChangeController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new change")
-    public Change createChange(@RequestBody CreateChangeCommand command) {
+    public Change createChange(@Valid @RequestBody CreateChangeCommand command) {
         return createChangeUseCase.createChange(command);
     }
 
@@ -65,10 +66,14 @@ public class ChangeController {
     @Operation(summary = "List all changes (paginated)")
     public PagedResponse<Change> listChanges(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<Change> changes = changeRepository.findAll(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<Change> changes = changeRepository.findAll(page, clampedSize);
         long total = changeRepository.countAll();
-        return PagedResponse.of(changes, total, page, size);
+        return PagedResponse.of(changes, total, page, clampedSize);
     }
 
     @GetMapping("/{id}")
@@ -288,4 +293,18 @@ public class ChangeController {
 
     /** Request body for problem linking. */
     public record ProblemLinkRequest(String problemId) {}
+
+    // ---- Bulk Operations ----
+
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Bulk create changes (max 100 items)")
+    public List<Change> bulkCreateChanges(@Valid @RequestBody List<CreateChangeCommand> commands) {
+        if (commands.size() > 100) {
+            throw new IllegalArgumentException("Bulk operations are limited to 100 items");
+        }
+        return commands.stream()
+                .map(createChangeUseCase::createChange)
+                .toList();
+    }
 }

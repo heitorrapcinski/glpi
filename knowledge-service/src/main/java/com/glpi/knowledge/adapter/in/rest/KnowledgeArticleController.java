@@ -9,6 +9,7 @@ import com.glpi.knowledge.domain.port.in.*;
 import com.glpi.knowledge.domain.port.out.KnowbaseItemRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,23 +54,26 @@ public class KnowledgeArticleController {
     @Operation(summary = "List KB articles (paginated, visibility-filtered)")
     public PagedResponse<KnowbaseItem> listArticles(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-Entity-Id", required = false) String entityId,
             @RequestHeader(value = "X-Profile-Id", required = false) String profileId,
             @RequestHeader(value = "X-Profile-Interface", required = false) String profileInterface,
             @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
         UserContext userContext = new UserContext(userId, entityId, profileId, profileInterface, Collections.emptyList());
-        List<KnowbaseItem> all = repository.findAll(page, size);
+        List<KnowbaseItem> all = repository.findAll(page, clampedSize);
         List<KnowbaseItem> visible = visibilityResolver.filterVisible(all, userContext);
         long total = repository.countAll();
-        return PagedResponse.of(visible, total, page, size);
+        return PagedResponse.of(visible, total, page, clampedSize);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new KB article")
-    public KnowbaseItem createArticle(@RequestBody CreateArticleCommand command) {
+    public KnowbaseItem createArticle(@Valid @RequestBody CreateArticleCommand command) {
         return createArticleUseCase.createArticle(command);
     }
 
@@ -128,9 +132,12 @@ public class KnowledgeArticleController {
     public PagedResponse<KnowbaseItem> searchArticles(
             @RequestParam("q") String query,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<KnowbaseItem> results = repository.searchByText(query, page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<KnowbaseItem> results = repository.searchByText(query, page, clampedSize);
         long total = repository.countByTextSearch(query);
-        return PagedResponse.of(results, total, page, size);
+        return PagedResponse.of(results, total, page, clampedSize);
     }
 }

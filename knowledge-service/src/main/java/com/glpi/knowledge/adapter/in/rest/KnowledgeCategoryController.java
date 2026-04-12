@@ -36,10 +36,14 @@ public class KnowledgeCategoryController {
     @Operation(summary = "List KB categories (paginated)")
     public PagedResponse<KnowbaseItemCategory> listCategories(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<KnowbaseItemCategory> categories = repository.findAll(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "name") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<KnowbaseItemCategory> categories = repository.findAll(page, clampedSize);
         long total = repository.countAll();
-        return PagedResponse.of(categories, total, page, size);
+        return PagedResponse.of(categories, total, page, clampedSize);
     }
 
     @PostMapping
