@@ -700,8 +700,8 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
   - Ensure all Asset, Notification, and Knowledge Service tests pass. Verify license compliance, Kafka event consumption, notification delivery with retry, and article visibility rules. Ask the user if questions arise.
 
 
-- [-] 18. Cross-cutting concerns — REST API contracts and pagination
-  - [ ] 18.1 Implement consistent pagination across all services
+- [x] 18. Cross-cutting concerns — REST API contracts and pagination
+  - [x] 18.1 Implement consistent pagination across all services
     - Implement `PagedResponse<T>` wrapper in `common` module (already defined in task 1.3)
     - Ensure all collection endpoints in all services return `PagedResponse<T>` with `totalElements`, `totalPages`, `currentPage`, `pageSize`
     - Enforce `page` (0-indexed, default 0), `size` (default 50, max 500), `sort`, `order` (ASC/DESC) query parameters on all collection endpoints
@@ -710,7 +710,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 35: Pagination metadata correctness**
     - **Validates: Requirements 19.6, 19.7**
     - Use jqwik to generate collections of arbitrary size and page sizes, assert `totalPages = ceil(totalElements / pageSize)` always holds
-  - [ ] 18.3 Implement HTTP status code contract across all services
+  - [x] 18.3 Implement HTTP status code contract across all services
     - Audit all REST controllers in all services: GET → 200, POST (create) → 201, PUT/PATCH → 200, DELETE → 204, not found → 404, forbidden → 403, validation error → 422
     - Ensure `expand_dropdowns` query parameter is supported on all collection endpoints
     - Implement bulk operation endpoint `POST /{resource}/bulk` (max 100 items) on Ticket, Problem, Change, and Asset services
@@ -719,12 +719,12 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 34: HTTP status code contract**
     - **Validates: Requirements 19.2**
     - Use jqwik to generate valid GET, POST (create), and DELETE requests across services and assert correct HTTP status codes returned
-  - [ ] 18.5 Implement SLA escalation consumers in Ticket Service
+  - [x] 18.5 Implement SLA escalation consumers in Ticket Service
     - Implement `SlaEscalationConsumer` in Ticket Service: consume `SlaEscalationTriggered` events from `sla.events`
     - Handle `reassign` action: update ticket's assigned group/user
     - Handle `change_priority` action: update ticket priority (bypass `CHANGEPRIORITY` check for system-initiated changes)
     - _Requirements: 15.4, 15.5_
-  - [ ] 18.6 Implement domain event envelope validation across all Kafka producers
+  - [x] 18.6 Implement domain event envelope validation across all Kafka producers
     - Audit all `KafkaEventPublisher` adapters in all services
     - Ensure every published event wraps payload in `DomainEventEnvelope` with all 6 required fields: `eventId` (UUID v4), `eventType`, `aggregateId`, `aggregateType`, `occurredAt` (ISO 8601 UTC), `version` (≥1)
     - Use aggregate ID as Kafka message key for ordered delivery
@@ -733,17 +733,17 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 36: Domain event envelope completeness (integration)**
     - **Validates: Requirements 21.2**
     - Use jqwik to trigger domain events across all services and assert every published envelope contains all 6 required fields with correct types
-  - [ ] 18.8 Implement MongoDB transactions for multi-collection operations
+  - [x] 18.8 Implement MongoDB transactions for multi-collection operations
     - Identify all use cases that span multiple collections within the same service (e.g., creating a user + recording password history)
     - Wrap those operations in MongoDB transactions using `@Transactional` with `MongoTransactionManager`
     - _Requirements: 22.10_
-  - [ ] 18.9 Implement input validation and security hardening across all services
+  - [x] 18.9 Implement input validation and security hardening across all services
     - Add `@Valid` annotations and Bean Validation constraints on all request DTOs in all services
     - Ensure no sensitive fields (password, tokens, TOTP secrets) appear in any API response or log output
     - Implement NoSQL injection prevention: use parameterized MongoDB queries, never concatenate user input into query strings
     - _Requirements: 24.3, 24.4, 24.5_
 
-- [~] 19. Finalize Docker Compose and integration wiring
+- [-] 19. Finalize Docker Compose and integration wiring
   - [ ] 19.1 Complete `docker-compose.yml` with all service definitions
     - Add full service definitions for all 9 microservices with correct port mappings, environment variables, and `depends_on` for MongoDB and Kafka
     - Configure MongoDB with one database per service (via `SPRING_DATA_MONGODB_DATABASE` env var)

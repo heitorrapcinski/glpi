@@ -14,7 +14,7 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.springframework.util.backoff.FixedBackOff;
+import org.springframework.util.backoff.ExponentialBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,10 +63,13 @@ public class KafkaConfig {
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
 
-        // DLQ routing after 3 retries with 1s interval
+        // DLQ routing after 3 retries with exponential backoff (1s, 4s, 16s)
+        // Requirements: 16.6, 21.6
+        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 4.0);
+        backOff.setMaxAttempts(3);
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
                 new DeadLetterPublishingRecoverer(kafkaTemplate()),
-                new FixedBackOff(1000L, 2L) // 2 retries + 1 original = 3 attempts
+                backOff
         );
         factory.setCommonErrorHandler(errorHandler);
 

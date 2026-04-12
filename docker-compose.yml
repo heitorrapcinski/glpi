@@ -23,7 +23,6 @@ x-microservice-defaults: &microservice-defaults
     context: .
   environment:
     SPRING_PROFILES_ACTIVE: docker
-    MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017}
     KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
     JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
     JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
@@ -124,7 +123,7 @@ services:
       - "${IDENTITY_SERVICE_PORT:-8081}:8081"
     environment:
       SERVER_PORT: 8081
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_identity?authSource=admin
+      MONGODB_URI: ${IDENTITY_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_identity?authSource=admin}
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
       JWT_ACCESS_TOKEN_EXPIRY_SECONDS: ${JWT_ACCESS_TOKEN_EXPIRY_SECONDS:-3600}
@@ -141,7 +140,7 @@ services:
       - "${TICKET_SERVICE_PORT:-8082}:8082"
     environment:
       SERVER_PORT: 8082
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_tickets?authSource=admin
+      MONGODB_URI: ${TICKET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_tickets?authSource=admin}
       SLA_SERVICE_URL: ${SLA_SERVICE_URL:-http://sla-service:8086}
 
   problem-service:
@@ -154,7 +153,7 @@ services:
       - "${PROBLEM_SERVICE_PORT:-8083}:8083"
     environment:
       SERVER_PORT: 8083
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_problems?authSource=admin
+      MONGODB_URI: ${PROBLEM_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_problems?authSource=admin}
 
   change-service:
     <<: *microservice-defaults
@@ -166,7 +165,7 @@ services:
       - "${CHANGE_SERVICE_PORT:-8084}:8084"
     environment:
       SERVER_PORT: 8084
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_changes?authSource=admin
+      MONGODB_URI: ${CHANGE_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_changes?authSource=admin}
 
   asset-service:
     <<: *microservice-defaults
@@ -178,7 +177,7 @@ services:
       - "${ASSET_SERVICE_PORT:-8085}:8085"
     environment:
       SERVER_PORT: 8085
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_assets?authSource=admin
+      MONGODB_URI: ${ASSET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_assets?authSource=admin}
 
   sla-service:
     <<: *microservice-defaults
@@ -190,8 +189,9 @@ services:
       - "${SLA_SERVICE_PORT:-8086}:8086"
     environment:
       SERVER_PORT: 8086
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_sla?authSource=admin
-      ESCALATION_SCHEDULE_CRON: ${ESCALATION_SCHEDULE_CRON:-0 */5 * * * *}
+      MONGODB_URI: ${SLA_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_sla?authSource=admin}
+      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL:-http://ticket-service:8082}
+      ESCALATION_CRON: ${ESCALATION_CRON:-0 */5 * * * *}
 
   notification-service:
     <<: *microservice-defaults
@@ -203,12 +203,12 @@ services:
       - "${NOTIFICATION_SERVICE_PORT:-8087}:8087"
     environment:
       SERVER_PORT: 8087
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_notifications?authSource=admin
+      MONGODB_URI: ${NOTIFICATION_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_notifications?authSource=admin}
       SMTP_HOST: ${SMTP_HOST:-localhost}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:-noreply@glpi.local}
+      NOTIFICATION_SENDER_EMAIL: ${NOTIFICATION_SENDER_EMAIL:-noreply@glpi.local}
 
   knowledge-service:
     <<: *microservice-defaults
@@ -220,20 +220,21 @@ services:
       - "${KNOWLEDGE_SERVICE_PORT:-8088}:8088"
     environment:
       SERVER_PORT: 8088
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_knowledge?authSource=admin
+      MONGODB_URI: ${KNOWLEDGE_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_knowledge?authSource=admin}
 
   # ─── Seeders (profile: seed) ───────────────────────────────────────────────
   # Run with: docker compose --profile seed up
-  # Seeders run once and exit; they depend on their respective service being healthy.
+  # Seeders run the service with seed data on startup and exit.
+  # Dependency order: Identity → SLA → Ticket → Asset → Knowledge → Notification
 
   identity-seeder:
     <<: *service-defaults
     profiles: ["seed"]
     image: glpi/identity-service:${VERSION:-1.0.0-SNAPSHOT}
     container_name: glpi-identity-seeder
-    command: ["java", "-jar", "app.jar", "--spring.profiles.active=seed"]
+    entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_identity?authSource=admin
+      MONGODB_URI: ${IDENTITY_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_identity?authSource=admin}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
     depends_on:
       mongodb:
@@ -247,11 +248,86 @@ services:
     profiles: ["seed"]
     image: glpi/sla-service:${VERSION:-1.0.0-SNAPSHOT}
     container_name: glpi-sla-seeder
-    command: ["java", "-jar", "app.jar", "--spring.profiles.active=seed"]
+    entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_sla?authSource=admin
+      MONGODB_URI: ${SLA_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_sla?authSource=admin}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL:-http://ticket-service:8082}
+    depends_on:
+      identity-seeder:
+        condition: service_completed_successfully
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: "no"
+
+  ticket-seeder:
+    <<: *service-defaults
+    profiles: ["seed"]
+    image: glpi/ticket-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-ticket-seeder
+    entrypoint: ["java", "-jar", "app.jar"]
+    environment:
+      MONGODB_URI: ${TICKET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_tickets?authSource=admin}
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
     depends_on:
+      sla-seeder:
+        condition: service_completed_successfully
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: "no"
+
+  asset-seeder:
+    <<: *service-defaults
+    profiles: ["seed"]
+    image: glpi/asset-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-asset-seeder
+    entrypoint: ["java", "-jar", "app.jar"]
+    environment:
+      MONGODB_URI: ${ASSET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_assets?authSource=admin}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    depends_on:
+      ticket-seeder:
+        condition: service_completed_successfully
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: "no"
+
+  knowledge-seeder:
+    <<: *service-defaults
+    profiles: ["seed"]
+    image: glpi/knowledge-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-knowledge-seeder
+    entrypoint: ["java", "-jar", "app.jar"]
+    environment:
+      MONGODB_URI: ${KNOWLEDGE_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_knowledge?authSource=admin}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    depends_on:
+      asset-seeder:
+        condition: service_completed_successfully
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: "no"
+
+  notification-seeder:
+    <<: *service-defaults
+    profiles: ["seed"]
+    image: glpi/notification-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-notification-seeder
+    entrypoint: ["java", "-jar", "app.jar"]
+    environment:
+      MONGODB_URI: ${NOTIFICATION_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_notifications?authSource=admin}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    depends_on:
+      knowledge-seeder:
+        condition: service_completed_successfully
       mongodb:
         condition: service_healthy
       kafka:
