@@ -174,8 +174,8 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Use jqwik to run the seeder twice and assert collection size remains unchanged on the second run
 
 
-- [-] 4. Implement Identity Service — Authentication, JWT, and 2FA
-  - [ ] 4.1 Implement JWT RS256 token issuance and validation
+- [x] 4. Implement Identity Service — Authentication, JWT, and 2FA
+  - [x] 4.1 Implement JWT RS256 token issuance and validation
     - Implement `AuthenticateUserUseCase`: validate credentials, check `isActive`, check `lockedUntil`, verify TOTP if `twoFactorEnabled`, issue JWT (exp=1h) + refresh token (exp=7d) signed with RS256 key pair
     - JWT payload must contain: `sub`, `entity_id`, `profile_id`, `rights`, `iat`, `exp`
     - Implement `RefreshTokenUseCase`: validate refresh token, rotate (issue new pair, invalidate old), detect replay attack (HTTP 401 / `REFRESH_TOKEN_REUSE`), invalidate entire token family on replay
@@ -188,7 +188,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 15: Refresh token rotation**
     - **Validates: Requirements 4.3, 4.4**
     - Use jqwik to generate valid refresh tokens, use each once, assert new tokens issued and original token invalidated (second use returns HTTP 401)
-  - [ ] 4.4 Implement JWT blocklist for logout
+  - [x] 4.4 Implement JWT blocklist for logout
     - Implement `TokenBlocklistPort` interface: `block(jti, ttl)`, `isBlocked(jti)`
     - Implement in-memory (dev) and Redis-backed (prod) adapters
     - Implement `LogoutUseCase`: add JWT `jti` to blocklist for remaining validity duration
@@ -197,16 +197,16 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 16: Logout blocklists JWT**
     - **Validates: Requirements 4.6**
     - Use jqwik to generate valid JWTs, logout, assert presenting the same JWT to any protected endpoint returns HTTP 401
-  - [ ] 4.6 Implement TOTP 2FA support
+  - [x] 4.6 Implement TOTP 2FA support
     - Implement TOTP secret generation (RFC 6238), encrypted storage (AES-256)
     - Enforce TOTP verification on login when `twoFactorEnabled=true` or profile `twoFactorEnforced=true`
     - Return HTTP 401 / `TOTP_REQUIRED` when TOTP not provided; `TOTP_INVALID` when code incorrect
     - _Requirements: 1.8, 1.9_
-  - [ ] 4.7 Implement user impersonation
+  - [x] 4.7 Implement user impersonation
     - Implement `ImpersonateUserUseCase`: require `IMPERSONATE` right, issue impersonation JWT with impersonating user ID recorded in claims
     - Log impersonating user ID in all audit log entries during impersonation session
     - _Requirements: 1.12_
-  - [ ] 4.8 Implement Identity Service REST controllers
+  - [x] 4.8 Implement Identity Service REST controllers
     - `POST /auth/login` → `AuthenticateUserUseCase`
     - `POST /auth/refresh` → `RefreshTokenUseCase`
     - `POST /auth/logout` → `LogoutUseCase`
@@ -220,32 +220,32 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `GET /groups`, `POST /groups`, `GET /groups/{id}`, `PUT /groups/{id}`, `DELETE /groups/{id}`
     - Apply pagination (page, size, sort, order) on all collection endpoints
     - _Requirements: 19.1, 19.2, 19.6, 19.7, 19.8, 20.1_
-  - [ ] 4.9 Implement Identity Service global exception handler
+  - [x] 4.9 Implement Identity Service global exception handler
     - Implement `@RestControllerAdvice` mapping domain exceptions to HTTP responses using the error code registry
     - Map: `DuplicateUsernameException` → 409, `EntityHasChildrenException` → 409, `InvalidStatusTransitionException` → 422, `PasswordComplexityException` → 422, `TokenExpiredException` → 401, etc.
     - Never expose stack traces or sensitive data in responses
     - _Requirements: 19.3, 19.4, 19.5_
-  - [ ] 4.10 Configure SpringDoc OpenAPI for Identity Service
+  - [x] 4.10 Configure SpringDoc OpenAPI for Identity Service
     - Configure SpringDoc to generate OpenAPI 3.0 spec at `/v3/api-docs`
     - Serve Swagger UI at `/swagger-ui.html`
     - Document all endpoints with summary, description, request/response schemas, error codes, and auth notes
     - _Requirements: 28.1, 28.2, 28.3, 28.5, 28.7, 28.8_
-  - [ ] 4.11 Create Identity Service `Dockerfile` and `README.md`
+  - [x] 4.11 Create Identity Service `Dockerfile` and `README.md`
     - Multi-stage Dockerfile: Maven build stage + Eclipse Temurin JRE 21 slim runtime stage
     - Run as non-root user in container
     - `README.md`: service purpose, local setup, environment variables, endpoints summary, Kafka topics
     - _Requirements: 25.1, 25.3, 28.9_
 
-- [~] 5. Checkpoint — Identity Service
+- [x] 5. Checkpoint — Identity Service
   - Ensure all Identity Service tests pass. Verify JWT issuance, user CRUD, entity hierarchy, profile RBAC, and seeder work end-to-end. Ask the user if questions arise.
 
 
-- [~] 6. Implement API Gateway
-  - [ ] 6.1 Scaffold API Gateway Maven module
+- [x] 6. Implement API Gateway
+  - [x] 6.1 Scaffold API Gateway Maven module
     - Create `api-gateway/pom.xml` with Spring Cloud Gateway, Spring Security, JJWT, SpringDoc dependencies
     - Create `ApiGatewayApplication.java` main class
     - _Requirements: 18.1_
-  - [ ] 6.2 Implement JWT validation filter
+  - [x] 6.2 Implement JWT validation filter
     - Implement `JwtAuthenticationFilter` as a Spring Cloud Gateway `GlobalFilter`
     - Validate RS256 JWT signature, check `exp` claim, check blocklist (via Identity Service or shared cache)
     - On invalid/expired JWT: return HTTP 401 with `TOKEN_EXPIRED` or `TOKEN_INVALID` error code without forwarding
@@ -255,7 +255,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 14: Expired JWT rejection**
     - **Validates: Requirements 4.2**
     - Use jqwik to generate JWTs with `exp` in the past and assert API Gateway returns HTTP 401 with `TOKEN_EXPIRED`
-  - [ ] 6.4 Implement rate limiting filter
+  - [x] 6.4 Implement rate limiting filter
     - Implement `RateLimitingFilter`: token bucket per `X-User-Id`, max 1000 requests/minute
     - On limit exceeded: return HTTP 429 with `Retry-After` header
     - Use in-memory implementation for dev; document Redis-backed option for production
@@ -264,7 +264,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 33: Rate limit enforcement**
     - **Validates: Requirements 18.4, 18.5**
     - Use jqwik to simulate 1001 requests within 60 seconds for the same user and assert the 1001st returns HTTP 429 with `Retry-After` header
-  - [ ] 6.6 Implement route configuration
+  - [x] 6.6 Implement route configuration
     - Define Spring Cloud Gateway routes for all 8 downstream services using path prefix matching:
       - `/auth/**`, `/users/**`, `/entities/**`, `/profiles/**`, `/groups/**` → Identity Service (8081)
       - `/tickets/**` → Ticket Service (8082)
@@ -276,30 +276,30 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
       - `/knowledge/**` → Knowledge Service (8088)
     - Configure CORS with allowed origins, methods, and headers
     - _Requirements: 18.1, 18.7, 18.10_
-  - [ ] 6.7 Implement App-Token validation
+  - [x] 6.7 Implement App-Token validation
     - Implement `AppTokenValidationFilter`: validate `App-Token` header against configured API client registry
     - _Requirements: 18.7, 4.8_
-  - [ ] 6.8 Implement health aggregation and request logging
+  - [x] 6.8 Implement health aggregation and request logging
     - Implement `HealthAggregator`: poll `/actuator/health` on all downstream services, aggregate into single response at `GET /actuator/health`
     - Implement request logging filter: log timestamp, method, path, user ID, response status, latency in milliseconds
     - _Requirements: 18.8, 18.9_
-  - [ ] 6.9 Implement OpenAPI aggregation in API Gateway
+  - [x] 6.9 Implement OpenAPI aggregation in API Gateway
     - Configure SpringDoc to aggregate OpenAPI specs from all downstream services
     - Expose unified Swagger UI at `GET /swagger-ui.html` listing all services
     - _Requirements: 28.4_
-  - [ ] 6.10 Create API Gateway `Dockerfile` and `README.md`
+  - [x] 6.10 Create API Gateway `Dockerfile` and `README.md`
     - Multi-stage Dockerfile with non-root user
     - `README.md`: gateway purpose, routing table, rate limiting config, environment variables
     - _Requirements: 25.1, 25.3, 28.9_
 
 
-- [~] 7. Implement SLA Service
-  - [ ] 7.1 Scaffold SLA Service Maven module with hexagonal structure
+- [x] 7. Implement SLA Service
+  - [x] 7.1 Scaffold SLA Service Maven module with hexagonal structure
     - Create `sla-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
     - Create `SlaServiceApplication.java` main class
     - _Requirements: 14.1_
-  - [ ] 7.2 Implement `Calendar` aggregate and business-hours computation
+  - [x] 7.2 Implement `Calendar` aggregate and business-hours computation
     - Implement `Calendar` aggregate with fields: `id`, `name`, `entityId`, `isRecursive`, `segments` (embedded array of `CalendarSegment`: dayOfWeek, startTime, endTime), `holidays` (embedded array: id, name, date, isRecurring), `createdAt`, `updatedAt`
     - Implement `DeadlineComputationService` implementing `DeadlineComputationPort`:
       - `computeDeadline(start, durationSeconds, calendarId)`: advance time through business segments, skip non-business hours and holidays, return deadline instant
@@ -309,20 +309,20 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 26: SLA deadline excludes non-business hours**
     - **Validates: Requirements 14.7, 14.8, 9.1, 9.2**
     - Use jqwik to generate arbitrary calendars and start times, compute deadlines, assert computed deadline never falls within non-business hours or on a holiday
-  - [ ] 7.4 Implement `Sla` and `Ola` aggregates with escalation levels
+  - [x] 7.4 Implement `Sla` and `Ola` aggregates with escalation levels
     - Implement `Sla` aggregate: `id`, `name`, `entityId`, `type` (TTO=1/TTR=2), `durationSeconds`, `calendarId`, `levels` (embedded `SlaLevel[]`: id, name, executionDelaySeconds, actions[])
     - Implement `Ola` aggregate with same structure
     - Implement `SlaLevel` with `actions`: `send_notification`, `reassign`, `change_priority`
     - Define `SlaRepository`, `OlaRepository` interfaces and MongoDB adapters
     - Create MongoDB indexes: `entityId`, `type`
     - _Requirements: 14.1, 14.2, 14.3, 22.7_
-  - [ ] 7.5 Implement SLA escalation scheduler
+  - [x] 7.5 Implement SLA escalation scheduler
     - Implement `EscalationScheduler` as Spring `@Scheduled` task running every 5 minutes
     - Query active tickets via Ticket Service HTTP client (Feign or RestClient)
     - Evaluate each ticket's SLA levels: if `now >= deadline + executionDelaySeconds` and not already triggered, publish `SlaEscalationTriggered` event to `sla.events`
     - Record each escalation execution with timestamp to prevent duplicate triggering
     - _Requirements: 15.1, 15.2, 15.6_
-  - [ ] 7.6 Implement SLA Service REST controllers
+  - [x] 7.6 Implement SLA Service REST controllers
     - `GET /slas`, `POST /slas`, `GET /slas/{id}`, `PUT /slas/{id}`, `DELETE /slas/{id}`
     - `GET /olas`, `POST /olas`, `GET /olas/{id}`, `PUT /olas/{id}`, `DELETE /olas/{id}`
     - `GET /calendars`, `POST /calendars`, `GET /calendars/{id}`, `PUT /calendars/{id}`, `DELETE /calendars/{id}`
@@ -330,10 +330,10 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `POST /slas/compute-deadline` → `DeadlineComputationPort.computeDeadline`
     - Apply pagination on collection endpoints
     - _Requirements: 14.4, 14.8, 19.1, 19.6_
-  - [ ] 7.7 Implement SLA Service seeder
+  - [x] 7.7 Implement SLA Service seeder
     - Seed default calendar (id=1, name="Default", entityId=0, isRecursive=true) with Mon–Fri 08:00–20:00 segments when `calendars` collection is empty
     - _Requirements: 29.5, 29.12_
-  - [ ] 7.8 Implement SLA Service global exception handler, SpringDoc config, Dockerfile, and README
+  - [x] 7.8 Implement SLA Service global exception handler, SpringDoc config, Dockerfile, and README
     - `@RestControllerAdvice` with error code mapping
     - SpringDoc OpenAPI at `/v3/api-docs`, Swagger UI at `/swagger-ui.html`
     - Multi-stage Dockerfile with non-root user
@@ -341,24 +341,24 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
 
-- [~] 8. Implement Ticket Service — core domain and lifecycle
-  - [ ] 8.1 Scaffold Ticket Service Maven module with hexagonal structure
+- [x] 8. Implement Ticket Service — core domain and lifecycle
+  - [x] 8.1 Scaffold Ticket Service Maven module with hexagonal structure
     - Create `ticket-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
     - Create `TicketServiceApplication.java` main class
     - _Requirements: 5.1_
-  - [ ] 8.2 Implement `Ticket` aggregate with embedded sub-documents
+  - [x] 8.2 Implement `Ticket` aggregate with embedded sub-documents
     - Implement `Ticket` aggregate with all fields from the Ticket document schema: `id`, `type` (INCIDENT=1/SERVICE_REQUEST=2), `status`, `title`, `content`, `entityId`, `priority`, `urgency`, `impact`, `categoryId`, `isDeleted`, `actors[]`, `followups[]`, `tasks[]`, `solution`, `validations[]`, `sla` (embedded `SlaContext`), `priorityManualOverride`, `createdAt`, `updatedAt`, `solvedAt`, `closedAt`, `takeIntoAccountDelay`
     - Implement `TicketStatus` enum: INCOMING=1, ASSIGNED=2, PLANNED=3, WAITING=4, SOLVED=5, CLOSED=6
     - Implement `Actor` value object: `actorType` (REQUESTER=1, ASSIGNED=2, OBSERVER=3, SUPPLIER=4), `actorKind` (user/group/supplier), `actorId`, `useNotification`
     - Implement `SlaContext` value object with all SLA deadline fields
     - _Requirements: 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 22.3_
-  - [ ] 8.3 Implement `TicketRepository` driven port and MongoDB adapter
+  - [x] 8.3 Implement `TicketRepository` driven port and MongoDB adapter
     - Define `TicketRepository` interface: `findById`, `save`, `findByEntityId`, `findByStatus`, `findAllNotDeleted`
     - Implement `MongoTicketRepository` with Spring Data MongoDB
     - Create MongoDB indexes: `entityId`, `status`, `type`, `isDeleted`, `createdAt`, `actors.actorId`
     - _Requirements: 22.3, 22.9_
-  - [ ] 8.4 Implement `CreateTicketUseCase` with status and event publication
+  - [x] 8.4 Implement `CreateTicketUseCase` with status and event publication
     - Implement `CreateTicketService`: assign `status=INCOMING`, record `createdAt`, `requesterId`, `entityId`
     - Compute initial priority using `PriorityMatrixService`
     - Publish `TicketCreated` event to `tickets.events` with full ticket snapshot
@@ -371,7 +371,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 21: Ticket event publication on create/update**
     - **Validates: Requirements 5.10, 21.2**
     - Use jqwik to generate ticket create/update operations and assert `TicketCreated`/`TicketUpdated` event published to `tickets.events` with full snapshot
-  - [ ] 8.7 Implement `PriorityMatrixService` and priority computation
+  - [x] 8.7 Implement `PriorityMatrixService` and priority computation
     - Implement `PriorityMatrixService`: load entity-specific matrix (or default), compute `priority = matrix[urgency][impact]`
     - Seed default priority matrix: `{"1":{"1":1,...},...}` as per Requirement 29.6
     - Implement `UpdateTicketUseCase`: auto-recompute priority when urgency/impact changes unless `priorityManualOverride=true`
@@ -389,7 +389,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 38: Priority recomputed on urgency/impact change**
     - **Validates: Requirements 27.4**
     - Use jqwik to generate tickets without manual override, update urgency/impact, assert priority recomputed using entity matrix
-  - [ ] 8.11 Implement ticket assignment and status transitions
+  - [x] 8.11 Implement ticket assignment and status transitions
     - Implement `AssignTicketUseCase`: transition `INCOMING → ASSIGNED`, record assignment timestamp, publish `TicketUpdated` event
     - Implement `StatusTransitionService`: enforce allowed transitions per profile's `ticketStatusMatrix`, return HTTP 422 / `INVALID_STATUS_TRANSITION` on violation
     - Enforce actor rights: `OWN` right for self-assignment when no assigned user exists; `STEAL` right for reassignment
@@ -402,7 +402,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 37: Invalid status transition rejection**
     - **Validates: Requirements 26.6, 26.1, 26.2, 26.3, 26.4**
     - Use jqwik to generate status transitions not permitted by profile matrix and assert HTTP 422 with `INVALID_STATUS_TRANSITION`
-  - [ ] 8.14 Implement soft delete and search exclusion
+  - [x] 8.14 Implement soft delete and search exclusion
     - Implement `DeleteTicketUseCase`: set `isDeleted=true`, publish `TicketDeleted` event to `tickets.events`
     - Ensure all `findAll` queries filter `isDeleted=false` by default
     - _Requirements: 5.11, 5.12_
@@ -412,8 +412,8 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Use jqwik to generate tickets with `isDeleted=true` and assert they never appear in default `GET /tickets` results
 
 
-- [~] 9. Implement Ticket Service — followups, tasks, solutions, validations, and SLA
-  - [ ] 9.1 Implement followup, task, and solution use cases
+- [x] 9. Implement Ticket Service — followups, tasks, solutions, validations, and SLA
+  - [x] 9.1 Implement followup, task, and solution use cases
     - Implement `AddFollowupUseCase`: add `ITILFollowup` (content, authorId, isPrivate, source, createdAt) to ticket; if ticket is CLOSED/SOLVED and author is requester, reopen to INCOMING and publish `TicketReopened` event; publish `TicketFollowupAdded` event
     - Implement `AddTaskUseCase`: add `ITILTask` (content, assignedUserId, plannedStart, plannedEnd, duration, status, isPrivate); publish `TicketTaskCompleted` event when `status=DONE`
     - Implement `AddSolutionUseCase`: set `solution` embedded doc, transition ticket to SOLVED, record `solvedAt`, publish `TicketSolved` event; enforce `SOLUTION_REQUIRED` on SOLVED transition
@@ -427,7 +427,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 24: Solution addition transitions ticket to SOLVED**
     - **Validates: Requirements 7.4, 5.5**
     - Use jqwik to generate tickets in any non-CLOSED status, add solution, assert `status=SOLVED` and `TicketSolved` event published
-  - [ ] 9.2 Implement validation workflow use cases
+  - [x] 9.2 Implement validation workflow use cases
     - Implement `RequestValidationUseCase`: create `TicketValidation` record (validatorId, validatorKind, status=WAITING), set ticket status to WAITING, publish `TicketValidationRequested` event
     - Implement `ApproveValidationUseCase`: set validation status=ACCEPTED; if all required validations accepted, allow SOLVED transition
     - Implement `RefuseValidationUseCase`: set validation status=REFUSED, reopen ticket, publish `TicketValidationRefused` event
@@ -437,7 +437,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 25: Validation request sets ticket to WAITING**
     - **Validates: Requirements 8.2**
     - Use jqwik to generate tickets and request validations, assert ticket status becomes WAITING and `TicketValidationRequested` event published
-  - [ ] 9.5 Implement SLA deadline computation and timer pause/resume
+  - [x] 9.5 Implement SLA deadline computation and timer pause/resume
     - Implement `SlaDeadlineService`: call SLA Service `POST /slas/compute-deadline` via HTTP client to compute TTO/TTR deadlines on ticket creation
     - Implement SLA timer pause: when ticket enters WAITING, record `waitingStart`; when exits WAITING, add elapsed seconds to `slaWaitingDuration`, extend deadlines accordingly
     - Record `takeIntoAccountDelay` when ticket is assigned (TTO met)
@@ -448,7 +448,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 27: SLA timer pause/resume preserves elapsed time**
     - **Validates: Requirements 9.3, 9.4**
     - Use jqwik to generate tickets that enter/exit WAITING status, assert `slaWaitingDuration` equals total wall-clock seconds in WAITING and deadline extended by exactly that duration
-  - [ ] 9.7 Implement Ticket Service REST controllers and sub-resource endpoints
+  - [x] 9.7 Implement Ticket Service REST controllers and sub-resource endpoints
     - `GET /tickets`, `POST /tickets`, `GET /tickets/{id}`, `PUT /tickets/{id}`, `PATCH /tickets/{id}`, `DELETE /tickets/{id}`
     - `GET /tickets/{id}/followups`, `POST /tickets/{id}/followups`
     - `GET /tickets/{id}/tasks`, `POST /tickets/{id}/tasks`, `PUT /tickets/{id}/tasks/{taskId}`
@@ -457,15 +457,15 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `GET /tickets/{id}/validations`, `POST /tickets/{id}/validations`, `PUT /tickets/{id}/validations/{validationId}`
     - Apply pagination, sorting, filtering on collection endpoints
     - _Requirements: 19.1, 19.6, 19.7, 20.1, 20.2_
-  - [ ] 9.8 Implement Ticket Service seeder
+  - [x] 9.8 Implement Ticket Service seeder
     - Seed default priority matrix configuration when `priority_matrix` collection is empty
     - _Requirements: 29.6, 29.12_
-  - [ ] 9.9 Implement Ticket Service global exception handler, SpringDoc config, Dockerfile, and README
+  - [x] 9.9 Implement Ticket Service global exception handler, SpringDoc config, Dockerfile, and README
     - `@RestControllerAdvice` with full error code mapping including `SOLUTION_REQUIRED`, `VALIDATION_PENDING`, `INVALID_STATUS_TRANSITION`
     - SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [~] 10. Checkpoint — SLA and Ticket Services
+- [-] 10. Checkpoint — SLA and Ticket Services
   - Ensure all SLA and Ticket Service tests pass. Verify deadline computation, priority matrix, status transitions, followup/solution/validation workflows, and SLA timer pause/resume. Ask the user if questions arise.
 
 
