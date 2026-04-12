@@ -11,15 +11,15 @@ Every spec (feature or bugfix) must follow a strict Git workflow from branch cre
 Create a branch at the start of every new spec using the spec identifier:
 
 ```
-feature-{year}.{sequential}.[{version}]-{short-description}
-bugfix-{year}.{sequential}.[{version}]-{short-description}
+feature-{year}.{sequential}
+bugfix-{year}.{sequential}
 ```
 
 ### Examples
 
 ```
-feature-2026.000001.[1.0.0-SNAPSHOT]-user-authentication
-bugfix-2026.000002.[1.0.1-SNAPSHOT]-fix-login-crash
+feature-2026.000001
+bugfix-2026.000002
 ```
 
 ## Workflow Steps
@@ -30,10 +30,10 @@ Before any implementation begins, create and checkout the branch:
 
 ```powershell
 # Windows (PowerShell)
-git checkout -b feature-2026.000001.[1.0.0-SNAPSHOT]-short-description
+git checkout -b feature-2026.000001
 
 # Linux/macOS (Bash)
-git checkout -b feature-2026.000001.[1.0.0-SNAPSHOT]-short-description
+git checkout -b feature-2026.000001
 ```
 
 ### 2. During Implementation — Normal commits per task

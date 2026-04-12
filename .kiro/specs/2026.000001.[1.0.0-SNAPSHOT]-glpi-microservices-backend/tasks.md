@@ -1,0 +1,792 @@
+
+# Implementation Plan: GLPI Microservices Backend
+
+## Overview
+
+This plan converts the design into incremental coding tasks organized by bounded context. Each task builds on the previous ones, ending with full integration. The implementation language is **Java 21** with Spring Boot 3.x, Maven multi-module, MongoDB, Apache Kafka, and Spring Cloud Gateway, as defined in the design document.
+
+Commit format after each task: `2026.000001-{XXXX}: <short description>`
+
+Tasks marked with `*` are optional (property-based and unit tests) and can be skipped for a faster MVP. All other tasks are mandatory.
+
+---
+
+## Tasks
+
+- [ ] 1. Bootstrap project structure and shared infrastructure
+  - [ ] 1.1 Create Git branch `feature-2026.000001.[1.0.0-SNAPSHOT]-glpi-microservices-backend`
+    - Run: `git checkout -b feature-2026.000001.[1.0.0-SNAPSHOT]-glpi-microservices-backend`
+    - This must be the very first action before any code is written
+    - _Requirements: version-control-workflow_
+  - [ ] 1.2 Create Maven multi-module parent `pom.xml`
+    - Define `groupId=com.glpi`, `artifactId=glpi-microservices-backend`, `version=1.0.0-SNAPSHOT`
+    - Declare all 9 service modules + `common` as `<modules>`
+    - Set Java 21 compiler source/target, Spring Boot 3.x BOM, dependency management for MongoDB, Kafka, JJWT, SpringDoc, jqwik, JUnit 5, Mockito
+    - _Requirements: 25.1_
+  - [ ] 1.3 Create `common` module with shared domain event envelope
+    - Implement `DomainEventEnvelope` record: `eventId`, `eventType`, `aggregateId`, `aggregateType`, `occurredAt`, `version`, `payload`
+    - Implement `ErrorResponse` record: `timestamp`, `status`, `errorCode`, `message`, `details`, `traceId`
+    - Implement `PagedResponse<T>` record: `content`, `totalElements`, `totalPages`, `currentPage`, `pageSize`
+    - _Requirements: 21.2, 19.6, 19.7_
+  - [ ]* 1.4 Write property test for domain event envelope completeness
+    - **Property 36: Domain event envelope completeness**
+    - **Validates: Requirements 21.2**
+    - Use jqwik `@ForAll` to generate random `DomainEventEnvelope` instances and assert all 6 fields are non-null and valid
+  - [ ] 1.5 Create `docker-compose.yml` with all infrastructure services
+    - Define services: MongoDB 7.x (port 27017), Kafka 3.x (port 9092), Zookeeper (port 2181)
+    - Add placeholder service entries for all 9 microservices with correct port mappings (8080–8088)
+    - Configure environment variables for DB URIs, Kafka brokers, JWT keys with documented defaults
+    - Add `seed` Docker Compose profile for running seeders in dependency order
+    - _Requirements: 25.2, 25.4, 25.5, 29.11_
+  - [ ] 1.6 Create root-level `.gitignore` and `.dockerignore`
+    - `.gitignore`: `target/`, `*.jar`, `.env`, `*.key`, `*.pem`, `.idea/`, `.vscode/`
+    - `.dockerignore`: `.git/`, `.kiro/`, `target/`, `*.md`, `.env`, `tests/`
+    - _Requirements: ignore-files-policy_
+  - [ ] 1.7 Create root-level `README.md`
+    - Document overall architecture, microservice list with ports, how to start with `docker compose up`, links to each service README
+    - _Requirements: 28.10_
+
+
+- [ ] 2. Implement Identity Service — domain model and user lifecycle
+  - [ ] 2.1 Scaffold Identity Service Maven module with hexagonal package structure
+    - Create `identity-service/pom.xml` with Spring Boot, MongoDB, Kafka, JJWT, SpringDoc, jqwik dependencies
+    - Create package tree: `domain/model`, `domain/port/in`, `domain/port/out`, `domain/service`, `application/usecase`, `adapter/in/rest`, `adapter/out/persistence`, `adapter/out/messaging`, `config`
+    - Create `IdentityServiceApplication.java` main class
+    - _Requirements: 25.1_
+  - [ ] 2.2 Implement `User` aggregate and value objects
+    - Implement `User` aggregate with all fields from the User document schema: `id`, `username`, `passwordHash`, `authType`, `emails`, `isActive`, `isDeleted`, `entityId`, `profileId`, `personalToken`, `apiToken`, `totpSecret`, `twoFactorEnabled`, `passwordHistory`, `failedLoginAttempts`, `lockedUntil`, `createdAt`, `updatedAt`
+    - Implement `AuthType` enum: `DB_GLPI=1`, `LDAP=2`, `OAUTH2=4`
+    - Implement `Email` value object with `email` and `isDefault` fields
+    - Enforce mandatory field invariants in the constructor
+    - _Requirements: 1.1, 1.4, 22.1_
+  - [ ]* 2.3 Write property test for user mandatory fields invariant
+    - **Property 1: User mandatory fields invariant**
+    - **Validates: Requirements 1.1, 22.1**
+    - Use jqwik to generate valid `CreateUserCommand` instances and assert stored `User` always has non-null `username`, `passwordHash`, `emails`, `isActive`, `createdAt`
+  - [ ] 2.4 Implement `UserRepository` driven port and MongoDB adapter
+    - Define `UserRepository` interface: `findByUsername`, `findById`, `save`, `delete`, `existsByUsernameAndAuthType`
+    - Implement `MongoUserRepository` using Spring Data MongoDB
+    - Create `UserDocument` MongoDB document class with all fields
+    - Create MongoDB indexes: `username` (unique), `entityId`, `isActive`, `isDeleted`
+    - _Requirements: 22.1, 22.9_
+  - [ ] 2.5 Implement `CreateUserUseCase` with password hashing and duplicate rejection
+    - Implement `CreateUserService` enforcing: bcrypt hash (cost ≥ 12), duplicate username rejection (HTTP 409 / `DUPLICATE_USERNAME`), password complexity validation (HTTP 422 / `PASSWORD_COMPLEXITY_VIOLATION`)
+    - Implement `PasswordHistoryPort` interface and MongoDB adapter storing last 5 hashes
+    - Reject reuse of any of the last 5 passwords (HTTP 422 / `PASSWORD_HISTORY_VIOLATION`)
+    - _Requirements: 1.1, 1.2, 1.3, 1.10, 24.1_
+  - [ ]* 2.6 Write property test for duplicate username rejection
+    - **Property 2: Duplicate username rejection**
+    - **Validates: Requirements 1.2**
+    - Use jqwik to generate a username, create first user, assert second creation with same username+authType returns HTTP 409
+  - [ ]* 2.7 Write property test for password history enforcement
+    - **Property 5: Password history enforcement**
+    - **Validates: Requirements 1.10**
+    - Use jqwik to generate a sequence of 6+ passwords, set each in order, assert that re-using any of the last 5 returns HTTP 422
+  - [ ]* 2.8 Write property test for password stored as bcrypt hash
+    - **Property 40: Password stored as bcrypt hash**
+    - **Validates: Requirements 24.1**
+    - Use jqwik to generate arbitrary plaintext passwords, assert stored `passwordHash` is a valid bcrypt string with cost ≥ 12 and never equals the plaintext
+  - [ ] 2.9 Implement user deactivation and account lockout
+    - Implement `DeactivateUserUseCase`: set `isActive=false`; subsequent auth attempts return HTTP 401 / `ACCOUNT_INACTIVE`
+    - Implement account lockout: after 5 consecutive failed logins within 10 minutes, set `lockedUntil = now + 15 minutes`, publish `AccountLocked` domain event to `identity.users`
+    - _Requirements: 1.5, 24.7_
+  - [ ]* 2.10 Write property test for deactivated user authentication rejection
+    - **Property 3: Deactivated user authentication rejection**
+    - **Validates: Requirements 1.5**
+    - Use jqwik to generate users with `isActive=false` and assert every auth attempt (password, API token, TOTP) returns HTTP 401
+  - [ ]* 2.11 Write property test for account lockout after failed attempts
+    - **Property 41: Account lockout after failed attempts**
+    - **Validates: Requirements 24.7**
+    - Use jqwik to simulate 5 consecutive failed logins within 10 minutes and assert subsequent attempts return HTTP 401 and `AccountLocked` event is published
+  - [ ] 2.12 Implement personal API token generation and authentication
+    - Implement `GenerateApiTokenUseCase`: generate UUID-based token, encrypt with AES-256, store in `personalToken`
+    - Implement API token authentication path in `AuthenticateUserUseCase`
+    - _Requirements: 1.6, 1.7_
+  - [ ]* 2.13 Write property test for API token uniqueness
+    - **Property 4: API token uniqueness**
+    - **Validates: Requirements 1.6**
+    - Use jqwik to generate N users, generate tokens for all, assert all N tokens are pairwise distinct
+  - [ ] 2.14 Implement user purge and `UserPurged` event publication
+    - Implement `PurgeUserUseCase`: hard-delete user document, publish `UserPurged` event to `identity.users` Kafka topic via `EventPublisherPort`
+    - Implement `KafkaEventPublisher` adapter for `EventPublisherPort`
+    - _Requirements: 1.11, 21.1, 21.2_
+  - [ ]* 2.15 Write property test for UserPurged event publication
+    - **Property 6: UserPurged event publication**
+    - **Validates: Requirements 1.11**
+    - Use jqwik to purge arbitrary users and assert `UserPurged` event on `identity.users` contains correct `userId` and non-null `occurredAt`
+
+
+- [ ] 3. Implement Identity Service — Entity hierarchy and RBAC
+  - [ ] 3.1 Implement `Entity` aggregate and repository
+    - Implement `Entity` aggregate with fields: `id`, `name`, `parentId`, `level`, `completeName`, `config` (embedded with all CONFIG_PARENT fields), `createdAt`, `updatedAt`
+    - Define `EntityRepository` interface and `MongoEntityRepository` adapter
+    - Create MongoDB indexes: `parentId`, compound `name+parentId` (unique)
+    - _Requirements: 2.1, 2.2, 22.2_
+  - [ ] 3.2 Implement entity CRUD use cases with tree invariants
+    - Implement `CreateEntityUseCase`: enforce unique name within parent (HTTP 409 / `DUPLICATE_ENTITY_NAME`), compute `completeName` from full path, set `level`
+    - Implement `DeleteEntityUseCase`: reject deletion if entity has children (HTTP 409 / `ENTITY_HAS_CHILDREN`)
+    - Implement `ResolveEntityConfigUseCase`: traverse tree upward for CONFIG_PARENT (-2) fields until non-inherited value found
+    - _Requirements: 2.2, 2.3, 2.4, 2.7_
+  - [ ]* 3.3 Write property test for entity tree parent invariant
+    - **Property 7: Entity tree parent invariant**
+    - **Validates: Requirements 2.1**
+    - Use jqwik to generate entity trees and assert every non-root entity has exactly one non-null `parentId` referencing an existing entity
+  - [ ]* 3.4 Write property test for entity name uniqueness within parent
+    - **Property 8: Entity name uniqueness within parent**
+    - **Validates: Requirements 2.2**
+    - Use jqwik to generate parent entities and assert creating two children with the same name returns HTTP 409
+  - [ ]* 3.5 Write property test for entity deletion blocked when children exist
+    - **Property 9: Entity deletion blocked when children exist**
+    - **Validates: Requirements 2.3**
+    - Use jqwik to generate entities with at least one child and assert deletion returns HTTP 409
+  - [ ]* 3.6 Write property test for CONFIG_PARENT inheritance resolution
+    - **Property 10: CONFIG_PARENT inheritance resolution**
+    - **Validates: Requirements 2.4, 2.7**
+    - Use jqwik to generate entity hierarchies with CONFIG_PARENT fields and assert resolved value equals nearest ancestor's non-inherited value
+  - [ ]* 3.7 Write property test for recursive entity assignment covers all descendants
+    - **Property 11: Recursive entity assignment covers all descendants**
+    - **Validates: Requirements 2.5**
+    - Use jqwik to generate entity trees with N descendants and assert recursive profile assignment grants access to all N descendants
+  - [ ] 3.8 Implement `Profile` aggregate and RBAC
+    - Implement `Profile` aggregate with fields: `id`, `name`, `interface` (central/helpdesk), `isDefault`, `twoFactorEnforced`, `rights` (Map<String, Integer> bitfields), `ticketStatusMatrix`, `createdAt`, `updatedAt`
+    - Define `ProfileRepository` interface and `MongoProfileRepository` adapter
+    - Implement `AssignProfileUseCase`: assign profile to user in entity, publish `ProfileAssigned` event to `identity.profiles`
+    - Enforce: cannot delete last profile holding UPDATE right on "profile" resource
+    - _Requirements: 3.1, 3.2, 3.3, 3.5, 3.6, 3.7_
+  - [ ]* 3.9 Write property test for permission bitfield round-trip
+    - **Property 12: Permission bitfield round-trip**
+    - **Validates: Requirements 3.2, 3.3**
+    - Use jqwik to generate arbitrary combinations of READ/UPDATE/CREATE/DELETE/PURGE bits, store in profile, read back, assert all bits preserved exactly
+  - [ ] 3.10 Implement `Group` aggregate and repository
+    - Implement `Group` aggregate with fields: `id`, `name`, `entityId`, `isRecursive`, `memberUserIds`, `createdAt`, `updatedAt`
+    - Define `GroupRepository` interface and `MongoGroupRepository` adapter
+    - _Requirements: 2.5_
+  - [ ] 3.11 Implement Identity Service seeder
+    - Implement `IdentitySeeder` Spring component that runs on startup when `users` and `profiles` collections are empty
+    - Seed 8 default profiles (Self-Service, Observer, Admin, Super-Admin, Hotliner, Technician, Supervisor, Read-Only) with correct `interface` and `isDefault` values
+    - Seed 4 default users (glpi/glpi, post-only/postonly, tech/tech, normal/normal) with bcrypt passwords and correct profile assignments
+    - Seed root entity (id=0, name="Root Entity", parentId=null, level=1)
+    - Log each seeding operation with collection name, documents inserted, and timestamp
+    - _Requirements: 29.1, 29.2, 29.3, 29.4, 29.13_
+  - [ ]* 3.12 Write property test for seeder idempotency
+    - **Property 39: Seeder idempotency**
+    - **Validates: Requirements 29.12**
+    - Use jqwik to run the seeder twice and assert collection size remains unchanged on the second run
+
+
+- [ ] 4. Implement Identity Service — Authentication, JWT, and 2FA
+  - [ ] 4.1 Implement JWT RS256 token issuance and validation
+    - Implement `AuthenticateUserUseCase`: validate credentials, check `isActive`, check `lockedUntil`, verify TOTP if `twoFactorEnabled`, issue JWT (exp=1h) + refresh token (exp=7d) signed with RS256 key pair
+    - JWT payload must contain: `sub`, `entity_id`, `profile_id`, `rights`, `iat`, `exp`
+    - Implement `RefreshTokenUseCase`: validate refresh token, rotate (issue new pair, invalidate old), detect replay attack (HTTP 401 / `REFRESH_TOKEN_REUSE`), invalidate entire token family on replay
+    - _Requirements: 4.1, 4.3, 4.4, 4.5, 4.7_
+  - [ ]* 4.2 Write property test for JWT contains all required claims
+    - **Property 13: JWT contains all required claims**
+    - **Validates: Requirements 4.7, 3.4**
+    - Use jqwik to generate valid auth requests and assert every returned JWT payload contains `sub`, `entity_id`, `profile_id`, `rights`, `iat`, `exp` with correct types and non-null values
+  - [ ]* 4.3 Write property test for refresh token rotation
+    - **Property 15: Refresh token rotation**
+    - **Validates: Requirements 4.3, 4.4**
+    - Use jqwik to generate valid refresh tokens, use each once, assert new tokens issued and original token invalidated (second use returns HTTP 401)
+  - [ ] 4.4 Implement JWT blocklist for logout
+    - Implement `TokenBlocklistPort` interface: `block(jti, ttl)`, `isBlocked(jti)`
+    - Implement in-memory (dev) and Redis-backed (prod) adapters
+    - Implement `LogoutUseCase`: add JWT `jti` to blocklist for remaining validity duration
+    - _Requirements: 4.6_
+  - [ ]* 4.5 Write property test for logout blocklists JWT
+    - **Property 16: Logout blocklists JWT**
+    - **Validates: Requirements 4.6**
+    - Use jqwik to generate valid JWTs, logout, assert presenting the same JWT to any protected endpoint returns HTTP 401
+  - [ ] 4.6 Implement TOTP 2FA support
+    - Implement TOTP secret generation (RFC 6238), encrypted storage (AES-256)
+    - Enforce TOTP verification on login when `twoFactorEnabled=true` or profile `twoFactorEnforced=true`
+    - Return HTTP 401 / `TOTP_REQUIRED` when TOTP not provided; `TOTP_INVALID` when code incorrect
+    - _Requirements: 1.8, 1.9_
+  - [ ] 4.7 Implement user impersonation
+    - Implement `ImpersonateUserUseCase`: require `IMPERSONATE` right, issue impersonation JWT with impersonating user ID recorded in claims
+    - Log impersonating user ID in all audit log entries during impersonation session
+    - _Requirements: 1.12_
+  - [ ] 4.8 Implement Identity Service REST controllers
+    - `POST /auth/login` → `AuthenticateUserUseCase`
+    - `POST /auth/refresh` → `RefreshTokenUseCase`
+    - `POST /auth/logout` → `LogoutUseCase`
+    - `POST /users` → `CreateUserUseCase`
+    - `GET /users`, `GET /users/{id}`, `PUT /users/{id}`, `DELETE /users/{id}`, `DELETE /users/{id}/purge`
+    - `POST /users/{id}/api-token` → `GenerateApiTokenUseCase`
+    - `POST /users/{id}/impersonate` → `ImpersonateUserUseCase`
+    - `GET /entities`, `POST /entities`, `GET /entities/{id}`, `PUT /entities/{id}`, `DELETE /entities/{id}`
+    - `GET /profiles`, `POST /profiles`, `GET /profiles/{id}`, `PUT /profiles/{id}`, `DELETE /profiles/{id}`
+    - `POST /profiles/{id}/assign` → `AssignProfileUseCase`
+    - `GET /groups`, `POST /groups`, `GET /groups/{id}`, `PUT /groups/{id}`, `DELETE /groups/{id}`
+    - Apply pagination (page, size, sort, order) on all collection endpoints
+    - _Requirements: 19.1, 19.2, 19.6, 19.7, 19.8, 20.1_
+  - [ ] 4.9 Implement Identity Service global exception handler
+    - Implement `@RestControllerAdvice` mapping domain exceptions to HTTP responses using the error code registry
+    - Map: `DuplicateUsernameException` → 409, `EntityHasChildrenException` → 409, `InvalidStatusTransitionException` → 422, `PasswordComplexityException` → 422, `TokenExpiredException` → 401, etc.
+    - Never expose stack traces or sensitive data in responses
+    - _Requirements: 19.3, 19.4, 19.5_
+  - [ ] 4.10 Configure SpringDoc OpenAPI for Identity Service
+    - Configure SpringDoc to generate OpenAPI 3.0 spec at `/v3/api-docs`
+    - Serve Swagger UI at `/swagger-ui.html`
+    - Document all endpoints with summary, description, request/response schemas, error codes, and auth notes
+    - _Requirements: 28.1, 28.2, 28.3, 28.5, 28.7, 28.8_
+  - [ ] 4.11 Create Identity Service `Dockerfile` and `README.md`
+    - Multi-stage Dockerfile: Maven build stage + Eclipse Temurin JRE 21 slim runtime stage
+    - Run as non-root user in container
+    - `README.md`: service purpose, local setup, environment variables, endpoints summary, Kafka topics
+    - _Requirements: 25.1, 25.3, 28.9_
+
+- [ ] 5. Checkpoint — Identity Service
+  - Ensure all Identity Service tests pass. Verify JWT issuance, user CRUD, entity hierarchy, profile RBAC, and seeder work end-to-end. Ask the user if questions arise.
+
+
+- [ ] 6. Implement API Gateway
+  - [ ] 6.1 Scaffold API Gateway Maven module
+    - Create `api-gateway/pom.xml` with Spring Cloud Gateway, Spring Security, JJWT, SpringDoc dependencies
+    - Create `ApiGatewayApplication.java` main class
+    - _Requirements: 18.1_
+  - [ ] 6.2 Implement JWT validation filter
+    - Implement `JwtAuthenticationFilter` as a Spring Cloud Gateway `GlobalFilter`
+    - Validate RS256 JWT signature, check `exp` claim, check blocklist (via Identity Service or shared cache)
+    - On invalid/expired JWT: return HTTP 401 with `TOKEN_EXPIRED` or `TOKEN_INVALID` error code without forwarding
+    - On valid JWT: extract claims and forward as headers: `X-User-Id`, `X-Entity-Id`, `X-Profile-Id`, `X-User-Rights`
+    - _Requirements: 18.2, 18.3, 18.6, 4.2_
+  - [ ]* 6.3 Write property test for expired JWT rejection
+    - **Property 14: Expired JWT rejection**
+    - **Validates: Requirements 4.2**
+    - Use jqwik to generate JWTs with `exp` in the past and assert API Gateway returns HTTP 401 with `TOKEN_EXPIRED`
+  - [ ] 6.4 Implement rate limiting filter
+    - Implement `RateLimitingFilter`: token bucket per `X-User-Id`, max 1000 requests/minute
+    - On limit exceeded: return HTTP 429 with `Retry-After` header
+    - Use in-memory implementation for dev; document Redis-backed option for production
+    - _Requirements: 18.4, 18.5_
+  - [ ]* 6.5 Write property test for rate limit enforcement
+    - **Property 33: Rate limit enforcement**
+    - **Validates: Requirements 18.4, 18.5**
+    - Use jqwik to simulate 1001 requests within 60 seconds for the same user and assert the 1001st returns HTTP 429 with `Retry-After` header
+  - [ ] 6.6 Implement route configuration
+    - Define Spring Cloud Gateway routes for all 8 downstream services using path prefix matching:
+      - `/auth/**`, `/users/**`, `/entities/**`, `/profiles/**`, `/groups/**` → Identity Service (8081)
+      - `/tickets/**` → Ticket Service (8082)
+      - `/problems/**` → Problem Service (8083)
+      - `/changes/**` → Change Service (8084)
+      - `/assets/**` → Asset Service (8085)
+      - `/slas/**`, `/olas/**`, `/calendars/**` → SLA Service (8086)
+      - `/notifications/**` → Notification Service (8087)
+      - `/knowledge/**` → Knowledge Service (8088)
+    - Configure CORS with allowed origins, methods, and headers
+    - _Requirements: 18.1, 18.7, 18.10_
+  - [ ] 6.7 Implement App-Token validation
+    - Implement `AppTokenValidationFilter`: validate `App-Token` header against configured API client registry
+    - _Requirements: 18.7, 4.8_
+  - [ ] 6.8 Implement health aggregation and request logging
+    - Implement `HealthAggregator`: poll `/actuator/health` on all downstream services, aggregate into single response at `GET /actuator/health`
+    - Implement request logging filter: log timestamp, method, path, user ID, response status, latency in milliseconds
+    - _Requirements: 18.8, 18.9_
+  - [ ] 6.9 Implement OpenAPI aggregation in API Gateway
+    - Configure SpringDoc to aggregate OpenAPI specs from all downstream services
+    - Expose unified Swagger UI at `GET /swagger-ui.html` listing all services
+    - _Requirements: 28.4_
+  - [ ] 6.10 Create API Gateway `Dockerfile` and `README.md`
+    - Multi-stage Dockerfile with non-root user
+    - `README.md`: gateway purpose, routing table, rate limiting config, environment variables
+    - _Requirements: 25.1, 25.3, 28.9_
+
+
+- [ ] 7. Implement SLA Service
+  - [ ] 7.1 Scaffold SLA Service Maven module with hexagonal structure
+    - Create `sla-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
+    - Create package tree following hexagonal architecture
+    - Create `SlaServiceApplication.java` main class
+    - _Requirements: 14.1_
+  - [ ] 7.2 Implement `Calendar` aggregate and business-hours computation
+    - Implement `Calendar` aggregate with fields: `id`, `name`, `entityId`, `isRecursive`, `segments` (embedded array of `CalendarSegment`: dayOfWeek, startTime, endTime), `holidays` (embedded array: id, name, date, isRecurring), `createdAt`, `updatedAt`
+    - Implement `DeadlineComputationService` implementing `DeadlineComputationPort`:
+      - `computeDeadline(start, durationSeconds, calendarId)`: advance time through business segments, skip non-business hours and holidays, return deadline instant
+      - `computeElapsedBusinessSeconds(start, end, calendarId)`: count only business seconds between two instants
+    - _Requirements: 14.5, 14.6, 14.7, 14.8_
+  - [ ]* 7.3 Write property test for SLA deadline excludes non-business hours
+    - **Property 26: SLA deadline excludes non-business hours**
+    - **Validates: Requirements 14.7, 14.8, 9.1, 9.2**
+    - Use jqwik to generate arbitrary calendars and start times, compute deadlines, assert computed deadline never falls within non-business hours or on a holiday
+  - [ ] 7.4 Implement `Sla` and `Ola` aggregates with escalation levels
+    - Implement `Sla` aggregate: `id`, `name`, `entityId`, `type` (TTO=1/TTR=2), `durationSeconds`, `calendarId`, `levels` (embedded `SlaLevel[]`: id, name, executionDelaySeconds, actions[])
+    - Implement `Ola` aggregate with same structure
+    - Implement `SlaLevel` with `actions`: `send_notification`, `reassign`, `change_priority`
+    - Define `SlaRepository`, `OlaRepository` interfaces and MongoDB adapters
+    - Create MongoDB indexes: `entityId`, `type`
+    - _Requirements: 14.1, 14.2, 14.3, 22.7_
+  - [ ] 7.5 Implement SLA escalation scheduler
+    - Implement `EscalationScheduler` as Spring `@Scheduled` task running every 5 minutes
+    - Query active tickets via Ticket Service HTTP client (Feign or RestClient)
+    - Evaluate each ticket's SLA levels: if `now >= deadline + executionDelaySeconds` and not already triggered, publish `SlaEscalationTriggered` event to `sla.events`
+    - Record each escalation execution with timestamp to prevent duplicate triggering
+    - _Requirements: 15.1, 15.2, 15.6_
+  - [ ] 7.6 Implement SLA Service REST controllers
+    - `GET /slas`, `POST /slas`, `GET /slas/{id}`, `PUT /slas/{id}`, `DELETE /slas/{id}`
+    - `GET /olas`, `POST /olas`, `GET /olas/{id}`, `PUT /olas/{id}`, `DELETE /olas/{id}`
+    - `GET /calendars`, `POST /calendars`, `GET /calendars/{id}`, `PUT /calendars/{id}`, `DELETE /calendars/{id}`
+    - `POST /calendars/{id}/holidays`, `DELETE /calendars/{id}/holidays/{holidayId}`
+    - `POST /slas/compute-deadline` → `DeadlineComputationPort.computeDeadline`
+    - Apply pagination on collection endpoints
+    - _Requirements: 14.4, 14.8, 19.1, 19.6_
+  - [ ] 7.7 Implement SLA Service seeder
+    - Seed default calendar (id=1, name="Default", entityId=0, isRecursive=true) with Mon–Fri 08:00–20:00 segments when `calendars` collection is empty
+    - _Requirements: 29.5, 29.12_
+  - [ ] 7.8 Implement SLA Service global exception handler, SpringDoc config, Dockerfile, and README
+    - `@RestControllerAdvice` with error code mapping
+    - SpringDoc OpenAPI at `/v3/api-docs`, Swagger UI at `/swagger-ui.html`
+    - Multi-stage Dockerfile with non-root user
+    - `README.md` with service purpose, endpoints, Kafka topics
+    - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
+
+
+- [ ] 8. Implement Ticket Service — core domain and lifecycle
+  - [ ] 8.1 Scaffold Ticket Service Maven module with hexagonal structure
+    - Create `ticket-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
+    - Create package tree following hexagonal architecture
+    - Create `TicketServiceApplication.java` main class
+    - _Requirements: 5.1_
+  - [ ] 8.2 Implement `Ticket` aggregate with embedded sub-documents
+    - Implement `Ticket` aggregate with all fields from the Ticket document schema: `id`, `type` (INCIDENT=1/SERVICE_REQUEST=2), `status`, `title`, `content`, `entityId`, `priority`, `urgency`, `impact`, `categoryId`, `isDeleted`, `actors[]`, `followups[]`, `tasks[]`, `solution`, `validations[]`, `sla` (embedded `SlaContext`), `priorityManualOverride`, `createdAt`, `updatedAt`, `solvedAt`, `closedAt`, `takeIntoAccountDelay`
+    - Implement `TicketStatus` enum: INCOMING=1, ASSIGNED=2, PLANNED=3, WAITING=4, SOLVED=5, CLOSED=6
+    - Implement `Actor` value object: `actorType` (REQUESTER=1, ASSIGNED=2, OBSERVER=3, SUPPLIER=4), `actorKind` (user/group/supplier), `actorId`, `useNotification`
+    - Implement `SlaContext` value object with all SLA deadline fields
+    - _Requirements: 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 22.3_
+  - [ ] 8.3 Implement `TicketRepository` driven port and MongoDB adapter
+    - Define `TicketRepository` interface: `findById`, `save`, `findByEntityId`, `findByStatus`, `findAllNotDeleted`
+    - Implement `MongoTicketRepository` with Spring Data MongoDB
+    - Create MongoDB indexes: `entityId`, `status`, `type`, `isDeleted`, `createdAt`, `actors.actorId`
+    - _Requirements: 22.3, 22.9_
+  - [ ] 8.4 Implement `CreateTicketUseCase` with status and event publication
+    - Implement `CreateTicketService`: assign `status=INCOMING`, record `createdAt`, `requesterId`, `entityId`
+    - Compute initial priority using `PriorityMatrixService`
+    - Publish `TicketCreated` event to `tickets.events` with full ticket snapshot
+    - _Requirements: 5.3, 5.10, 21.2_
+  - [ ]* 8.5 Write property test for ticket creation invariant
+    - **Property 17: Ticket creation invariant**
+    - **Validates: Requirements 5.3**
+    - Use jqwik to generate valid `CreateTicketCommand` instances and assert resulting ticket always has `status=INCOMING`, non-null `createdAt`, `requesterId`, and `entityId`
+  - [ ]* 8.6 Write property test for ticket event publication on create/update
+    - **Property 21: Ticket event publication on create/update**
+    - **Validates: Requirements 5.10, 21.2**
+    - Use jqwik to generate ticket create/update operations and assert `TicketCreated`/`TicketUpdated` event published to `tickets.events` with full snapshot
+  - [ ] 8.7 Implement `PriorityMatrixService` and priority computation
+    - Implement `PriorityMatrixService`: load entity-specific matrix (or default), compute `priority = matrix[urgency][impact]`
+    - Seed default priority matrix: `{"1":{"1":1,...},...}` as per Requirement 29.6
+    - Implement `UpdateTicketUseCase`: auto-recompute priority when urgency/impact changes unless `priorityManualOverride=true`
+    - Enforce `CHANGEPRIORITY` right check when priority is directly set (HTTP 403 / `INSUFFICIENT_RIGHTS`)
+    - _Requirements: 5.8, 5.9, 27.1, 27.2, 27.3, 27.4_
+  - [ ]* 8.8 Write property test for priority matrix computation
+    - **Property 19: Priority matrix computation**
+    - **Validates: Requirements 5.8, 27.1, 27.2**
+    - Use jqwik to generate all valid (urgency, impact) pairs in [1..5]×[1..5] and assert computed priority equals `matrix[urgency][impact]`
+  - [ ]* 8.9 Write property test for CHANGEPRIORITY right enforcement
+    - **Property 20: CHANGEPRIORITY right enforcement**
+    - **Validates: Requirements 5.9**
+    - Use jqwik to generate users without `CHANGEPRIORITY` right and assert direct priority set returns HTTP 403
+  - [ ]* 8.10 Write property test for priority recomputed on urgency/impact change
+    - **Property 38: Priority recomputed on urgency/impact change**
+    - **Validates: Requirements 27.4**
+    - Use jqwik to generate tickets without manual override, update urgency/impact, assert priority recomputed using entity matrix
+  - [ ] 8.11 Implement ticket assignment and status transitions
+    - Implement `AssignTicketUseCase`: transition `INCOMING → ASSIGNED`, record assignment timestamp, publish `TicketUpdated` event
+    - Implement `StatusTransitionService`: enforce allowed transitions per profile's `ticketStatusMatrix`, return HTTP 422 / `INVALID_STATUS_TRANSITION` on violation
+    - Enforce actor rights: `OWN` right for self-assignment when no assigned user exists; `STEAL` right for reassignment
+    - _Requirements: 5.4, 6.5, 6.6, 26.1, 26.5, 26.6_
+  - [ ]* 8.12 Write property test for ticket assignment triggers status transition
+    - **Property 18: Ticket assignment triggers status transition**
+    - **Validates: Requirements 5.4**
+    - Use jqwik to generate tickets in INCOMING status, assign user/group, assert `status=ASSIGNED` with non-null assignment timestamp
+  - [ ]* 8.13 Write property test for invalid status transition rejection
+    - **Property 37: Invalid status transition rejection**
+    - **Validates: Requirements 26.6, 26.1, 26.2, 26.3, 26.4**
+    - Use jqwik to generate status transitions not permitted by profile matrix and assert HTTP 422 with `INVALID_STATUS_TRANSITION`
+  - [ ] 8.14 Implement soft delete and search exclusion
+    - Implement `DeleteTicketUseCase`: set `isDeleted=true`, publish `TicketDeleted` event to `tickets.events`
+    - Ensure all `findAll` queries filter `isDeleted=false` by default
+    - _Requirements: 5.11, 5.12_
+  - [ ]* 8.15 Write property test for soft-deleted tickets excluded from search
+    - **Property 22: Soft-deleted tickets excluded from search**
+    - **Validates: Requirements 5.11**
+    - Use jqwik to generate tickets with `isDeleted=true` and assert they never appear in default `GET /tickets` results
+
+
+- [ ] 9. Implement Ticket Service — followups, tasks, solutions, validations, and SLA
+  - [ ] 9.1 Implement followup, task, and solution use cases
+    - Implement `AddFollowupUseCase`: add `ITILFollowup` (content, authorId, isPrivate, source, createdAt) to ticket; if ticket is CLOSED/SOLVED and author is requester, reopen to INCOMING and publish `TicketReopened` event; publish `TicketFollowupAdded` event
+    - Implement `AddTaskUseCase`: add `ITILTask` (content, assignedUserId, plannedStart, plannedEnd, duration, status, isPrivate); publish `TicketTaskCompleted` event when `status=DONE`
+    - Implement `AddSolutionUseCase`: set `solution` embedded doc, transition ticket to SOLVED, record `solvedAt`, publish `TicketSolved` event; enforce `SOLUTION_REQUIRED` on SOLVED transition
+    - Implement `RejectSolutionUseCase`: reopen ticket to ASSIGNED, record rejection reason
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 5.5, 5.7, 26.2_
+  - [ ]* 9.2 Write property test for ticket reopen on followup by requester
+    - **Property 23: Ticket reopen on followup by requester**
+    - **Validates: Requirements 5.7**
+    - Use jqwik to generate tickets in CLOSED/SOLVED status, add followup by requester, assert ticket transitions to INCOMING and `TicketReopened` event published
+  - [ ]* 9.3 Write property test for solution addition transitions ticket to SOLVED
+    - **Property 24: Solution addition transitions ticket to SOLVED**
+    - **Validates: Requirements 7.4, 5.5**
+    - Use jqwik to generate tickets in any non-CLOSED status, add solution, assert `status=SOLVED` and `TicketSolved` event published
+  - [ ] 9.2 Implement validation workflow use cases
+    - Implement `RequestValidationUseCase`: create `TicketValidation` record (validatorId, validatorKind, status=WAITING), set ticket status to WAITING, publish `TicketValidationRequested` event
+    - Implement `ApproveValidationUseCase`: set validation status=ACCEPTED; if all required validations accepted, allow SOLVED transition
+    - Implement `RefuseValidationUseCase`: set validation status=REFUSED, reopen ticket, publish `TicketValidationRefused` event
+    - Support global (any one approves) and sequential (all must approve in order) validation modes
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
+  - [ ]* 9.4 Write property test for validation request sets ticket to WAITING
+    - **Property 25: Validation request sets ticket to WAITING**
+    - **Validates: Requirements 8.2**
+    - Use jqwik to generate tickets and request validations, assert ticket status becomes WAITING and `TicketValidationRequested` event published
+  - [ ] 9.5 Implement SLA deadline computation and timer pause/resume
+    - Implement `SlaDeadlineService`: call SLA Service `POST /slas/compute-deadline` via HTTP client to compute TTO/TTR deadlines on ticket creation
+    - Implement SLA timer pause: when ticket enters WAITING, record `waitingStart`; when exits WAITING, add elapsed seconds to `slaWaitingDuration`, extend deadlines accordingly
+    - Record `takeIntoAccountDelay` when ticket is assigned (TTO met)
+    - Record `solveDelayStat` when ticket is solved (TTR met)
+    - Support OLA deadlines in parallel (`internalTtoDeadline`, `internalTtrDeadline`)
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8_
+  - [ ]* 9.6 Write property test for SLA timer pause/resume preserves elapsed time
+    - **Property 27: SLA timer pause/resume preserves elapsed time**
+    - **Validates: Requirements 9.3, 9.4**
+    - Use jqwik to generate tickets that enter/exit WAITING status, assert `slaWaitingDuration` equals total wall-clock seconds in WAITING and deadline extended by exactly that duration
+  - [ ] 9.7 Implement Ticket Service REST controllers and sub-resource endpoints
+    - `GET /tickets`, `POST /tickets`, `GET /tickets/{id}`, `PUT /tickets/{id}`, `PATCH /tickets/{id}`, `DELETE /tickets/{id}`
+    - `GET /tickets/{id}/followups`, `POST /tickets/{id}/followups`
+    - `GET /tickets/{id}/tasks`, `POST /tickets/{id}/tasks`, `PUT /tickets/{id}/tasks/{taskId}`
+    - `GET /tickets/{id}/solutions`, `POST /tickets/{id}/solutions`
+    - `GET /tickets/{id}/actors`, `POST /tickets/{id}/actors`, `DELETE /tickets/{id}/actors/{actorId}`
+    - `GET /tickets/{id}/validations`, `POST /tickets/{id}/validations`, `PUT /tickets/{id}/validations/{validationId}`
+    - Apply pagination, sorting, filtering on collection endpoints
+    - _Requirements: 19.1, 19.6, 19.7, 20.1, 20.2_
+  - [ ] 9.8 Implement Ticket Service seeder
+    - Seed default priority matrix configuration when `priority_matrix` collection is empty
+    - _Requirements: 29.6, 29.12_
+  - [ ] 9.9 Implement Ticket Service global exception handler, SpringDoc config, Dockerfile, and README
+    - `@RestControllerAdvice` with full error code mapping including `SOLUTION_REQUIRED`, `VALIDATION_PENDING`, `INVALID_STATUS_TRANSITION`
+    - SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
+    - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
+
+- [ ] 10. Checkpoint — SLA and Ticket Services
+  - Ensure all SLA and Ticket Service tests pass. Verify deadline computation, priority matrix, status transitions, followup/solution/validation workflows, and SLA timer pause/resume. Ask the user if questions arise.
+
+
+- [ ] 11. Implement Problem Service
+  - [ ] 11.1 Scaffold Problem Service Maven module with hexagonal structure
+    - Create `problem-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
+    - Create package tree following hexagonal architecture
+    - Create `ProblemServiceApplication.java` main class
+    - _Requirements: 10.1_
+  - [ ] 11.2 Implement `Problem` aggregate and repository
+    - Implement `Problem` aggregate with all fields from the Problem document schema: `id`, `status`, `title`, `content`, `entityId`, `priority`, `urgency`, `impact`, `actors[]`, `linkedTicketIds[]`, `linkedAssets[]`, `impactContent`, `causeContent`, `symptomContent`, `followups[]`, `tasks[]`, `solution`, `createdAt`, `updatedAt`, `solvedAt`, `closedAt`
+    - Implement `ProblemStatus` enum: INCOMING=1, ACCEPTED=7, ASSIGNED=2, PLANNED=3, WAITING=4, SOLVED=5, OBSERVED=8, CLOSED=6
+    - Define `ProblemRepository` interface and `MongoProblemRepository` adapter
+    - Create MongoDB indexes: `entityId`, `status`, `linkedTicketIds`
+    - _Requirements: 10.1, 22.4_
+  - [ ] 11.3 Implement Problem lifecycle use cases
+    - Implement `CreateProblemUseCase`: assign `status=INCOMING`, publish `ProblemCreated` event to `problems.events`
+    - Implement `LinkTicketToProblemUseCase`: add ticket ID to `linkedTicketIds`, publish `ProblemTicketLinked` event
+    - Implement `SolveProblemUseCase`: record `solvedAt`, publish `ProblemSolved` event
+    - Implement `CloseProblemUseCase`: publish `ProblemClosed` event
+    - Enforce status transition rules: CLOSED can only reopen to INCOMING or ACCEPTED (HTTP 422 / `INVALID_STATUS_TRANSITION`)
+    - Support actor types: REQUESTER, ASSIGNED, OBSERVER, SUPPLIER
+    - Support followups, tasks, and solution sub-documents (same rules as Ticket)
+    - _Requirements: 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 26.4_
+  - [ ] 11.4 Implement Problem Service REST controllers and sub-resource endpoints
+    - `GET /problems`, `POST /problems`, `GET /problems/{id}`, `PUT /problems/{id}`, `PATCH /problems/{id}`, `DELETE /problems/{id}`
+    - `GET /problems/{id}/followups`, `POST /problems/{id}/followups`
+    - `GET /problems/{id}/tasks`, `POST /problems/{id}/tasks`
+    - `GET /problems/{id}/solutions`, `POST /problems/{id}/solutions`
+    - `GET /problems/{id}/actors`, `POST /problems/{id}/actors`, `DELETE /problems/{id}/actors/{actorId}`
+    - `GET /problems/{id}/tickets`, `POST /problems/{id}/tickets`, `DELETE /problems/{id}/tickets/{ticketId}`
+    - Apply pagination on collection endpoints
+    - _Requirements: 19.1, 19.6, 20.3_
+  - [ ] 11.5 Implement Problem Service global exception handler, SpringDoc config, Dockerfile, and README
+    - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
+    - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
+
+- [ ] 12. Implement Change Service
+  - [ ] 12.1 Scaffold Change Service Maven module with hexagonal structure
+    - Create `change-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
+    - Create package tree following hexagonal architecture
+    - Create `ChangeServiceApplication.java` main class
+    - _Requirements: 11.1_
+  - [ ] 12.2 Implement `Change` aggregate and repository
+    - Implement `Change` aggregate with all fields from the Change document schema: `id`, `status`, `title`, `content`, `entityId`, `priority`, `urgency`, `impact`, `actors[]`, `planningDocuments` (embedded: impactContent, controlListContent, rolloutPlanContent, backoutPlanContent, checklistContent), `validationSteps[]`, `linkedTicketIds[]`, `linkedProblemIds[]`, `linkedAssets[]`, `followups[]`, `tasks[]`, `solution`, `satisfactionSurvey`, `createdAt`, `updatedAt`, `closedAt`
+    - Implement `ChangeStatus` enum: INCOMING=1, EVALUATION=9, APPROVAL=10, ACCEPTED=7, WAITING=4, TEST=11, QUALIFICATION=12, SOLVED=5, OBSERVED=8, CLOSED=6, CANCELED=14, REFUSED=13
+    - Define `ChangeRepository` interface and `MongoChangeRepository` adapter
+    - Create MongoDB indexes: `entityId`, `status`, `linkedTicketIds`, `linkedProblemIds`
+    - _Requirements: 11.1, 22.5_
+  - [ ] 12.3 Implement Change lifecycle use cases
+    - Implement `CreateChangeUseCase`: assign `status=INCOMING`, publish `ChangeCreated` event to `changes.events`
+    - Implement `ApproveChangeValidationUseCase`: set validation status=ACCEPTED, publish `ChangeValidationApproved` event
+    - Implement `LinkTicketToChangeUseCase`: add ticket ID to `linkedTicketIds`, publish `ChangeTicketLinked` event
+    - Implement `CloseChangeUseCase`: record `closedAt`, publish `ChangeClosed` event
+    - Enforce status transition: cannot go INCOMING → SOLVED directly, must pass through EVALUATION or APPROVAL (HTTP 422 / `INVALID_STATUS_TRANSITION`)
+    - Support actor types: REQUESTER, ASSIGNED, OBSERVER, SUPPLIER
+    - Support followups, tasks, solution, and satisfaction survey sub-documents
+    - _Requirements: 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 26.3_
+  - [ ] 12.4 Implement Change Service REST controllers and sub-resource endpoints
+    - `GET /changes`, `POST /changes`, `GET /changes/{id}`, `PUT /changes/{id}`, `PATCH /changes/{id}`, `DELETE /changes/{id}`
+    - `GET /changes/{id}/followups`, `POST /changes/{id}/followups`
+    - `GET /changes/{id}/tasks`, `POST /changes/{id}/tasks`
+    - `GET /changes/{id}/solutions`, `POST /changes/{id}/solutions`
+    - `GET /changes/{id}/actors`, `POST /changes/{id}/actors`, `DELETE /changes/{id}/actors/{actorId}`
+    - `GET /changes/{id}/validations`, `POST /changes/{id}/validations`, `PUT /changes/{id}/validations/{validationId}`
+    - `GET /changes/{id}/tickets`, `POST /changes/{id}/tickets`
+    - `GET /changes/{id}/problems`, `POST /changes/{id}/problems`
+    - Apply pagination on collection endpoints
+    - _Requirements: 19.1, 19.6, 20.4_
+  - [ ] 12.5 Implement Change Service global exception handler, SpringDoc config, Dockerfile, and README
+    - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
+    - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
+
+- [ ] 13. Checkpoint — Problem and Change Services
+  - Ensure all Problem and Change Service tests pass. Verify lifecycle events, status transitions, validation workflows, and cross-service linking. Ask the user if questions arise.
+
+
+- [ ] 14. Implement Asset Service
+  - [ ] 14.1 Scaffold Asset Service Maven module with hexagonal structure
+    - Create `asset-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
+    - Create package tree following hexagonal architecture
+    - Create `AssetServiceApplication.java` main class
+    - _Requirements: 12.1_
+  - [ ] 14.2 Implement polymorphic `Asset` aggregate and repository
+    - Implement `Asset` aggregate with discriminator field `assetType` and common fields: `id`, `name`, `entityId`, `serial`, `otherSerial`, `stateId`, `locationId`, `userId`, `groupId`, `manufacturerId`, `modelId`, `isDeleted`, `networkPorts[]`, `infocom` (embedded), `contractIds[]`, `createdAt`, `updatedAt`
+    - Implement `AssetType` enum: Computer, NetworkEquipment, Monitor, Printer, Phone, Peripheral, Software, SoftwareLicense
+    - Implement `Computer`-specific embedded sub-documents: `computerDetails` (osInstallation, devices[], diskPartitions[], softwareInstallations[], virtualMachines[])
+    - Implement `NetworkPort` value object: `id`, `name`, `mac`, `ip`, `vlan`, `connectionType`
+    - Implement `Infocom` value object: `purchaseDate`, `purchasePrice`, `warrantyExpiry`, `orderNumber`, `deliveryDate`, `depreciationRate`
+    - Define `AssetRepository` interface and `MongoAssetRepository` adapter
+    - Create MongoDB indexes: `entityId`, `assetType`, `isDeleted`, `userId`, `groupId`
+    - _Requirements: 12.1, 12.2, 12.9, 12.10, 12.11, 22.6_
+  - [ ] 14.3 Implement Asset lifecycle use cases and event publication
+    - Implement `CreateAssetUseCase`: validate mandatory fields, publish `AssetCreated` event to `assets.events`
+    - Implement `UpdateAssetUseCase`: publish `AssetUpdated` event
+    - Implement `DeleteAssetUseCase`: set `isDeleted=true`, publish `AssetDeleted` event
+    - Implement `AssetStateService`: manage configurable asset states lifecycle
+    - Implement `LocationService`: manage hierarchical location tree with `completeName` computation
+    - _Requirements: 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.12_
+  - [ ] 14.4 Implement Software and License management
+    - Implement `Software` entity: `name`, `manufacturer`, `category`, `versions[]`
+    - Implement `SoftwareLicense` entity: `name`, `softwareId`, `licenseType`, `serial`, `numberOfSeats`, `expiryDate`, `entityId`
+    - Implement `Item_SoftwareVersion` linking software version to asset
+    - Implement `LicenseComplianceService`: count active installations per license, compare to `numberOfSeats`
+    - When installations exceed seats: publish `LicenseOverused` event to `assets.events`
+    - Expose `GET /assets/licenses/{id}/compliance` returning `totalSeats`, `usedSeats`, `remainingSeats`
+    - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
+  - [ ]* 14.5 Write property test for license overuse event publication
+    - **Property 28: License overuse event publication**
+    - **Validates: Requirements 13.4**
+    - Use jqwik to generate licenses with N seats and N+1 installations, assert `LicenseOverused` event published to `assets.events`
+  - [ ] 14.6 Implement Asset Service REST controllers and sub-resource endpoints
+    - `GET /assets/{type}`, `POST /assets/{type}`, `GET /assets/{type}/{id}`, `PUT /assets/{type}/{id}`, `DELETE /assets/{type}/{id}`
+    - `GET /assets/{type}/{id}/networkports`, `POST /assets/{type}/{id}/networkports`
+    - `GET /assets/computers/{id}/software`, `GET /assets/computers/{id}/devices`
+    - `GET /assets/{type}/{id}/tickets` (cross-service link query)
+    - `GET /assets/licenses`, `POST /assets/licenses`, `GET /assets/licenses/{id}`, `GET /assets/licenses/{id}/compliance`
+    - `GET /assets/states`, `POST /assets/states`
+    - `GET /assets/locations`, `POST /assets/locations`
+    - Apply pagination on collection endpoints
+    - _Requirements: 19.1, 19.6, 20.5_
+  - [ ] 14.7 Implement Asset Service seeder
+    - Seed default asset states: "In Stock", "In Use", "Maintenance", "Retired", "Disposed" when `asset_states` collection is empty
+    - Seed default root location (id=0, name="Root Location", parentId=null, level=1)
+    - _Requirements: 29.7, 29.8, 29.12_
+  - [ ] 14.8 Implement Asset Service global exception handler, SpringDoc config, Dockerfile, and README
+    - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
+    - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
+
+
+- [ ] 15. Implement Notification Service
+  - [ ] 15.1 Scaffold Notification Service Maven module with hexagonal structure
+    - Create `notification-service/pom.xml` with Spring Boot, MongoDB, Kafka, Spring Retry, JavaMail, SpringDoc, jqwik dependencies
+    - Create package tree following hexagonal architecture
+    - Create `NotificationServiceApplication.java` main class
+    - _Requirements: 16.1_
+  - [ ] 15.2 Implement `NotificationTemplate` and `QueuedNotification` aggregates
+    - Implement `NotificationTemplate` aggregate: `id`, `eventName`, `subjectTemplate`, `bodyTemplate` (HTML), `language`
+    - Implement `QueuedNotification` aggregate: `id`, `eventType`, `channel`, `recipientId`, `recipientAddress`, `subject`, `body`, `status` (PENDING/SENT/FAILED), `attempts`, `lastAttemptAt`, `deliveredAt`, `errorMessage`, `createdAt`
+    - Define repositories and MongoDB adapters
+    - Create MongoDB indexes: `status`, `recipientId`, `createdAt`
+    - _Requirements: 16.4, 16.7, 22.8_
+  - [ ] 15.3 Implement Kafka consumers for all domain event topics
+    - Implement `TicketEventConsumer`: consume from `tickets.events` (consumer group `notification-service`)
+    - Implement `ProblemEventConsumer`: consume from `problems.events`
+    - Implement `ChangeEventConsumer`: consume from `changes.events`
+    - Implement `SlaEventConsumer`: consume from `sla.events`
+    - Implement `KnowledgeEventConsumer`: consume from `knowledge.events`
+    - Handle all event types: ticket.created, ticket.updated, ticket.solved, ticket.closed, ticket.deleted, ticket.validation.requested, ticket.validation.approved, ticket.validation.refused, problem.created, problem.solved, change.created, change.validation.approved, sla.escalation.triggered
+    - On consumer failure after 3 retries: route to `{topic}.dlq` with headers `X-Original-Topic`, `X-Failure-Reason`, `X-Retry-Count`, `X-Failed-At`
+    - _Requirements: 16.1, 16.2, 16.5, 21.5, 21.6_
+  - [ ] 15.4 Implement notification target resolution and delivery
+    - Implement `NotificationTargetResolver`: resolve recipients from ticket/problem/change actors (requester, assigned user, assigned group members, observers, validators)
+    - Skip actors with `useNotification=false` for their actor role
+    - Implement `EmailDeliveryAdapter`: send via SMTP using JavaMail
+    - Implement `WebhookDeliveryAdapter`: HTTP POST to configured webhook URL
+    - Implement `NotificationDispatchService`: resolve template, render subject/body, create `QueuedNotification`, dispatch via channel adapter
+    - _Requirements: 16.3, 16.5, 16.9, 16.10_
+  - [ ]* 15.5 Write property test for notification skips users with notifications disabled
+    - **Property 30: Notification skips users with notifications disabled**
+    - **Validates: Requirements 16.10**
+    - Use jqwik to generate actors with `useNotification=false` and assert they never appear in resolved notification target list
+  - [ ] 15.6 Implement retry with exponential backoff
+    - Configure Spring Retry on `EmailDeliveryAdapter` and `WebhookDeliveryAdapter`: max 3 attempts, delays 1s, 4s, 16s
+    - On all retries exhausted: set `QueuedNotification.status=FAILED`, record `errorMessage`
+    - On success: set `status=SENT`, record `deliveredAt`
+    - _Requirements: 16.6, 16.7, 16.8_
+  - [ ]* 15.7 Write property test for notification retry with exponential backoff
+    - **Property 29: Notification retry with exponential backoff**
+    - **Validates: Requirements 16.6**
+    - Use jqwik to simulate delivery failures and assert system retries exactly 3 times with delays 1s, 4s, 16s before marking `FAILED`
+  - [ ] 15.8 Implement Notification Service seeder
+    - Seed default notification templates for: ticket.created, ticket.solved, ticket.closed, ticket.validation.requested, problem.created, problem.solved, change.created, change.validation.approved when `notification_templates` collection is empty
+    - _Requirements: 29.10, 29.12_
+  - [ ] 15.9 Implement Notification Service REST controllers, SpringDoc config, Dockerfile, and README
+    - `GET /notifications/templates`, `POST /notifications/templates`, `GET /notifications/templates/{id}`, `PUT /notifications/templates/{id}`
+    - `GET /notifications/queue` (paginated list of `QueuedNotification`)
+    - SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
+    - _Requirements: 19.1, 25.1, 25.3, 28.1, 28.2, 28.9_
+
+- [ ] 16. Implement Knowledge Service
+  - [ ] 16.1 Scaffold Knowledge Service Maven module with hexagonal structure
+    - Create `knowledge-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
+    - Create package tree following hexagonal architecture
+    - Create `KnowledgeServiceApplication.java` main class
+    - _Requirements: 17.1_
+  - [ ] 16.2 Implement `KnowbaseItem` aggregate and `KnowbaseItemCategory` aggregate
+    - Implement `KnowbaseItem` aggregate with all fields from the KnowbaseItem document schema: `id`, `title`, `answer`, `authorId`, `isFaq`, `viewCount`, `visibility` (embedded: userIds[], groupIds[], profileIds[], entityRules[]), `categoryIds[]`, `revisions[]`, `linkedItems[]`, `comments[]`, `beginDate`, `endDate`, `createdAt`, `updatedAt`
+    - Implement `KnowbaseItemCategory` aggregate: `id`, `name`, `parentId`, `level`, `completeName`
+    - Define repositories and MongoDB adapters
+    - Create MongoDB indexes: `isFaq`, `entityId`, `beginDate`, `endDate`, text index on `title+answer`
+    - _Requirements: 17.1, 17.2, 17.7, 17.8, 22.8_
+  - [ ] 16.3 Implement visibility resolution and article filtering
+    - Implement `VisibilityResolverPort` and `VisibilityResolverService`:
+      - Anonymous users: return only `isFaq=true` articles where entity visibility includes root entity recursively
+      - Helpdesk users: return only `isFaq=true` articles matching user's entity/group/profile visibility rules
+      - Central users: return all articles matching user's entity/group/profile visibility rules
+    - Respect `beginDate`/`endDate` visibility windows
+    - _Requirements: 17.3, 17.4, 17.5, 17.6_
+  - [ ]* 16.4 Write property test for knowledge article visibility — anonymous users
+    - **Property 31: Knowledge article visibility — anonymous users**
+    - **Validates: Requirements 17.4**
+    - Use jqwik to generate articles with various visibility settings and assert anonymous requests only return `isFaq=true` articles with root entity visibility
+  - [ ] 16.5 Implement article view counter, revisions, comments, and linking
+    - Implement `ViewArticleUseCase`: increment `viewCount` atomically using MongoDB `$inc` operator
+    - Implement `UpdateArticleUseCase`: create `KnowbaseItem_Revision` entry before updating, publish `KnowledgeArticleUpdated` event
+    - Implement `CreateArticleUseCase`: publish `KnowledgeArticleCreated` event to `knowledge.events`
+    - Implement `AddCommentUseCase`: add comment to `comments[]`
+    - Implement `LinkArticleUseCase`: add item link to `linkedItems[]`
+    - Implement full-text search using MongoDB text index on `title+answer`
+    - _Requirements: 17.7, 17.8, 17.9, 17.10, 17.11, 17.12_
+  - [ ]* 16.6 Write property test for knowledge article view counter increment
+    - **Property 32: Knowledge article view counter increment**
+    - **Validates: Requirements 17.9**
+    - Use jqwik to generate article view requests and assert `viewCount` incremented by exactly 1 atomically per request
+  - [ ] 16.7 Implement Knowledge Service REST controllers
+    - `GET /knowledge/articles`, `POST /knowledge/articles`, `GET /knowledge/articles/{id}`, `PUT /knowledge/articles/{id}`, `DELETE /knowledge/articles/{id}`
+    - `GET /knowledge/articles/{id}/revisions`
+    - `POST /knowledge/articles/{id}/comments`
+    - `GET /knowledge/categories`, `POST /knowledge/categories`, `GET /knowledge/categories/{id}`
+    - `GET /knowledge/articles/search?q={query}` (full-text search)
+    - Apply pagination on collection endpoints; support `expand_dropdowns` query parameter
+    - _Requirements: 19.1, 19.6, 19.11_
+  - [ ] 16.8 Implement Knowledge Service seeder
+    - Seed default root KB category (id=0, name="Root", parentId=null) when `knowledge_categories` collection is empty
+    - _Requirements: 29.9, 29.12_
+  - [ ] 16.9 Implement Knowledge Service global exception handler, SpringDoc config, Dockerfile, and README
+    - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
+    - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
+
+- [ ] 17. Checkpoint — Asset, Notification, and Knowledge Services
+  - Ensure all Asset, Notification, and Knowledge Service tests pass. Verify license compliance, Kafka event consumption, notification delivery with retry, and article visibility rules. Ask the user if questions arise.
+
+
+- [ ] 18. Cross-cutting concerns — REST API contracts and pagination
+  - [ ] 18.1 Implement consistent pagination across all services
+    - Implement `PagedResponse<T>` wrapper in `common` module (already defined in task 1.3)
+    - Ensure all collection endpoints in all services return `PagedResponse<T>` with `totalElements`, `totalPages`, `currentPage`, `pageSize`
+    - Enforce `page` (0-indexed, default 0), `size` (default 50, max 500), `sort`, `order` (ASC/DESC) query parameters on all collection endpoints
+    - _Requirements: 19.6, 19.7, 19.8_
+  - [ ]* 18.2 Write property test for pagination metadata correctness
+    - **Property 35: Pagination metadata correctness**
+    - **Validates: Requirements 19.6, 19.7**
+    - Use jqwik to generate collections of arbitrary size and page sizes, assert `totalPages = ceil(totalElements / pageSize)` always holds
+  - [ ] 18.3 Implement HTTP status code contract across all services
+    - Audit all REST controllers in all services: GET → 200, POST (create) → 201, PUT/PATCH → 200, DELETE → 204, not found → 404, forbidden → 403, validation error → 422
+    - Ensure `expand_dropdowns` query parameter is supported on all collection endpoints
+    - Implement bulk operation endpoint `POST /{resource}/bulk` (max 100 items) on Ticket, Problem, Change, and Asset services
+    - _Requirements: 19.2, 19.3, 19.4, 19.5, 19.11, 19.12_
+  - [ ]* 18.4 Write property test for HTTP status code contract
+    - **Property 34: HTTP status code contract**
+    - **Validates: Requirements 19.2**
+    - Use jqwik to generate valid GET, POST (create), and DELETE requests across services and assert correct HTTP status codes returned
+  - [ ] 18.5 Implement SLA escalation consumers in Ticket Service
+    - Implement `SlaEscalationConsumer` in Ticket Service: consume `SlaEscalationTriggered` events from `sla.events`
+    - Handle `reassign` action: update ticket's assigned group/user
+    - Handle `change_priority` action: update ticket priority (bypass `CHANGEPRIORITY` check for system-initiated changes)
+    - _Requirements: 15.4, 15.5_
+  - [ ] 18.6 Implement domain event envelope validation across all Kafka producers
+    - Audit all `KafkaEventPublisher` adapters in all services
+    - Ensure every published event wraps payload in `DomainEventEnvelope` with all 6 required fields: `eventId` (UUID v4), `eventType`, `aggregateId`, `aggregateType`, `occurredAt` (ISO 8601 UTC), `version` (≥1)
+    - Use aggregate ID as Kafka message key for ordered delivery
+    - _Requirements: 21.2, 21.3_
+  - [ ]* 18.7 Write property test for domain event envelope completeness (integration)
+    - **Property 36: Domain event envelope completeness (integration)**
+    - **Validates: Requirements 21.2**
+    - Use jqwik to trigger domain events across all services and assert every published envelope contains all 6 required fields with correct types
+  - [ ] 18.8 Implement MongoDB transactions for multi-collection operations
+    - Identify all use cases that span multiple collections within the same service (e.g., creating a user + recording password history)
+    - Wrap those operations in MongoDB transactions using `@Transactional` with `MongoTransactionManager`
+    - _Requirements: 22.10_
+  - [ ] 18.9 Implement input validation and security hardening across all services
+    - Add `@Valid` annotations and Bean Validation constraints on all request DTOs in all services
+    - Ensure no sensitive fields (password, tokens, TOTP secrets) appear in any API response or log output
+    - Implement NoSQL injection prevention: use parameterized MongoDB queries, never concatenate user input into query strings
+    - _Requirements: 24.3, 24.4, 24.5_
+
+- [ ] 19. Finalize Docker Compose and integration wiring
+  - [ ] 19.1 Complete `docker-compose.yml` with all service definitions
+    - Add full service definitions for all 9 microservices with correct port mappings, environment variables, and `depends_on` for MongoDB and Kafka
+    - Configure MongoDB with one database per service (via `SPRING_DATA_MONGODB_DATABASE` env var)
+    - Configure Kafka topics with correct names matching the Kafka Topic Map
+    - Add `seed` profile that runs all seeders in dependency order: Identity → SLA → Ticket → Asset → Knowledge → Notification
+    - _Requirements: 25.2, 25.4, 25.5, 29.11_
+  - [ ] 19.2 Update parent `pom.xml` and verify all modules build
+    - Ensure `mvn clean package -DskipTests` succeeds for all modules from the root
+    - Verify all inter-module dependencies (e.g., `common` module) are correctly declared
+    - _Requirements: 25.1_
+  - [ ] 19.3 Wire SLA escalation end-to-end
+    - Verify `EscalationScheduler` in SLA Service correctly calls Ticket Service HTTP client
+    - Verify Ticket Service `SlaEscalationConsumer` correctly handles `reassign` and `change_priority` actions
+    - Verify Notification Service `SlaEventConsumer` correctly handles `send_notification` action
+    - _Requirements: 15.3, 15.4, 15.5_
+  - [ ] 19.4 Wire Notification Service end-to-end
+    - Verify all Kafka consumers in Notification Service correctly consume events from all topics
+    - Verify notification target resolution works for all actor types
+    - Verify DLQ routing works when consumer fails after 3 retries
+    - _Requirements: 16.1, 16.2, 21.6_
+
+- [ ] 20. Final checkpoint — Full stack integration
+  - Ensure all tests pass across all services. Verify `docker compose up` starts the full stack successfully. Verify seeders run correctly on first startup and are idempotent on restart. Ask the user if questions arise.
+
+
+- [ ] 21. 2026.000001-XXXX - Version control and release
+  - [ ] Ensure all previous tasks are complete and tests pass
+  - [ ] Remove SNAPSHOT suffix from all version references in the codebase
+    - Find and replace `1.0.0-SNAPSHOT` → `1.0.0` in all `pom.xml` files (parent + all 9 service modules + `common`)
+    - Verify no remaining `SNAPSHOT` references in any configuration or documentation file
+  - [ ] Commit the version bump: "release: 1.0.0 - glpi-microservices-backend"
+  - [ ] Merge branch into main/master
+  - [ ] Apply Git tag: `1.0.0` (without SNAPSHOT)
+  - [ ] Push branch, merge, and tag to remote
+
+---
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for a faster MVP
+- Each task references specific requirements for traceability
+- Checkpoints ensure incremental validation at key milestones
+- Property tests (jqwik) validate universal correctness properties; unit tests validate specific examples and edge cases
+- The `common` module must be built first as it is a dependency of all service modules
+- All 41 correctness properties from the design document are covered by property test sub-tasks distributed across the relevant service tasks
+- The version control task (task 21) is mandatory and must be the last task executed
