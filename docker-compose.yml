@@ -1,0 +1,269 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GLPI Microservices Backend — Docker Compose
+#
+# Usage:
+#   Start all infrastructure + services:   docker compose up -d
+#   Start infrastructure only:             docker compose up -d zookeeper kafka mongodb
+#   Run seeders (seed profile):            docker compose --profile seed up
+#
+# Environment variables can be overridden by creating a .env file at the root.
+# See .env.example for all available variables and their documented defaults.
+# ─────────────────────────────────────────────────────────────────────────────
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  networks:
+    - glpi-net
+
+x-microservice-defaults: &microservice-defaults
+  <<: *service-defaults
+  build:
+    context: .
+  environment:
+    SPRING_PROFILES_ACTIVE: docker
+    MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017}
+    KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
+    JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
+  depends_on:
+    mongodb:
+      condition: service_healthy
+    kafka:
+      condition: service_healthy
+
+services:
+
+  # ─── Infrastructure ────────────────────────────────────────────────────────
+
+  zookeeper:
+    <<: *service-defaults
+    image: confluentinc/cp-zookeeper:7.7.1
+    container_name: glpi-zookeeper
+    ports:
+      - "${ZOOKEEPER_PORT:-2181}:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    <<: *service-defaults
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: glpi-kafka
+    ports:
+      - "${KAFKA_PORT:-9092}:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:${KAFKA_PORT:-9092}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  mongodb:
+    <<: *service-defaults
+    image: mongo:7.0
+    container_name: glpi-mongodb
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-glpi}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-glpi_secret}
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Microservices ─────────────────────────────────────────────────────────
+
+  api-gateway:
+    <<: *microservice-defaults
+    image: glpi/api-gateway:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-api-gateway
+    build:
+      context: ./api-gateway
+    ports:
+      - "${API_GATEWAY_PORT:-8080}:8080"
+    environment:
+      SERVER_PORT: 8080
+      IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL:-http://identity-service:8081}
+      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL:-http://ticket-service:8082}
+      PROBLEM_SERVICE_URL: ${PROBLEM_SERVICE_URL:-http://problem-service:8083}
+      CHANGE_SERVICE_URL: ${CHANGE_SERVICE_URL:-http://change-service:8084}
+      ASSET_SERVICE_URL: ${ASSET_SERVICE_URL:-http://asset-service:8085}
+      SLA_SERVICE_URL: ${SLA_SERVICE_URL:-http://sla-service:8086}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://notification-service:8087}
+      KNOWLEDGE_SERVICE_URL: ${KNOWLEDGE_SERVICE_URL:-http://knowledge-service:8088}
+      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE:-1000}
+
+  identity-service:
+    <<: *microservice-defaults
+    image: glpi/identity-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-identity-service
+    build:
+      context: ./identity-service
+    ports:
+      - "${IDENTITY_SERVICE_PORT:-8081}:8081"
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_identity?authSource=admin
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
+      JWT_ACCESS_TOKEN_EXPIRY_SECONDS: ${JWT_ACCESS_TOKEN_EXPIRY_SECONDS:-3600}
+      JWT_REFRESH_TOKEN_EXPIRY_SECONDS: ${JWT_REFRESH_TOKEN_EXPIRY_SECONDS:-604800}
+      BCRYPT_COST: ${BCRYPT_COST:-12}
+
+  ticket-service:
+    <<: *microservice-defaults
+    image: glpi/ticket-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-ticket-service
+    build:
+      context: ./ticket-service
+    ports:
+      - "${TICKET_SERVICE_PORT:-8082}:8082"
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_tickets?authSource=admin
+      SLA_SERVICE_URL: ${SLA_SERVICE_URL:-http://sla-service:8086}
+
+  problem-service:
+    <<: *microservice-defaults
+    image: glpi/problem-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-problem-service
+    build:
+      context: ./problem-service
+    ports:
+      - "${PROBLEM_SERVICE_PORT:-8083}:8083"
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_problems?authSource=admin
+
+  change-service:
+    <<: *microservice-defaults
+    image: glpi/change-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-change-service
+    build:
+      context: ./change-service
+    ports:
+      - "${CHANGE_SERVICE_PORT:-8084}:8084"
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_changes?authSource=admin
+
+  asset-service:
+    <<: *microservice-defaults
+    image: glpi/asset-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-asset-service
+    build:
+      context: ./asset-service
+    ports:
+      - "${ASSET_SERVICE_PORT:-8085}:8085"
+    environment:
+      SERVER_PORT: 8085
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_assets?authSource=admin
+
+  sla-service:
+    <<: *microservice-defaults
+    image: glpi/sla-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-sla-service
+    build:
+      context: ./sla-service
+    ports:
+      - "${SLA_SERVICE_PORT:-8086}:8086"
+    environment:
+      SERVER_PORT: 8086
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_sla?authSource=admin
+      ESCALATION_SCHEDULE_CRON: ${ESCALATION_SCHEDULE_CRON:-0 */5 * * * *}
+
+  notification-service:
+    <<: *microservice-defaults
+    image: glpi/notification-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-notification-service
+    build:
+      context: ./notification-service
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-8087}:8087"
+    environment:
+      SERVER_PORT: 8087
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_notifications?authSource=admin
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@glpi.local}
+
+  knowledge-service:
+    <<: *microservice-defaults
+    image: glpi/knowledge-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-knowledge-service
+    build:
+      context: ./knowledge-service
+    ports:
+      - "${KNOWLEDGE_SERVICE_PORT:-8088}:8088"
+    environment:
+      SERVER_PORT: 8088
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_knowledge?authSource=admin
+
+  # ─── Seeders (profile: seed) ───────────────────────────────────────────────
+  # Run with: docker compose --profile seed up
+  # Seeders run once and exit; they depend on their respective service being healthy.
+
+  identity-seeder:
+    <<: *service-defaults
+    profiles: ["seed"]
+    image: glpi/identity-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-identity-seeder
+    command: ["java", "-jar", "app.jar", "--spring.profiles.active=seed"]
+    environment:
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_identity?authSource=admin
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: "no"
+
+  sla-seeder:
+    <<: *service-defaults
+    profiles: ["seed"]
+    image: glpi/sla-service:${VERSION:-1.0.0-SNAPSHOT}
+    container_name: glpi-sla-seeder
+    command: ["java", "-jar", "app.jar", "--spring.profiles.active=seed"]
+    environment:
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017}/glpi_sla?authSource=admin
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: "no"
+
+# ─── Volumes ───────────────────────────────────────────────────────────────
+volumes:
+  mongodb-data:
+    driver: local
+
+# ─── Networks ──────────────────────────────────────────────────────────────
+networks:
+  glpi-net:
+    driver: bridge
