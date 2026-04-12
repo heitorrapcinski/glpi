@@ -24,10 +24,10 @@
   - [x] 3.2 Verify port mappings, environment variables, and depends_on are preserved in the resolved config
   - [x] 3.3 Commit: `2026.000002.3: validate docker-compose build context fix`
 
-- [-] 4. Version control and release
-  - [-] 4.1 Ensure all previous tasks are complete and tests pass
-  - [~] 4.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 4.3 Commit the version bump: "release: 1.0.1 - docker-compose-build-fix"
-  - [~] 4.4 Merge branch into main/master
-  - [~] 4.5 Apply Git tag: 1.0.1 (without SNAPSHOT)
-  - [~] 4.6 Push branch, merge, and tag to remote
+- [x] 4. Version control and release
+  - [x] 4.1 Ensure all previous tasks are complete and tests pass
+  - [x] 4.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] 4.3 Commit the version bump: "release: 1.0.1 - docker-compose-build-fix"
+  - [x] 4.4 Merge branch into main/master
+  - [x] 4.5 Apply Git tag: 1.0.1 (without SNAPSHOT)
+  - [x] 4.6 Push branch, merge, and tag to remote
