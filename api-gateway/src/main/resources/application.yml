@@ -1,0 +1,155 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        # Identity Service routes
+        - id: identity-auth
+          uri: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/auth/**
+        - id: identity-users
+          uri: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/users/**
+        - id: identity-entities
+          uri: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/entities/**
+        - id: identity-profiles
+          uri: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/profiles/**
+        - id: identity-groups
+          uri: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/groups/**
+
+        # Ticket Service
+        - id: ticket-service
+          uri: ${TICKET_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/tickets/**
+
+        # Problem Service
+        - id: problem-service
+          uri: ${PROBLEM_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/problems/**
+
+        # Change Service
+        - id: change-service
+          uri: ${CHANGE_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/changes/**
+
+        # Asset Service
+        - id: asset-service
+          uri: ${ASSET_SERVICE_URL:http://localhost:8085}
+          predicates:
+            - Path=/assets/**
+
+        # SLA Service
+        - id: sla-service-slas
+          uri: ${SLA_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/slas/**
+        - id: sla-service-olas
+          uri: ${SLA_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/olas/**
+        - id: sla-service-calendars
+          uri: ${SLA_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/calendars/**
+
+        # Notification Service
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8087}
+          predicates:
+            - Path=/notifications/**
+
+        # Knowledge Service
+        - id: knowledge-service
+          uri: ${KNOWLEDGE_SERVICE_URL:http://localhost:8088}
+          predicates:
+            - Path=/knowledge/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  # Aggregate OpenAPI specs from downstream services
+  swaggerui:
+    urls:
+      - name: identity-service
+        url: ${IDENTITY_SERVICE_URL:http://localhost:8081}/v3/api-docs
+      - name: ticket-service
+        url: ${TICKET_SERVICE_URL:http://localhost:8082}/v3/api-docs
+      - name: problem-service
+        url: ${PROBLEM_SERVICE_URL:http://localhost:8083}/v3/api-docs
+      - name: change-service
+        url: ${CHANGE_SERVICE_URL:http://localhost:8084}/v3/api-docs
+      - name: asset-service
+        url: ${ASSET_SERVICE_URL:http://localhost:8085}/v3/api-docs
+      - name: sla-service
+        url: ${SLA_SERVICE_URL:http://localhost:8086}/v3/api-docs
+      - name: notification-service
+        url: ${NOTIFICATION_SERVICE_URL:http://localhost:8087}/v3/api-docs
+      - name: knowledge-service
+        url: ${KNOWLEDGE_SERVICE_URL:http://localhost:8088}/v3/api-docs
+
+gateway:
+  jwt:
+    # Base64-encoded X509 public key (PEM without headers). Leave blank to use ephemeral dev key.
+    public-key: ${JWT_PUBLIC_KEY:}
+  app-tokens:
+    # Comma-separated list of valid API client tokens
+    valid-tokens: ${GATEWAY_APP_TOKENS:dev-app-token-1,dev-app-token-2}
+  downstream-services:
+    - name: identity-service
+      url: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+    - name: ticket-service
+      url: ${TICKET_SERVICE_URL:http://localhost:8082}
+    - name: problem-service
+      url: ${PROBLEM_SERVICE_URL:http://localhost:8083}
+    - name: change-service
+      url: ${CHANGE_SERVICE_URL:http://localhost:8084}
+    - name: asset-service
+      url: ${ASSET_SERVICE_URL:http://localhost:8085}
+    - name: sla-service
+      url: ${SLA_SERVICE_URL:http://localhost:8086}
+    - name: notification-service
+      url: ${NOTIFICATION_SERVICE_URL:http://localhost:8087}
+    - name: knowledge-service
+      url: ${KNOWLEDGE_SERVICE_URL:http://localhost:8088}
+
+logging:
+  level:
+    com.glpi.gateway: INFO

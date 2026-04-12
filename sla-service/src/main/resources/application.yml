@@ -1,0 +1,41 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: sla-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/sla_db}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+escalation:
+  schedule:
+    cron: ${ESCALATION_CRON:0 */5 * * * *}
+
+ticket:
+  service:
+    url: ${TICKET_SERVICE_URL:http://localhost:8082}
+
+logging:
+  level:
+    com.glpi.sla: INFO
