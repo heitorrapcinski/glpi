@@ -465,23 +465,23 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [-] 10. Checkpoint — SLA and Ticket Services
+- [x] 10. Checkpoint — SLA and Ticket Services
   - Ensure all SLA and Ticket Service tests pass. Verify deadline computation, priority matrix, status transitions, followup/solution/validation workflows, and SLA timer pause/resume. Ask the user if questions arise.
 
 
-- [~] 11. Implement Problem Service
-  - [ ] 11.1 Scaffold Problem Service Maven module with hexagonal structure
+- [x] 11. Implement Problem Service
+  - [x] 11.1 Scaffold Problem Service Maven module with hexagonal structure
     - Create `problem-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
     - Create `ProblemServiceApplication.java` main class
     - _Requirements: 10.1_
-  - [ ] 11.2 Implement `Problem` aggregate and repository
+  - [x] 11.2 Implement `Problem` aggregate and repository
     - Implement `Problem` aggregate with all fields from the Problem document schema: `id`, `status`, `title`, `content`, `entityId`, `priority`, `urgency`, `impact`, `actors[]`, `linkedTicketIds[]`, `linkedAssets[]`, `impactContent`, `causeContent`, `symptomContent`, `followups[]`, `tasks[]`, `solution`, `createdAt`, `updatedAt`, `solvedAt`, `closedAt`
     - Implement `ProblemStatus` enum: INCOMING=1, ACCEPTED=7, ASSIGNED=2, PLANNED=3, WAITING=4, SOLVED=5, OBSERVED=8, CLOSED=6
     - Define `ProblemRepository` interface and `MongoProblemRepository` adapter
     - Create MongoDB indexes: `entityId`, `status`, `linkedTicketIds`
     - _Requirements: 10.1, 22.4_
-  - [ ] 11.3 Implement Problem lifecycle use cases
+  - [x] 11.3 Implement Problem lifecycle use cases
     - Implement `CreateProblemUseCase`: assign `status=INCOMING`, publish `ProblemCreated` event to `problems.events`
     - Implement `LinkTicketToProblemUseCase`: add ticket ID to `linkedTicketIds`, publish `ProblemTicketLinked` event
     - Implement `SolveProblemUseCase`: record `solvedAt`, publish `ProblemSolved` event
@@ -490,7 +490,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Support actor types: REQUESTER, ASSIGNED, OBSERVER, SUPPLIER
     - Support followups, tasks, and solution sub-documents (same rules as Ticket)
     - _Requirements: 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 26.4_
-  - [ ] 11.4 Implement Problem Service REST controllers and sub-resource endpoints
+  - [x] 11.4 Implement Problem Service REST controllers and sub-resource endpoints
     - `GET /problems`, `POST /problems`, `GET /problems/{id}`, `PUT /problems/{id}`, `PATCH /problems/{id}`, `DELETE /problems/{id}`
     - `GET /problems/{id}/followups`, `POST /problems/{id}/followups`
     - `GET /problems/{id}/tasks`, `POST /problems/{id}/tasks`
@@ -499,23 +499,23 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `GET /problems/{id}/tickets`, `POST /problems/{id}/tickets`, `DELETE /problems/{id}/tickets/{ticketId}`
     - Apply pagination on collection endpoints
     - _Requirements: 19.1, 19.6, 20.3_
-  - [ ] 11.5 Implement Problem Service global exception handler, SpringDoc config, Dockerfile, and README
+  - [x] 11.5 Implement Problem Service global exception handler, SpringDoc config, Dockerfile, and README
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [~] 12. Implement Change Service
-  - [ ] 12.1 Scaffold Change Service Maven module with hexagonal structure
+- [x] 12. Implement Change Service
+  - [x] 12.1 Scaffold Change Service Maven module with hexagonal structure
     - Create `change-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
     - Create `ChangeServiceApplication.java` main class
     - _Requirements: 11.1_
-  - [ ] 12.2 Implement `Change` aggregate and repository
+  - [x] 12.2 Implement `Change` aggregate and repository
     - Implement `Change` aggregate with all fields from the Change document schema: `id`, `status`, `title`, `content`, `entityId`, `priority`, `urgency`, `impact`, `actors[]`, `planningDocuments` (embedded: impactContent, controlListContent, rolloutPlanContent, backoutPlanContent, checklistContent), `validationSteps[]`, `linkedTicketIds[]`, `linkedProblemIds[]`, `linkedAssets[]`, `followups[]`, `tasks[]`, `solution`, `satisfactionSurvey`, `createdAt`, `updatedAt`, `closedAt`
     - Implement `ChangeStatus` enum: INCOMING=1, EVALUATION=9, APPROVAL=10, ACCEPTED=7, WAITING=4, TEST=11, QUALIFICATION=12, SOLVED=5, OBSERVED=8, CLOSED=6, CANCELED=14, REFUSED=13
     - Define `ChangeRepository` interface and `MongoChangeRepository` adapter
     - Create MongoDB indexes: `entityId`, `status`, `linkedTicketIds`, `linkedProblemIds`
     - _Requirements: 11.1, 22.5_
-  - [ ] 12.3 Implement Change lifecycle use cases
+  - [x] 12.3 Implement Change lifecycle use cases
     - Implement `CreateChangeUseCase`: assign `status=INCOMING`, publish `ChangeCreated` event to `changes.events`
     - Implement `ApproveChangeValidationUseCase`: set validation status=ACCEPTED, publish `ChangeValidationApproved` event
     - Implement `LinkTicketToChangeUseCase`: add ticket ID to `linkedTicketIds`, publish `ChangeTicketLinked` event
@@ -524,7 +524,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Support actor types: REQUESTER, ASSIGNED, OBSERVER, SUPPLIER
     - Support followups, tasks, solution, and satisfaction survey sub-documents
     - _Requirements: 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 26.3_
-  - [ ] 12.4 Implement Change Service REST controllers and sub-resource endpoints
+  - [x] 12.4 Implement Change Service REST controllers and sub-resource endpoints
     - `GET /changes`, `POST /changes`, `GET /changes/{id}`, `PUT /changes/{id}`, `PATCH /changes/{id}`, `DELETE /changes/{id}`
     - `GET /changes/{id}/followups`, `POST /changes/{id}/followups`
     - `GET /changes/{id}/tasks`, `POST /changes/{id}/tasks`
@@ -535,21 +535,21 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `GET /changes/{id}/problems`, `POST /changes/{id}/problems`
     - Apply pagination on collection endpoints
     - _Requirements: 19.1, 19.6, 20.4_
-  - [ ] 12.5 Implement Change Service global exception handler, SpringDoc config, Dockerfile, and README
+  - [x] 12.5 Implement Change Service global exception handler, SpringDoc config, Dockerfile, and README
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [~] 13. Checkpoint — Problem and Change Services
+- [x] 13. Checkpoint — Problem and Change Services
   - Ensure all Problem and Change Service tests pass. Verify lifecycle events, status transitions, validation workflows, and cross-service linking. Ask the user if questions arise.
 
 
-- [~] 14. Implement Asset Service
-  - [ ] 14.1 Scaffold Asset Service Maven module with hexagonal structure
+- [x] 14. Implement Asset Service
+  - [x] 14.1 Scaffold Asset Service Maven module with hexagonal structure
     - Create `asset-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
     - Create `AssetServiceApplication.java` main class
     - _Requirements: 12.1_
-  - [ ] 14.2 Implement polymorphic `Asset` aggregate and repository
+  - [x] 14.2 Implement polymorphic `Asset` aggregate and repository
     - Implement `Asset` aggregate with discriminator field `assetType` and common fields: `id`, `name`, `entityId`, `serial`, `otherSerial`, `stateId`, `locationId`, `userId`, `groupId`, `manufacturerId`, `modelId`, `isDeleted`, `networkPorts[]`, `infocom` (embedded), `contractIds[]`, `createdAt`, `updatedAt`
     - Implement `AssetType` enum: Computer, NetworkEquipment, Monitor, Printer, Phone, Peripheral, Software, SoftwareLicense
     - Implement `Computer`-specific embedded sub-documents: `computerDetails` (osInstallation, devices[], diskPartitions[], softwareInstallations[], virtualMachines[])
@@ -558,14 +558,14 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Define `AssetRepository` interface and `MongoAssetRepository` adapter
     - Create MongoDB indexes: `entityId`, `assetType`, `isDeleted`, `userId`, `groupId`
     - _Requirements: 12.1, 12.2, 12.9, 12.10, 12.11, 22.6_
-  - [ ] 14.3 Implement Asset lifecycle use cases and event publication
+  - [x] 14.3 Implement Asset lifecycle use cases and event publication
     - Implement `CreateAssetUseCase`: validate mandatory fields, publish `AssetCreated` event to `assets.events`
     - Implement `UpdateAssetUseCase`: publish `AssetUpdated` event
     - Implement `DeleteAssetUseCase`: set `isDeleted=true`, publish `AssetDeleted` event
     - Implement `AssetStateService`: manage configurable asset states lifecycle
     - Implement `LocationService`: manage hierarchical location tree with `completeName` computation
     - _Requirements: 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.12_
-  - [ ] 14.4 Implement Software and License management
+  - [x] 14.4 Implement Software and License management
     - Implement `Software` entity: `name`, `manufacturer`, `category`, `versions[]`
     - Implement `SoftwareLicense` entity: `name`, `softwareId`, `licenseType`, `serial`, `numberOfSeats`, `expiryDate`, `entityId`
     - Implement `Item_SoftwareVersion` linking software version to asset
@@ -577,7 +577,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 28: License overuse event publication**
     - **Validates: Requirements 13.4**
     - Use jqwik to generate licenses with N seats and N+1 installations, assert `LicenseOverused` event published to `assets.events`
-  - [ ] 14.6 Implement Asset Service REST controllers and sub-resource endpoints
+  - [x] 14.6 Implement Asset Service REST controllers and sub-resource endpoints
     - `GET /assets/{type}`, `POST /assets/{type}`, `GET /assets/{type}/{id}`, `PUT /assets/{type}/{id}`, `DELETE /assets/{type}/{id}`
     - `GET /assets/{type}/{id}/networkports`, `POST /assets/{type}/{id}/networkports`
     - `GET /assets/computers/{id}/software`, `GET /assets/computers/{id}/devices`
@@ -587,28 +587,28 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `GET /assets/locations`, `POST /assets/locations`
     - Apply pagination on collection endpoints
     - _Requirements: 19.1, 19.6, 20.5_
-  - [ ] 14.7 Implement Asset Service seeder
+  - [x] 14.7 Implement Asset Service seeder
     - Seed default asset states: "In Stock", "In Use", "Maintenance", "Retired", "Disposed" when `asset_states` collection is empty
     - Seed default root location (id=0, name="Root Location", parentId=null, level=1)
     - _Requirements: 29.7, 29.8, 29.12_
-  - [ ] 14.8 Implement Asset Service global exception handler, SpringDoc config, Dockerfile, and README
+  - [x] 14.8 Implement Asset Service global exception handler, SpringDoc config, Dockerfile, and README
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
 
-- [~] 15. Implement Notification Service
-  - [ ] 15.1 Scaffold Notification Service Maven module with hexagonal structure
+- [x] 15. Implement Notification Service
+  - [x] 15.1 Scaffold Notification Service Maven module with hexagonal structure
     - Create `notification-service/pom.xml` with Spring Boot, MongoDB, Kafka, Spring Retry, JavaMail, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
     - Create `NotificationServiceApplication.java` main class
     - _Requirements: 16.1_
-  - [ ] 15.2 Implement `NotificationTemplate` and `QueuedNotification` aggregates
+  - [x] 15.2 Implement `NotificationTemplate` and `QueuedNotification` aggregates
     - Implement `NotificationTemplate` aggregate: `id`, `eventName`, `subjectTemplate`, `bodyTemplate` (HTML), `language`
     - Implement `QueuedNotification` aggregate: `id`, `eventType`, `channel`, `recipientId`, `recipientAddress`, `subject`, `body`, `status` (PENDING/SENT/FAILED), `attempts`, `lastAttemptAt`, `deliveredAt`, `errorMessage`, `createdAt`
     - Define repositories and MongoDB adapters
     - Create MongoDB indexes: `status`, `recipientId`, `createdAt`
     - _Requirements: 16.4, 16.7, 22.8_
-  - [ ] 15.3 Implement Kafka consumers for all domain event topics
+  - [x] 15.3 Implement Kafka consumers for all domain event topics
     - Implement `TicketEventConsumer`: consume from `tickets.events` (consumer group `notification-service`)
     - Implement `ProblemEventConsumer`: consume from `problems.events`
     - Implement `ChangeEventConsumer`: consume from `changes.events`
@@ -617,7 +617,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Handle all event types: ticket.created, ticket.updated, ticket.solved, ticket.closed, ticket.deleted, ticket.validation.requested, ticket.validation.approved, ticket.validation.refused, problem.created, problem.solved, change.created, change.validation.approved, sla.escalation.triggered
     - On consumer failure after 3 retries: route to `{topic}.dlq` with headers `X-Original-Topic`, `X-Failure-Reason`, `X-Retry-Count`, `X-Failed-At`
     - _Requirements: 16.1, 16.2, 16.5, 21.5, 21.6_
-  - [ ] 15.4 Implement notification target resolution and delivery
+  - [x] 15.4 Implement notification target resolution and delivery
     - Implement `NotificationTargetResolver`: resolve recipients from ticket/problem/change actors (requester, assigned user, assigned group members, observers, validators)
     - Skip actors with `useNotification=false` for their actor role
     - Implement `EmailDeliveryAdapter`: send via SMTP using JavaMail
@@ -628,7 +628,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 30: Notification skips users with notifications disabled**
     - **Validates: Requirements 16.10**
     - Use jqwik to generate actors with `useNotification=false` and assert they never appear in resolved notification target list
-  - [ ] 15.6 Implement retry with exponential backoff
+  - [x] 15.6 Implement retry with exponential backoff
     - Configure Spring Retry on `EmailDeliveryAdapter` and `WebhookDeliveryAdapter`: max 3 attempts, delays 1s, 4s, 16s
     - On all retries exhausted: set `QueuedNotification.status=FAILED`, record `errorMessage`
     - On success: set `status=SENT`, record `deliveredAt`
@@ -637,28 +637,28 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 29: Notification retry with exponential backoff**
     - **Validates: Requirements 16.6**
     - Use jqwik to simulate delivery failures and assert system retries exactly 3 times with delays 1s, 4s, 16s before marking `FAILED`
-  - [ ] 15.8 Implement Notification Service seeder
+  - [x] 15.8 Implement Notification Service seeder
     - Seed default notification templates for: ticket.created, ticket.solved, ticket.closed, ticket.validation.requested, problem.created, problem.solved, change.created, change.validation.approved when `notification_templates` collection is empty
     - _Requirements: 29.10, 29.12_
-  - [ ] 15.9 Implement Notification Service REST controllers, SpringDoc config, Dockerfile, and README
+  - [x] 15.9 Implement Notification Service REST controllers, SpringDoc config, Dockerfile, and README
     - `GET /notifications/templates`, `POST /notifications/templates`, `GET /notifications/templates/{id}`, `PUT /notifications/templates/{id}`
     - `GET /notifications/queue` (paginated list of `QueuedNotification`)
     - SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 19.1, 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [~] 16. Implement Knowledge Service
-  - [ ] 16.1 Scaffold Knowledge Service Maven module with hexagonal structure
+- [x] 16. Implement Knowledge Service
+  - [x] 16.1 Scaffold Knowledge Service Maven module with hexagonal structure
     - Create `knowledge-service/pom.xml` with Spring Boot, MongoDB, Kafka, SpringDoc, jqwik dependencies
     - Create package tree following hexagonal architecture
     - Create `KnowledgeServiceApplication.java` main class
     - _Requirements: 17.1_
-  - [ ] 16.2 Implement `KnowbaseItem` aggregate and `KnowbaseItemCategory` aggregate
+  - [x] 16.2 Implement `KnowbaseItem` aggregate and `KnowbaseItemCategory` aggregate
     - Implement `KnowbaseItem` aggregate with all fields from the KnowbaseItem document schema: `id`, `title`, `answer`, `authorId`, `isFaq`, `viewCount`, `visibility` (embedded: userIds[], groupIds[], profileIds[], entityRules[]), `categoryIds[]`, `revisions[]`, `linkedItems[]`, `comments[]`, `beginDate`, `endDate`, `createdAt`, `updatedAt`
     - Implement `KnowbaseItemCategory` aggregate: `id`, `name`, `parentId`, `level`, `completeName`
     - Define repositories and MongoDB adapters
     - Create MongoDB indexes: `isFaq`, `entityId`, `beginDate`, `endDate`, text index on `title+answer`
     - _Requirements: 17.1, 17.2, 17.7, 17.8, 22.8_
-  - [ ] 16.3 Implement visibility resolution and article filtering
+  - [x] 16.3 Implement visibility resolution and article filtering
     - Implement `VisibilityResolverPort` and `VisibilityResolverService`:
       - Anonymous users: return only `isFaq=true` articles where entity visibility includes root entity recursively
       - Helpdesk users: return only `isFaq=true` articles matching user's entity/group/profile visibility rules
@@ -669,7 +669,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 31: Knowledge article visibility — anonymous users**
     - **Validates: Requirements 17.4**
     - Use jqwik to generate articles with various visibility settings and assert anonymous requests only return `isFaq=true` articles with root entity visibility
-  - [ ] 16.5 Implement article view counter, revisions, comments, and linking
+  - [x] 16.5 Implement article view counter, revisions, comments, and linking
     - Implement `ViewArticleUseCase`: increment `viewCount` atomically using MongoDB `$inc` operator
     - Implement `UpdateArticleUseCase`: create `KnowbaseItem_Revision` entry before updating, publish `KnowledgeArticleUpdated` event
     - Implement `CreateArticleUseCase`: publish `KnowledgeArticleCreated` event to `knowledge.events`
@@ -681,7 +681,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 32: Knowledge article view counter increment**
     - **Validates: Requirements 17.9**
     - Use jqwik to generate article view requests and assert `viewCount` incremented by exactly 1 atomically per request
-  - [ ] 16.7 Implement Knowledge Service REST controllers
+  - [x] 16.7 Implement Knowledge Service REST controllers
     - `GET /knowledge/articles`, `POST /knowledge/articles`, `GET /knowledge/articles/{id}`, `PUT /knowledge/articles/{id}`, `DELETE /knowledge/articles/{id}`
     - `GET /knowledge/articles/{id}/revisions`
     - `POST /knowledge/articles/{id}/comments`
@@ -689,14 +689,14 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - `GET /knowledge/articles/search?q={query}` (full-text search)
     - Apply pagination on collection endpoints; support `expand_dropdowns` query parameter
     - _Requirements: 19.1, 19.6, 19.11_
-  - [ ] 16.8 Implement Knowledge Service seeder
+  - [x] 16.8 Implement Knowledge Service seeder
     - Seed default root KB category (id=0, name="Root", parentId=null) when `knowledge_categories` collection is empty
     - _Requirements: 29.9, 29.12_
-  - [ ] 16.9 Implement Knowledge Service global exception handler, SpringDoc config, Dockerfile, and README
+  - [x] 16.9 Implement Knowledge Service global exception handler, SpringDoc config, Dockerfile, and README
     - `@RestControllerAdvice`, SpringDoc OpenAPI, Swagger UI, multi-stage Dockerfile with non-root user, `README.md`
     - _Requirements: 25.1, 25.3, 28.1, 28.2, 28.9_
 
-- [~] 17. Checkpoint — Asset, Notification, and Knowledge Services
+- [-] 17. Checkpoint — Asset, Notification, and Knowledge Services
   - Ensure all Asset, Notification, and Knowledge Service tests pass. Verify license compliance, Kafka event consumption, notification delivery with retry, and article visibility rules. Ask the user if questions arise.
 
 
