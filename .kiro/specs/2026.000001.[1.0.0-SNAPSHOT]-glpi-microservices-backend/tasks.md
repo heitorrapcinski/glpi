@@ -116,13 +116,13 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Use jqwik to purge arbitrary users and assert `UserPurged` event on `identity.users` contains correct `userId` and non-null `occurredAt`
 
 
-- [-] 3. Implement Identity Service — Entity hierarchy and RBAC
-  - [ ] 3.1 Implement `Entity` aggregate and repository
+- [x] 3. Implement Identity Service — Entity hierarchy and RBAC
+  - [x] 3.1 Implement `Entity` aggregate and repository
     - Implement `Entity` aggregate with fields: `id`, `name`, `parentId`, `level`, `completeName`, `config` (embedded with all CONFIG_PARENT fields), `createdAt`, `updatedAt`
     - Define `EntityRepository` interface and `MongoEntityRepository` adapter
     - Create MongoDB indexes: `parentId`, compound `name+parentId` (unique)
     - _Requirements: 2.1, 2.2, 22.2_
-  - [ ] 3.2 Implement entity CRUD use cases with tree invariants
+  - [x] 3.2 Implement entity CRUD use cases with tree invariants
     - Implement `CreateEntityUseCase`: enforce unique name within parent (HTTP 409 / `DUPLICATE_ENTITY_NAME`), compute `completeName` from full path, set `level`
     - Implement `DeleteEntityUseCase`: reject deletion if entity has children (HTTP 409 / `ENTITY_HAS_CHILDREN`)
     - Implement `ResolveEntityConfigUseCase`: traverse tree upward for CONFIG_PARENT (-2) fields until non-inherited value found
@@ -147,7 +147,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 11: Recursive entity assignment covers all descendants**
     - **Validates: Requirements 2.5**
     - Use jqwik to generate entity trees with N descendants and assert recursive profile assignment grants access to all N descendants
-  - [ ] 3.8 Implement `Profile` aggregate and RBAC
+  - [x] 3.8 Implement `Profile` aggregate and RBAC
     - Implement `Profile` aggregate with fields: `id`, `name`, `interface` (central/helpdesk), `isDefault`, `twoFactorEnforced`, `rights` (Map<String, Integer> bitfields), `ticketStatusMatrix`, `createdAt`, `updatedAt`
     - Define `ProfileRepository` interface and `MongoProfileRepository` adapter
     - Implement `AssignProfileUseCase`: assign profile to user in entity, publish `ProfileAssigned` event to `identity.profiles`
@@ -157,11 +157,11 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - **Property 12: Permission bitfield round-trip**
     - **Validates: Requirements 3.2, 3.3**
     - Use jqwik to generate arbitrary combinations of READ/UPDATE/CREATE/DELETE/PURGE bits, store in profile, read back, assert all bits preserved exactly
-  - [ ] 3.10 Implement `Group` aggregate and repository
+  - [x] 3.10 Implement `Group` aggregate and repository
     - Implement `Group` aggregate with fields: `id`, `name`, `entityId`, `isRecursive`, `memberUserIds`, `createdAt`, `updatedAt`
     - Define `GroupRepository` interface and `MongoGroupRepository` adapter
     - _Requirements: 2.5_
-  - [ ] 3.11 Implement Identity Service seeder
+  - [x] 3.11 Implement Identity Service seeder
     - Implement `IdentitySeeder` Spring component that runs on startup when `users` and `profiles` collections are empty
     - Seed 8 default profiles (Self-Service, Observer, Admin, Super-Admin, Hotliner, Technician, Supervisor, Read-Only) with correct `interface` and `isDefault` values
     - Seed 4 default users (glpi/glpi, post-only/postonly, tech/tech, normal/normal) with bcrypt passwords and correct profile assignments
@@ -174,7 +174,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
     - Use jqwik to run the seeder twice and assert collection size remains unchanged on the second run
 
 
-- [~] 4. Implement Identity Service — Authentication, JWT, and 2FA
+- [-] 4. Implement Identity Service — Authentication, JWT, and 2FA
   - [ ] 4.1 Implement JWT RS256 token issuance and validation
     - Implement `AuthenticateUserUseCase`: validate credentials, check `isActive`, check `lockedUntil`, verify TOTP if `twoFactorEnabled`, issue JWT (exp=1h) + refresh token (exp=7d) signed with RS256 key pair
     - JWT payload must contain: `sub`, `entity_id`, `profile_id`, `rights`, `iat`, `exp`

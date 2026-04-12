@@ -1,12 +1,12 @@
 package com.glpi.identity.domain.service;
 
 import com.glpi.common.DomainEventEnvelope;
-import com.glpi.identity.domain.model.AccountInactiveException;
-import com.glpi.identity.domain.model.AccountLockedException;
-import com.glpi.identity.domain.model.User;
-import com.glpi.identity.domain.model.UserNotFoundException;
+import com.glpi.identity.domain.model.*;
+import com.glpi.identity.domain.port.in.AuthResponse;
 import com.glpi.identity.domain.port.in.AuthenticateUserCommand;
+import com.glpi.identity.domain.port.in.AuthenticateUserUseCase;
 import com.glpi.identity.domain.port.out.EventPublisherPort;
+import com.glpi.identity.domain.port.out.ProfileRepository;
 import com.glpi.identity.domain.port.out.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,35 +17,39 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Stub authentication service implementing account lockout logic.
- * Full JWT issuance is implemented in task 4.
- *
- * Lockout policy: after 5 consecutive failed logins within 10 minutes,
- * the account is locked for 15 minutes and an AccountLocked event is published.
+ * Authenticates users with password + optional TOTP, enforces lockout policy,
+ * and issues JWT access + refresh tokens on success.
  */
 @Service
-public class AuthenticateUserService {
+public class AuthenticateUserService implements AuthenticateUserUseCase {
 
     private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final Duration LOCKOUT_WINDOW = Duration.ofMinutes(10);
     private static final Duration LOCKOUT_DURATION = Duration.ofMinutes(15);
     private static final int BCRYPT_COST = 12;
+    private static final long ACCESS_TOKEN_EXPIRES_IN = 3600L;
 
     private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
     private final EventPublisherPort eventPublisher;
+    private final JwtTokenService jwtTokenService;
+    private final TotpService totpService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public AuthenticateUserService(UserRepository userRepository, EventPublisherPort eventPublisher) {
+    public AuthenticateUserService(UserRepository userRepository,
+                                   ProfileRepository profileRepository,
+                                   EventPublisherPort eventPublisher,
+                                   JwtTokenService jwtTokenService,
+                                   TotpService totpService) {
         this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
         this.eventPublisher = eventPublisher;
+        this.jwtTokenService = jwtTokenService;
+        this.totpService = totpService;
         this.passwordEncoder = new BCryptPasswordEncoder(BCRYPT_COST);
     }
 
-    /**
-     * Validates credentials and enforces lockout policy.
-     * Returns the authenticated User on success.
-     */
-    public User authenticate(AuthenticateUserCommand command) {
+    @Override
+    public AuthResponse authenticate(AuthenticateUserCommand command) {
         User user = userRepository.findByUsername(command.username())
                 .orElseThrow(() -> new UserNotFoundException(command.username()));
 
@@ -61,15 +65,44 @@ public class AuthenticateUserService {
 
         if (!credentialsValid) {
             handleFailedLogin(user);
-            throw new AccountLockedException(user.getLockedUntil() != null
-                    ? user.getLockedUntil()
-                    : Instant.now());
+            if (user.isLocked()) {
+                throw new AccountLockedException(user.getLockedUntil());
+            }
+            throw new UserNotFoundException(command.username()); // generic error to avoid enumeration
+        }
+
+        // TOTP check
+        boolean totpRequired = user.isTwoFactorEnabled() || isTotpEnforcedByProfile(user.getProfileId());
+        if (totpRequired) {
+            if (command.totpCode() == null) {
+                throw new TotpRequiredException();
+            }
+            String secret = user.getTotpSecret();
+            if (secret == null || !totpService.verifyCode(secret, command.totpCode())) {
+                throw new TotpInvalidException();
+            }
         }
 
         // Successful login — reset failed attempts
         user.resetFailedLoginAttempts();
         userRepository.save(user);
-        return user;
+
+        // Resolve rights from profile
+        Map<String, Integer> rights = profileRepository.findById(user.getProfileId())
+                .map(Profile::getRights)
+                .orElse(Map.of());
+
+        String accessToken = jwtTokenService.issueAccessTokenWithRights(user, rights, null);
+        String refreshToken = jwtTokenService.issueRefreshToken(user, null);
+
+        return new AuthResponse(accessToken, refreshToken, ACCESS_TOKEN_EXPIRES_IN);
+    }
+
+    private boolean isTotpEnforcedByProfile(String profileId) {
+        if (profileId == null) return false;
+        return profileRepository.findById(profileId)
+                .map(Profile::isTwoFactorEnforced)
+                .orElse(false);
     }
 
     private void handleFailedLogin(User user) {
