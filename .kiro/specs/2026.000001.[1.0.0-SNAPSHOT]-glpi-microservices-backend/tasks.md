@@ -769,7 +769,7 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
   - Ensure all tests pass across all services. Verify `docker compose up` starts the full stack successfully. Verify seeders run correctly on first startup and are idempotent on restart. Ask the user if questions arise.
 
 
-- [-] 21. Version control and release
+- [x] 21. Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
     - Find and replace `1.0.0-SNAPSHOT` → `1.0.0` in all `pom.xml` files (parent + all 9 service modules + `common`)
