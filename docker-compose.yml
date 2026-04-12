@@ -98,7 +98,8 @@ services:
     image: glpi/api-gateway:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-api-gateway
     build:
-      context: ./api-gateway
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "${API_GATEWAY_PORT:-8080}:8080"
     environment:
@@ -118,7 +119,8 @@ services:
     image: glpi/identity-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-identity-service
     build:
-      context: ./identity-service
+      context: .
+      dockerfile: identity-service/Dockerfile
     ports:
       - "${IDENTITY_SERVICE_PORT:-8081}:8081"
     environment:
@@ -135,7 +137,8 @@ services:
     image: glpi/ticket-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-ticket-service
     build:
-      context: ./ticket-service
+      context: .
+      dockerfile: ticket-service/Dockerfile
     ports:
       - "${TICKET_SERVICE_PORT:-8082}:8082"
     environment:
@@ -148,7 +151,8 @@ services:
     image: glpi/problem-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-problem-service
     build:
-      context: ./problem-service
+      context: .
+      dockerfile: problem-service/Dockerfile
     ports:
       - "${PROBLEM_SERVICE_PORT:-8083}:8083"
     environment:
@@ -160,7 +164,8 @@ services:
     image: glpi/change-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-change-service
     build:
-      context: ./change-service
+      context: .
+      dockerfile: change-service/Dockerfile
     ports:
       - "${CHANGE_SERVICE_PORT:-8084}:8084"
     environment:
@@ -172,7 +177,8 @@ services:
     image: glpi/asset-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-asset-service
     build:
-      context: ./asset-service
+      context: .
+      dockerfile: asset-service/Dockerfile
     ports:
       - "${ASSET_SERVICE_PORT:-8085}:8085"
     environment:
@@ -184,7 +190,8 @@ services:
     image: glpi/sla-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-sla-service
     build:
-      context: ./sla-service
+      context: .
+      dockerfile: sla-service/Dockerfile
     ports:
       - "${SLA_SERVICE_PORT:-8086}:8086"
     environment:
@@ -198,7 +205,8 @@ services:
     image: glpi/notification-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-notification-service
     build:
-      context: ./notification-service
+      context: .
+      dockerfile: notification-service/Dockerfile
     ports:
       - "${NOTIFICATION_SERVICE_PORT:-8087}:8087"
     environment:
@@ -215,7 +223,8 @@ services:
     image: glpi/knowledge-service:${VERSION:-1.0.1-SNAPSHOT}
     container_name: glpi-knowledge-service
     build:
-      context: ./knowledge-service
+      context: .
+      dockerfile: knowledge-service/Dockerfile
     ports:
       - "${KNOWLEDGE_SERVICE_PORT:-8088}:8088"
     environment:
