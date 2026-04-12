@@ -49,7 +49,7 @@ Commit after each task completion using the task ID as reference:
 The **last task** of every `tasks.md` must always be a version control task with the following sub-tasks:
 
 ```markdown
-- [ ] {year}.{sequential}-XXXX - Version control and release
+- [ ] Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
   - [ ] Commit the version bump: "release: {version} - {short-description}"

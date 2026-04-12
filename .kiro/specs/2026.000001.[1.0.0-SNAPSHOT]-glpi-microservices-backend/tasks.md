@@ -14,8 +14,8 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
 ## Tasks
 
 - [ ] 1. Bootstrap project structure and shared infrastructure
-  - [ ] 1.1 Create Git branch `feature-2026.000001.[1.0.0-SNAPSHOT]-glpi-microservices-backend`
-    - Run: `git checkout -b feature-2026.000001.[1.0.0-SNAPSHOT]-glpi-microservices-backend`
+  - [ ] 1.1 Create Git branch `feature-2026.000001`
+    - Run: `git checkout -b feature-2026.000001`
     - This must be the very first action before any code is written
     - _Requirements: version-control-workflow_
   - [ ] 1.2 Create Maven multi-module parent `pom.xml`
@@ -769,15 +769,19 @@ Tasks marked with `*` are optional (property-based and unit tests) and can be sk
   - Ensure all tests pass across all services. Verify `docker compose up` starts the full stack successfully. Verify seeders run correctly on first startup and are idempotent on restart. Ask the user if questions arise.
 
 
-- [ ] 21. 2026.000001-XXXX - Version control and release
+- [ ] 21. Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
     - Find and replace `1.0.0-SNAPSHOT` → `1.0.0` in all `pom.xml` files (parent + all 9 service modules + `common`)
     - Verify no remaining `SNAPSHOT` references in any configuration or documentation file
   - [ ] Commit the version bump: "release: 1.0.0 - glpi-microservices-backend"
   - [ ] Merge branch into main/master
+    - Run: `git checkout main`
+    - Run: `git merge --no-ff feature-2026.000001`
   - [ ] Apply Git tag: `1.0.0` (without SNAPSHOT)
+    - Run: `git tag -a "1.0.0" -m "release: 1.0.0 - glpi-microservices-backend"`
   - [ ] Push branch, merge, and tag to remote
+    - Run: `git push origin main --tags`
 
 ---
 
