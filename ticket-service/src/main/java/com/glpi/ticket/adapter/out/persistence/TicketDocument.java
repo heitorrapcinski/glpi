@@ -55,6 +55,7 @@ public class TicketDocument {
     private Instant solvedAt;
     private Instant closedAt;
     private Long takeIntoAccountDelay;
+    private Long solveDelayStat;
 
     public TicketDocument() {}
 
@@ -132,4 +133,7 @@ public class TicketDocument {
     public void setTakeIntoAccountDelay(Long takeIntoAccountDelay) {
         this.takeIntoAccountDelay = takeIntoAccountDelay;
     }
+
+    public Long getSolveDelayStat() { return solveDelayStat; }
+    public void setSolveDelayStat(Long solveDelayStat) { this.solveDelayStat = solveDelayStat; }
 }

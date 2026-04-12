@@ -33,6 +33,8 @@ public class Ticket {
     private Instant solvedAt;
     private Instant closedAt;
     private Long takeIntoAccountDelay;
+    /** Seconds from createdAt to solvedAt (TTR stat). Requirements: 9.6 */
+    private Long solveDelayStat;
 
     public Ticket() {
         this.actors = new ArrayList<>();
@@ -115,4 +117,7 @@ public class Ticket {
     public void setTakeIntoAccountDelay(Long takeIntoAccountDelay) {
         this.takeIntoAccountDelay = takeIntoAccountDelay;
     }
+
+    public Long getSolveDelayStat() { return solveDelayStat; }
+    public void setSolveDelayStat(Long solveDelayStat) { this.solveDelayStat = solveDelayStat; }
 }

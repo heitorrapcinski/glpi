@@ -85,6 +85,7 @@ public class TicketRepositoryAdapter implements TicketRepository {
         t.setSolvedAt(doc.getSolvedAt());
         t.setClosedAt(doc.getClosedAt());
         t.setTakeIntoAccountDelay(doc.getTakeIntoAccountDelay());
+        t.setSolveDelayStat(doc.getSolveDelayStat());
         return t;
     }
 
@@ -113,6 +114,7 @@ public class TicketRepositoryAdapter implements TicketRepository {
         doc.setSolvedAt(t.getSolvedAt());
         doc.setClosedAt(t.getClosedAt());
         doc.setTakeIntoAccountDelay(t.getTakeIntoAccountDelay());
+        doc.setSolveDelayStat(t.getSolveDelayStat());
         return doc;
     }
 }
