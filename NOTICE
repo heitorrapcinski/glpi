@@ -58,6 +58,16 @@ Upstream Baseline
   It is kept read-only as a reference baseline and must not be modified.
 
 -------------------------------------------------------------------------------
+AI Assistance Disclosure
+-------------------------------------------------------------------------------
+
+This work was substantially developed with the assistance of AI-based tools
+(including large language models) under the creative direction, architectural
+decisions, and intellectual supervision of the author, Heitor Rapcinski.
+The author retains full responsibility for the design, requirements, and
+overall structure of this work.
+
+-------------------------------------------------------------------------------
 License
 -------------------------------------------------------------------------------
 
