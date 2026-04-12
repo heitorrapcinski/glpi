@@ -95,10 +95,11 @@ services:
 
   api-gateway:
     <<: *microservice-defaults
-    image: glpi/api-gateway:${VERSION:-1.0.0}
+    image: glpi/api-gateway:${VERSION:-1.0.1}
     container_name: glpi-api-gateway
     build:
-      context: ./api-gateway
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "${API_GATEWAY_PORT:-8080}:8080"
     environment:
@@ -115,10 +116,11 @@ services:
 
   identity-service:
     <<: *microservice-defaults
-    image: glpi/identity-service:${VERSION:-1.0.0}
+    image: glpi/identity-service:${VERSION:-1.0.1}
     container_name: glpi-identity-service
     build:
-      context: ./identity-service
+      context: .
+      dockerfile: identity-service/Dockerfile
     ports:
       - "${IDENTITY_SERVICE_PORT:-8081}:8081"
     environment:
@@ -132,10 +134,11 @@ services:
 
   ticket-service:
     <<: *microservice-defaults
-    image: glpi/ticket-service:${VERSION:-1.0.0}
+    image: glpi/ticket-service:${VERSION:-1.0.1}
     container_name: glpi-ticket-service
     build:
-      context: ./ticket-service
+      context: .
+      dockerfile: ticket-service/Dockerfile
     ports:
       - "${TICKET_SERVICE_PORT:-8082}:8082"
     environment:
@@ -145,10 +148,11 @@ services:
 
   problem-service:
     <<: *microservice-defaults
-    image: glpi/problem-service:${VERSION:-1.0.0}
+    image: glpi/problem-service:${VERSION:-1.0.1}
     container_name: glpi-problem-service
     build:
-      context: ./problem-service
+      context: .
+      dockerfile: problem-service/Dockerfile
     ports:
       - "${PROBLEM_SERVICE_PORT:-8083}:8083"
     environment:
@@ -157,10 +161,11 @@ services:
 
   change-service:
     <<: *microservice-defaults
-    image: glpi/change-service:${VERSION:-1.0.0}
+    image: glpi/change-service:${VERSION:-1.0.1}
     container_name: glpi-change-service
     build:
-      context: ./change-service
+      context: .
+      dockerfile: change-service/Dockerfile
     ports:
       - "${CHANGE_SERVICE_PORT:-8084}:8084"
     environment:
@@ -169,10 +174,11 @@ services:
 
   asset-service:
     <<: *microservice-defaults
-    image: glpi/asset-service:${VERSION:-1.0.0}
+    image: glpi/asset-service:${VERSION:-1.0.1}
     container_name: glpi-asset-service
     build:
-      context: ./asset-service
+      context: .
+      dockerfile: asset-service/Dockerfile
     ports:
       - "${ASSET_SERVICE_PORT:-8085}:8085"
     environment:
@@ -181,10 +187,11 @@ services:
 
   sla-service:
     <<: *microservice-defaults
-    image: glpi/sla-service:${VERSION:-1.0.0}
+    image: glpi/sla-service:${VERSION:-1.0.1}
     container_name: glpi-sla-service
     build:
-      context: ./sla-service
+      context: .
+      dockerfile: sla-service/Dockerfile
     ports:
       - "${SLA_SERVICE_PORT:-8086}:8086"
     environment:
@@ -195,10 +202,11 @@ services:
 
   notification-service:
     <<: *microservice-defaults
-    image: glpi/notification-service:${VERSION:-1.0.0}
+    image: glpi/notification-service:${VERSION:-1.0.1}
     container_name: glpi-notification-service
     build:
-      context: ./notification-service
+      context: .
+      dockerfile: notification-service/Dockerfile
     ports:
       - "${NOTIFICATION_SERVICE_PORT:-8087}:8087"
     environment:
@@ -212,10 +220,11 @@ services:
 
   knowledge-service:
     <<: *microservice-defaults
-    image: glpi/knowledge-service:${VERSION:-1.0.0}
+    image: glpi/knowledge-service:${VERSION:-1.0.1}
     container_name: glpi-knowledge-service
     build:
-      context: ./knowledge-service
+      context: .
+      dockerfile: knowledge-service/Dockerfile
     ports:
       - "${KNOWLEDGE_SERVICE_PORT:-8088}:8088"
     environment:
@@ -230,7 +239,7 @@ services:
   identity-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/identity-service:${VERSION:-1.0.0}
+    image: glpi/identity-service:${VERSION:-1.0.1}
     container_name: glpi-identity-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -246,7 +255,7 @@ services:
   sla-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/sla-service:${VERSION:-1.0.0}
+    image: glpi/sla-service:${VERSION:-1.0.1}
     container_name: glpi-sla-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -265,7 +274,7 @@ services:
   ticket-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/ticket-service:${VERSION:-1.0.0}
+    image: glpi/ticket-service:${VERSION:-1.0.1}
     container_name: glpi-ticket-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -283,7 +292,7 @@ services:
   asset-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/asset-service:${VERSION:-1.0.0}
+    image: glpi/asset-service:${VERSION:-1.0.1}
     container_name: glpi-asset-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -301,7 +310,7 @@ services:
   knowledge-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/knowledge-service:${VERSION:-1.0.0}
+    image: glpi/knowledge-service:${VERSION:-1.0.1}
     container_name: glpi-knowledge-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -319,7 +328,7 @@ services:
   notification-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/notification-service:${VERSION:-1.0.0}
+    image: glpi/notification-service:${VERSION:-1.0.1}
     container_name: glpi-notification-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:

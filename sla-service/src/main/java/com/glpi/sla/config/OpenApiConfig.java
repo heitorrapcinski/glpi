@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         info = @Info(
                 title = "GLPI SLA Service API",
-                version = "1.0.0",
+                version = "1.0.1",
                 description = "SLA/OLA definitions, calendars, business-hours computation, and escalation scheduling",
                 contact = @Contact(name = "GLPI Backend Team")
         ),
