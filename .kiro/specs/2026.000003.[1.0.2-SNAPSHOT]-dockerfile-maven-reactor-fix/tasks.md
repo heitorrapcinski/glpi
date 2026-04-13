@@ -22,10 +22,10 @@
   - [x] 3.1 Run `docker compose build` and verify all 8 microservice images build successfully
   - [x] 3.2 Commit: `2026.000003.3: validate dockerfile maven reactor fix`
 
-- [-] 4. Version control and release
-  - [-] 4.1 Ensure all previous tasks are complete and tests pass
-  - [~] 4.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 4.3 Commit the version bump: "release: 1.0.2 - dockerfile-maven-reactor-fix"
-  - [~] 4.4 Merge branch into main/master
-  - [~] 4.5 Apply Git tag: 1.0.2 (without SNAPSHOT)
-  - [~] 4.6 Push branch, merge, and tag to remote
+- [x] 4. Version control and release
+  - [x] 4.1 Ensure all previous tasks are complete and tests pass
+  - [x] 4.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] 4.3 Commit the version bump: "release: 1.0.2 - dockerfile-maven-reactor-fix"
+  - [x] 4.4 Merge branch into main/master
+  - [x] 4.5 Apply Git tag: 1.0.2 (without SNAPSHOT)
+  - [x] 4.6 Push branch, merge, and tag to remote
