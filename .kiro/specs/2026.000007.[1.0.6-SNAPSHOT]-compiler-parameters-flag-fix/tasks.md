@@ -105,7 +105,7 @@
       - Root `pom.xml` retains existing `<source>`, `<target>`, `<encoding>` config
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [-] 4. Checkpoint — Ensure all tests pass
+- [x] 4. Checkpoint — Ensure all tests pass
   - Run `mvn test` across all modules from the project root
   - Verify all existing unit and integration tests pass without regressions
   - Verify both property-based test files pass (bug condition + preservation)
@@ -115,9 +115,9 @@
   - _Requirements: 3.3_
 
 - [ ] 5. Version control and release
-  - [~] 5.1 Ensure all previous tasks are complete and tests pass
-  - [~] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 5.3 Commit the version bump: "release: 1.0.6 - compiler-parameters-flag-fix"
-  - [~] 5.4 Merge branch `bugfix-2026.000007` into main
+  - [x] 5.1 Ensure all previous tasks are complete and tests pass
+  - [x] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] 5.3 Commit the version bump: "release: 1.0.6 - compiler-parameters-flag-fix"
+  - [-] 5.4 Merge branch `bugfix-2026.000007` into main
   - [~] 5.5 Apply Git tag: `1.0.6`
   - [~] 5.6 Push branch, merge, and tag to remote
