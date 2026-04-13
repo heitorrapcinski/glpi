@@ -1,0 +1,232 @@
+package com.glpi.ticket.config;
+
+import net.jqwik.api.*;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Preservation property tests for ticket-service KafkaConfig.
+ *
+ * These tests verify that existing consumer and producer configuration
+ * remains unchanged regardless of the bootstrap server value.
+ * They must PASS on UNFIXED code to establish the baseline behavior.
+ *
+ * Validates: Requirements 3.1, 3.2, 3.3, 3.5, 3.6
+ */
+class KafkaConfigPreservationTest {
+
+    // ---------------------------------------------------------------
+    // Property: Consumer config preserved for any bootstrap server
+    // ---------------------------------------------------------------
+
+    /**
+     * Property 2: Preservation — Consumer group ID is always "ticket-service"
+     * regardless of bootstrap server value.
+     *
+     * Validates: Requirements 3.1, 3.3
+     */
+    @Property(tries = 50)
+    void consumerFactory_groupId_isAlwaysTicketService(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ConsumerFactory<String, Map<String, Object>> factory = kafkaConfig.consumerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals("ticket-service", configs.get(ConsumerConfig.GROUP_ID_CONFIG),
+                "Consumer group ID must be 'ticket-service'");
+    }
+
+    /**
+     * Property 2: Preservation — Consumer key deserializer is always StringDeserializer
+     * regardless of bootstrap server value.
+     *
+     * Validates: Requirements 3.3
+     */
+    @Property(tries = 50)
+    void consumerFactory_keyDeserializer_isAlwaysStringDeserializer(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ConsumerFactory<String, Map<String, Object>> factory = kafkaConfig.consumerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals(StringDeserializer.class, configs.get(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG),
+                "Consumer key deserializer must be StringDeserializer");
+    }
+
+    /**
+     * Property 2: Preservation — Consumer value deserializer is always JsonDeserializer
+     * regardless of bootstrap server value.
+     *
+     * Validates: Requirements 3.2, 3.3
+     */
+    @Property(tries = 50)
+    void consumerFactory_valueDeserializer_isAlwaysJsonDeserializer(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ConsumerFactory<String, Map<String, Object>> factory = kafkaConfig.consumerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals(JsonDeserializer.class, configs.get(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG),
+                "Consumer value deserializer must be JsonDeserializer");
+    }
+
+    /**
+     * Property 2: Preservation — Consumer trusted packages is always "*"
+     * regardless of bootstrap server value.
+     *
+     * Validates: Requirements 3.2, 3.3
+     */
+    @Property(tries = 50)
+    void consumerFactory_trustedPackages_isAlwaysWildcard(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ConsumerFactory<String, Map<String, Object>> factory = kafkaConfig.consumerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals("*", configs.get(JsonDeserializer.TRUSTED_PACKAGES),
+                "Consumer trusted packages must be '*'");
+    }
+
+    /**
+     * Property 2: Preservation — Consumer auto offset reset is always "earliest"
+     * regardless of bootstrap server value.
+     *
+     * Validates: Requirements 3.2, 3.3
+     */
+    @Property(tries = 50)
+    void consumerFactory_autoOffsetReset_isAlwaysEarliest(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ConsumerFactory<String, Map<String, Object>> factory = kafkaConfig.consumerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals("earliest", configs.get(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG),
+                "Consumer auto offset reset must be 'earliest'");
+    }
+
+    /**
+     * Property 2: Preservation — Consumer bootstrap.servers matches the injected value
+     * regardless of what that value is.
+     *
+     * Validates: Requirements 3.1, 3.5
+     */
+    @Property(tries = 50)
+    void consumerFactory_bootstrapServers_matchesInjectedValue(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ConsumerFactory<String, Map<String, Object>> factory = kafkaConfig.consumerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals(bootstrapServer, configs.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG),
+                "Consumer bootstrap.servers must match the injected @Value");
+    }
+
+    // ---------------------------------------------------------------
+    // Property: Producer config preserved for any bootstrap server
+    // ---------------------------------------------------------------
+
+    /**
+     * Property 2: Preservation — Producer key serializer is always StringSerializer
+     * regardless of bootstrap server value.
+     *
+     * Validates: Requirements 3.6
+     */
+    @Property(tries = 50)
+    void producerFactory_keySerializer_isAlwaysStringSerializer(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ProducerFactory<String, Object> factory = kafkaConfig.producerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals(StringSerializer.class, configs.get(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG),
+                "Producer key serializer must be StringSerializer");
+    }
+
+    /**
+     * Property 2: Preservation — Producer value serializer is always JsonSerializer
+     * regardless of bootstrap server value.
+     *
+     * Validates: Requirements 3.6
+     */
+    @Property(tries = 50)
+    void producerFactory_valueSerializer_isAlwaysJsonSerializer(
+            @ForAll("bootstrapServers") String bootstrapServer) {
+
+        KafkaConfig kafkaConfig = new KafkaConfig();
+        ReflectionTestUtils.setField(kafkaConfig, "bootstrapServers", bootstrapServer);
+
+        ProducerFactory<String, Object> factory = kafkaConfig.producerFactory();
+        Map<String, Object> configs = factory.getConfigurationProperties();
+
+        assertEquals(JsonSerializer.class, configs.get(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG),
+                "Producer value serializer must be JsonSerializer");
+    }
+
+    // ---------------------------------------------------------------
+    // Property: @Value default fallback is localhost:9092
+    // ---------------------------------------------------------------
+
+    /**
+     * Property 2: Preservation — The @Value annotation default fallback is localhost:9092.
+     * This preserves local development connectivity.
+     *
+     * Validates: Requirements 3.1
+     */
+    @Example
+    void valueAnnotation_defaultFallback_isLocalhost9092() throws NoSuchFieldException {
+        var field = KafkaConfig.class.getDeclaredField("bootstrapServers");
+        var valueAnnotation = field.getAnnotation(
+                org.springframework.beans.factory.annotation.Value.class);
+
+        assertNotNull(valueAnnotation, "@Value annotation must be present on bootstrapServers field");
+        assertEquals("${spring.kafka.bootstrap-servers:localhost:9092}", valueAnnotation.value(),
+                "@Value default fallback must be localhost:9092");
+    }
+
+    // ---------------------------------------------------------------
+    // Generators
+    // ---------------------------------------------------------------
+
+    @Provide
+    Arbitrary<String> bootstrapServers() {
+        Arbitrary<String> hosts = Arbitraries.of(
+                "localhost", "kafka", "broker", "kafka-1", "kafka-2",
+                "192.168.1.100", "10.0.0.5", "kafka.internal",
+                "my-kafka-broker.example.com", "kafka-service.default.svc.cluster.local"
+        );
+        Arbitrary<Integer> ports = Arbitraries.integers().between(1024, 65535);
+        return Combinators.combine(hosts, ports).as((host, port) -> host + ":" + port);
+    }
+}
