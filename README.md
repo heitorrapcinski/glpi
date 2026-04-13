@@ -8,7 +8,7 @@ A cloud-native ITSM backend that reimplements the GLPI v12 domain as a set of in
 
 ```
                         ┌─────────────────────────────────────────────────────┐
-                        │              GLPI Microservices Backend              │
+                        │             GLPI Microservices Backend              │
                         │                                                     │
   API Client ──HTTPS──► │  API Gateway (8080)                                 │
                         │       │                                             │

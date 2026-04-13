@@ -6,7 +6,7 @@
 #   Start infrastructure only:             docker compose up -d zookeeper kafka mongodb
 #   Run seeders (seed profile):            docker compose --profile seed up
 #
-# Environment variables can be overridden by creating a .env file at the root.
+# All environment variables are defined in the .env file at the project root.
 # See .env.example for all available variables and their documented defaults.
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -19,11 +19,6 @@ x-microservice-defaults: &microservice-defaults
   <<: *service-defaults
   build:
     context: .
-  environment:
-    SPRING_PROFILES_ACTIVE: docker
-    KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
-    JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
-    JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
   depends_on:
     mongodb:
       condition: service_healthy
@@ -39,7 +34,7 @@ services:
     image: confluentinc/cp-zookeeper:7.7.1
     container_name: glpi-zookeeper
     ports:
-      - "${ZOOKEEPER_PORT:-2181}:2181"
+      - "${ZOOKEEPER_PORT}:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -55,12 +50,12 @@ services:
     image: confluentinc/cp-kafka:7.7.1
     container_name: glpi-kafka
     ports:
-      - "${KAFKA_PORT:-9092}:9092"
+      - "${KAFKA_PORT}:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:${KAFKA_PORT:-9092}
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:${KAFKA_PORT}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -79,10 +74,10 @@ services:
     image: mongo:7.0
     container_name: glpi-mongodb
     ports:
-      - "${MONGODB_PORT:-27017}:27017"
+      - "${MONGODB_PORT}:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-glpi}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-glpi_secret}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     volumes:
       - mongodb-data:/data/db
     healthcheck:
@@ -95,141 +90,166 @@ services:
 
   api-gateway:
     <<: *microservice-defaults
-    image: glpi/api-gateway:${VERSION:-1.0.4}
+    image: glpi/api-gateway:${VERSION}
     container_name: glpi-api-gateway
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
     ports:
-      - "${API_GATEWAY_PORT:-8080}:8080"
+      - "${API_GATEWAY_PORT}:8080"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8080
-      IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL:-http://identity-service:8081}
-      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL:-http://ticket-service:8082}
-      PROBLEM_SERVICE_URL: ${PROBLEM_SERVICE_URL:-http://problem-service:8083}
-      CHANGE_SERVICE_URL: ${CHANGE_SERVICE_URL:-http://change-service:8084}
-      ASSET_SERVICE_URL: ${ASSET_SERVICE_URL:-http://asset-service:8085}
-      SLA_SERVICE_URL: ${SLA_SERVICE_URL:-http://sla-service:8086}
-      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://notification-service:8087}
-      KNOWLEDGE_SERVICE_URL: ${KNOWLEDGE_SERVICE_URL:-http://knowledge-service:8088}
-      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE:-1000}
+      IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL}
+      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL}
+      PROBLEM_SERVICE_URL: ${PROBLEM_SERVICE_URL}
+      CHANGE_SERVICE_URL: ${CHANGE_SERVICE_URL}
+      ASSET_SERVICE_URL: ${ASSET_SERVICE_URL}
+      SLA_SERVICE_URL: ${SLA_SERVICE_URL}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
+      KNOWLEDGE_SERVICE_URL: ${KNOWLEDGE_SERVICE_URL}
+      RATE_LIMIT_REQUESTS_PER_MINUTE: ${RATE_LIMIT_REQUESTS_PER_MINUTE}
 
   identity-service:
     <<: *microservice-defaults
-    image: glpi/identity-service:${VERSION:-1.0.4}
+    image: glpi/identity-service:${VERSION}
     container_name: glpi-identity-service
     build:
       context: .
       dockerfile: identity-service/Dockerfile
     ports:
-      - "${IDENTITY_SERVICE_PORT:-8081}:8081"
+      - "${IDENTITY_SERVICE_PORT}:8081"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8081
-      MONGODB_URI: ${IDENTITY_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_identity?authSource=admin}
-      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
-      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
-      JWT_ACCESS_TOKEN_EXPIRY_SECONDS: ${JWT_ACCESS_TOKEN_EXPIRY_SECONDS:-3600}
-      JWT_REFRESH_TOKEN_EXPIRY_SECONDS: ${JWT_REFRESH_TOKEN_EXPIRY_SECONDS:-604800}
-      BCRYPT_COST: ${BCRYPT_COST:-12}
+      MONGODB_URI: ${IDENTITY_MONGODB_URI}
+      JWT_ACCESS_TOKEN_EXPIRY_SECONDS: ${JWT_ACCESS_TOKEN_EXPIRY_SECONDS}
+      JWT_REFRESH_TOKEN_EXPIRY_SECONDS: ${JWT_REFRESH_TOKEN_EXPIRY_SECONDS}
+      BCRYPT_COST: ${BCRYPT_COST}
 
   ticket-service:
     <<: *microservice-defaults
-    image: glpi/ticket-service:${VERSION:-1.0.4}
+    image: glpi/ticket-service:${VERSION}
     container_name: glpi-ticket-service
     build:
       context: .
       dockerfile: ticket-service/Dockerfile
     ports:
-      - "${TICKET_SERVICE_PORT:-8082}:8082"
+      - "${TICKET_SERVICE_PORT}:8082"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8082
-      MONGODB_URI: ${TICKET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_tickets?authSource=admin}
-      SLA_SERVICE_URL: ${SLA_SERVICE_URL:-http://sla-service:8086}
+      MONGODB_URI: ${TICKET_MONGODB_URI}
+      SLA_SERVICE_URL: ${SLA_SERVICE_URL}
 
   problem-service:
     <<: *microservice-defaults
-    image: glpi/problem-service:${VERSION:-1.0.4}
+    image: glpi/problem-service:${VERSION}
     container_name: glpi-problem-service
     build:
       context: .
       dockerfile: problem-service/Dockerfile
     ports:
-      - "${PROBLEM_SERVICE_PORT:-8083}:8083"
+      - "${PROBLEM_SERVICE_PORT}:8083"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8083
-      MONGODB_URI: ${PROBLEM_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_problems?authSource=admin}
+      MONGODB_URI: ${PROBLEM_MONGODB_URI}
 
   change-service:
     <<: *microservice-defaults
-    image: glpi/change-service:${VERSION:-1.0.4}
+    image: glpi/change-service:${VERSION}
     container_name: glpi-change-service
     build:
       context: .
       dockerfile: change-service/Dockerfile
     ports:
-      - "${CHANGE_SERVICE_PORT:-8084}:8084"
+      - "${CHANGE_SERVICE_PORT}:8084"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8084
-      MONGODB_URI: ${CHANGE_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_changes?authSource=admin}
+      MONGODB_URI: ${CHANGE_MONGODB_URI}
 
   asset-service:
     <<: *microservice-defaults
-    image: glpi/asset-service:${VERSION:-1.0.4}
+    image: glpi/asset-service:${VERSION}
     container_name: glpi-asset-service
     build:
       context: .
       dockerfile: asset-service/Dockerfile
     ports:
-      - "${ASSET_SERVICE_PORT:-8085}:8085"
+      - "${ASSET_SERVICE_PORT}:8085"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8085
-      MONGODB_URI: ${ASSET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_assets?authSource=admin}
+      MONGODB_URI: ${ASSET_MONGODB_URI}
 
   sla-service:
     <<: *microservice-defaults
-    image: glpi/sla-service:${VERSION:-1.0.4}
+    image: glpi/sla-service:${VERSION}
     container_name: glpi-sla-service
     build:
       context: .
       dockerfile: sla-service/Dockerfile
     ports:
-      - "${SLA_SERVICE_PORT:-8086}:8086"
+      - "${SLA_SERVICE_PORT}:8086"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8086
-      MONGODB_URI: ${SLA_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_sla?authSource=admin}
-      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL:-http://ticket-service:8082}
-      ESCALATION_CRON: ${ESCALATION_CRON:-0 */5 * * * *}
+      MONGODB_URI: ${SLA_MONGODB_URI}
+      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL}
+      ESCALATION_CRON: ${ESCALATION_CRON}
 
   notification-service:
     <<: *microservice-defaults
-    image: glpi/notification-service:${VERSION:-1.0.4}
+    image: glpi/notification-service:${VERSION}
     container_name: glpi-notification-service
     build:
       context: .
       dockerfile: notification-service/Dockerfile
     ports:
-      - "${NOTIFICATION_SERVICE_PORT:-8087}:8087"
+      - "${NOTIFICATION_SERVICE_PORT}:8087"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8087
-      MONGODB_URI: ${NOTIFICATION_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_notifications?authSource=admin}
-      SMTP_HOST: ${SMTP_HOST:-localhost}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USERNAME: ${SMTP_USERNAME:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      NOTIFICATION_SENDER_EMAIL: ${NOTIFICATION_SENDER_EMAIL:-noreply@glpi.local}
+      MONGODB_URI: ${NOTIFICATION_MONGODB_URI}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      NOTIFICATION_SENDER_EMAIL: ${NOTIFICATION_SENDER_EMAIL}
 
   knowledge-service:
     <<: *microservice-defaults
-    image: glpi/knowledge-service:${VERSION:-1.0.4}
+    image: glpi/knowledge-service:${VERSION}
     container_name: glpi-knowledge-service
     build:
       context: .
       dockerfile: knowledge-service/Dockerfile
     ports:
-      - "${KNOWLEDGE_SERVICE_PORT:-8088}:8088"
+      - "${KNOWLEDGE_SERVICE_PORT}:8088"
     environment:
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8088
-      MONGODB_URI: ${KNOWLEDGE_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_knowledge?authSource=admin}
+      MONGODB_URI: ${KNOWLEDGE_MONGODB_URI}
 
   # ─── Seeders (profile: seed) ───────────────────────────────────────────────
   # Run with: docker compose --profile seed up
@@ -239,12 +259,12 @@ services:
   identity-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/identity-service:${VERSION:-1.0.4}
+    image: glpi/identity-service:${VERSION}
     container_name: glpi-identity-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      MONGODB_URI: ${IDENTITY_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_identity?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
+      MONGODB_URI: ${IDENTITY_MONGODB_URI}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       mongodb:
         condition: service_healthy
@@ -255,13 +275,13 @@ services:
   sla-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/sla-service:${VERSION:-1.0.4}
+    image: glpi/sla-service:${VERSION}
     container_name: glpi-sla-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      MONGODB_URI: ${SLA_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_sla?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
-      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL:-http://ticket-service:8082}
+      MONGODB_URI: ${SLA_MONGODB_URI}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL}
     depends_on:
       identity-seeder:
         condition: service_completed_successfully
@@ -274,12 +294,12 @@ services:
   ticket-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/ticket-service:${VERSION:-1.0.4}
+    image: glpi/ticket-service:${VERSION}
     container_name: glpi-ticket-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      MONGODB_URI: ${TICKET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_tickets?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
+      MONGODB_URI: ${TICKET_MONGODB_URI}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       sla-seeder:
         condition: service_completed_successfully
@@ -292,12 +312,12 @@ services:
   asset-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/asset-service:${VERSION:-1.0.4}
+    image: glpi/asset-service:${VERSION}
     container_name: glpi-asset-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      MONGODB_URI: ${ASSET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_assets?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
+      MONGODB_URI: ${ASSET_MONGODB_URI}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       ticket-seeder:
         condition: service_completed_successfully
@@ -310,12 +330,12 @@ services:
   knowledge-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/knowledge-service:${VERSION:-1.0.4}
+    image: glpi/knowledge-service:${VERSION}
     container_name: glpi-knowledge-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      MONGODB_URI: ${KNOWLEDGE_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_knowledge?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
+      MONGODB_URI: ${KNOWLEDGE_MONGODB_URI}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       asset-seeder:
         condition: service_completed_successfully
@@ -328,12 +348,12 @@ services:
   notification-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/notification-service:${VERSION:-1.0.4}
+    image: glpi/notification-service:${VERSION}
     container_name: glpi-notification-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
-      MONGODB_URI: ${NOTIFICATION_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_notifications?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
+      MONGODB_URI: ${NOTIFICATION_MONGODB_URI}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
     depends_on:
       knowledge-seeder:
         condition: service_completed_successfully
