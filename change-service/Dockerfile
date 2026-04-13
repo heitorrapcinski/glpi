@@ -3,11 +3,19 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /workspace
 
-# Copy parent POM and common module first for layer caching
+# Copy parent POM and all module POMs for Maven reactor validation
 COPY pom.xml ./
 COPY common/pom.xml common/
-COPY common/src common/src/
+COPY api-gateway/pom.xml api-gateway/
+COPY identity-service/pom.xml identity-service/
+COPY ticket-service/pom.xml ticket-service/
+COPY problem-service/pom.xml problem-service/
 COPY change-service/pom.xml change-service/
+COPY asset-service/pom.xml asset-service/
+COPY sla-service/pom.xml sla-service/
+COPY notification-service/pom.xml notification-service/
+COPY knowledge-service/pom.xml knowledge-service/
+COPY common/src common/src/
 
 # Download dependencies
 RUN mvn -pl common,change-service dependency:go-offline -q
