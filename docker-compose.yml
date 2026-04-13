@@ -95,7 +95,7 @@ services:
 
   api-gateway:
     <<: *microservice-defaults
-    image: glpi/api-gateway:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/api-gateway:${VERSION:-1.0.2}
     container_name: glpi-api-gateway
     build:
       context: .
@@ -116,7 +116,7 @@ services:
 
   identity-service:
     <<: *microservice-defaults
-    image: glpi/identity-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/identity-service:${VERSION:-1.0.2}
     container_name: glpi-identity-service
     build:
       context: .
@@ -134,7 +134,7 @@ services:
 
   ticket-service:
     <<: *microservice-defaults
-    image: glpi/ticket-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/ticket-service:${VERSION:-1.0.2}
     container_name: glpi-ticket-service
     build:
       context: .
@@ -148,7 +148,7 @@ services:
 
   problem-service:
     <<: *microservice-defaults
-    image: glpi/problem-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/problem-service:${VERSION:-1.0.2}
     container_name: glpi-problem-service
     build:
       context: .
@@ -161,7 +161,7 @@ services:
 
   change-service:
     <<: *microservice-defaults
-    image: glpi/change-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/change-service:${VERSION:-1.0.2}
     container_name: glpi-change-service
     build:
       context: .
@@ -174,7 +174,7 @@ services:
 
   asset-service:
     <<: *microservice-defaults
-    image: glpi/asset-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/asset-service:${VERSION:-1.0.2}
     container_name: glpi-asset-service
     build:
       context: .
@@ -187,7 +187,7 @@ services:
 
   sla-service:
     <<: *microservice-defaults
-    image: glpi/sla-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/sla-service:${VERSION:-1.0.2}
     container_name: glpi-sla-service
     build:
       context: .
@@ -202,7 +202,7 @@ services:
 
   notification-service:
     <<: *microservice-defaults
-    image: glpi/notification-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/notification-service:${VERSION:-1.0.2}
     container_name: glpi-notification-service
     build:
       context: .
@@ -220,7 +220,7 @@ services:
 
   knowledge-service:
     <<: *microservice-defaults
-    image: glpi/knowledge-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/knowledge-service:${VERSION:-1.0.2}
     container_name: glpi-knowledge-service
     build:
       context: .
@@ -239,7 +239,7 @@ services:
   identity-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/identity-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/identity-service:${VERSION:-1.0.2}
     container_name: glpi-identity-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -255,7 +255,7 @@ services:
   sla-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/sla-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/sla-service:${VERSION:-1.0.2}
     container_name: glpi-sla-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -274,7 +274,7 @@ services:
   ticket-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/ticket-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/ticket-service:${VERSION:-1.0.2}
     container_name: glpi-ticket-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -292,7 +292,7 @@ services:
   asset-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/asset-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/asset-service:${VERSION:-1.0.2}
     container_name: glpi-asset-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -310,7 +310,7 @@ services:
   knowledge-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/knowledge-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/knowledge-service:${VERSION:-1.0.2}
     container_name: glpi-knowledge-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
@@ -328,7 +328,7 @@ services:
   notification-seeder:
     <<: *service-defaults
     profiles: ["seed"]
-    image: glpi/notification-service:${VERSION:-1.0.2-SNAPSHOT}
+    image: glpi/notification-service:${VERSION:-1.0.2}
     container_name: glpi-notification-seeder
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
