@@ -115,10 +115,10 @@
   - Ensure all existing tests (e.g., `PriorityMatrixServiceTest`, `StatusTransitionServiceTest`) still pass
   - Ask the user if questions arise
 
-- [-] 5. Version control and release
-  - [ ] Ensure all previous tasks are complete and tests pass
-  - [ ] Remove SNAPSHOT suffix from all version references in the codebase
-  - [ ] Commit the version bump: "release: 1.0.5 - kafka-consumer-connectivity-fix"
-  - [ ] Merge branch into main/master
-  - [ ] Apply Git tag: 1.0.5 (without SNAPSHOT)
-  - [ ] Push branch, merge, and tag to remote
+- [x] 5. Version control and release
+  - [x] Ensure all previous tasks are complete and tests pass
+  - [x] Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] Commit the version bump: "release: 1.0.5 - kafka-consumer-connectivity-fix"
+  - [x] Merge branch into main/master
+  - [x] Apply Git tag: 1.0.5 (without SNAPSHOT)
+  - [x] Push branch, merge, and tag to remote
