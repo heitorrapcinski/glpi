@@ -109,13 +109,13 @@
     - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
     - Confirm all preservation tests still pass after fix (no regressions to local dev connectivity, deserialization, DLQ routing, producer serialization, or env var overrides)
 
-- [-] 4. Checkpoint — Ensure all tests pass
+- [x] 4. Checkpoint — Ensure all tests pass
   - Run full test suite for both `notification-service` and `ticket-service`
   - Ensure all property-based tests (bug condition + preservation) pass
   - Ensure all existing tests (e.g., `PriorityMatrixServiceTest`, `StatusTransitionServiceTest`) still pass
   - Ask the user if questions arise
 
-- [~] 5. Version control and release
+- [-] 5. Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
   - [ ] Commit the version bump: "release: 1.0.5 - kafka-consumer-connectivity-fix"
