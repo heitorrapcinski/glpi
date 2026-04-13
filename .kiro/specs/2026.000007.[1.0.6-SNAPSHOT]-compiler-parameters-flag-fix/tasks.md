@@ -114,10 +114,10 @@
   - Commit: `2026.000007.4: verify all tests pass after compiler parameters flag fix`
   - _Requirements: 3.3_
 
-- [ ] 5. Version control and release
+- [x] 5. Version control and release
   - [x] 5.1 Ensure all previous tasks are complete and tests pass
   - [x] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
   - [x] 5.3 Commit the version bump: "release: 1.0.6 - compiler-parameters-flag-fix"
-  - [-] 5.4 Merge branch `bugfix-2026.000007` into main
-  - [~] 5.5 Apply Git tag: `1.0.6`
-  - [~] 5.6 Push branch, merge, and tag to remote
+  - [x] 5.4 Merge branch `bugfix-2026.000007` into main
+  - [x] 5.5 Apply Git tag: `1.0.6`
+  - [x] 5.6 Push branch, merge, and tag to remote
