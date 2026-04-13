@@ -87,10 +87,10 @@
   - Ensure no compilation errors or warnings
   - Ask the user if questions arise
 
-- [ ] 5. Version control and release
+- [x] 5. Version control and release
   - [x] 5.1 Ensure all previous tasks are complete and tests pass
   - [x] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
   - [x] 5.3 Commit the version bump: "release: 1.0.4 - swagger-gateway-routing-fix"
-  - [-] 5.4 Merge branch into main/master
-  - [~] 5.5 Apply Git tag: 1.0.4 (without SNAPSHOT)
-  - [~] 5.6 Push branch, merge, and tag to remote
+  - [x] 5.4 Merge branch into main/master
+  - [x] 5.5 Apply Git tag: 1.0.4 (without SNAPSHOT)
+  - [x] 5.6 Push branch, merge, and tag to remote
