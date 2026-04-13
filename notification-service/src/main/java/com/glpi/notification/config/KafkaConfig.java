@@ -39,6 +39,15 @@ public class KafkaConfig {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+        // Reconnection and timeout configuration for Docker/transient failure resilience
+        // Requirements: 2.1, 2.3, 2.4
+        config.put(ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG, 1000);       // 1s initial backoff
+        config.put(ConsumerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, 10000);  // 10s max backoff
+        config.put(ConsumerConfig.RETRY_BACKOFF_MS_CONFIG, 1000);           // 1s retry backoff
+        config.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 60000);        // 60s request timeout
+        config.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, 300000);  // 5min idle timeout
+
         return new DefaultKafkaConsumerFactory<>(config);
     }
 

@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [-] 1. Write bug condition exploration test
+- [x] 1. Write bug condition exploration test
   - **Property 1: Bug Condition** — Kafka Consumer Missing Reconnection Config in Docker
   - **CRITICAL**: This test MUST FAIL on unfixed code — failure confirms the bug exists
   - **DO NOT attempt to fix the test or the code when it fails**
@@ -18,7 +18,7 @@
   - Mark task complete when test is written, run, and failure is documented
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [~] 2. Write preservation property tests (BEFORE implementing fix)
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
   - **Property 2: Preservation** — Existing Consumer and Producer Configuration Unchanged
   - **IMPORTANT**: Follow observation-first methodology
   - Create `KafkaConfigPreservationTest.java` in `ticket-service/src/test/java/com/glpi/ticket/config/`
@@ -47,7 +47,7 @@
 
 - [ ] 3. Fix Kafka consumer connectivity in Docker
 
-  - [~] 3.1 Create `application-docker.yml` for notification-service
+  - [x] 3.1 Create `application-docker.yml` for notification-service
     - Create `notification-service/src/main/resources/application-docker.yml`
     - Set `spring.kafka.bootstrap-servers` to `${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}`
     - This provides an explicit Docker profile override layer so the `docker` Spring profile resolves the correct broker address
@@ -56,7 +56,7 @@
     - _Preservation: Local development connectivity (`localhost:9092`) unaffected — this file only activates with `docker` profile_
     - _Requirements: 2.1, 3.1_
 
-  - [~] 3.2 Create `application-docker.yml` for ticket-service
+  - [x] 3.2 Create `application-docker.yml` for ticket-service
     - Create `ticket-service/src/main/resources/application-docker.yml`
     - Set `spring.kafka.bootstrap-servers` to `${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}`
     - Same rationale as 3.1 — explicit Docker profile override
@@ -65,7 +65,7 @@
     - _Preservation: Local development connectivity (`localhost:9092`) unaffected_
     - _Requirements: 2.2, 3.1_
 
-  - [~] 3.3 Add reconnection and timeout config to notification-service `KafkaConfig.java`
+  - [x] 3.3 Add reconnection and timeout config to notification-service `KafkaConfig.java`
     - Edit `notification-service/src/main/java/com/glpi/notification/config/KafkaConfig.java`
     - In `consumerFactory()`, add to the config map:
       - `ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG` → `1000` (1s initial backoff)
@@ -79,7 +79,7 @@
     - _Preservation: Existing consumer properties (group ID, deserializers, trusted packages, auto offset reset), DLQ routing (3 retries, exponential backoff 1s/4s/16s), and producer config unchanged_
     - _Requirements: 2.1, 2.3, 2.4, 3.2, 3.4, 3.5, 3.6_
 
-  - [~] 3.4 Add reconnection and timeout config to ticket-service `KafkaConfig.java`
+  - [x] 3.4 Add reconnection and timeout config to ticket-service `KafkaConfig.java`
     - Edit `ticket-service/src/main/java/com/glpi/ticket/config/KafkaConfig.java`
     - In `consumerFactory()`, add to the config map:
       - `ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG` → `1000`
@@ -93,7 +93,7 @@
     - _Preservation: Existing consumer properties (group ID, deserializers, trusted packages, auto offset reset) and producer config unchanged_
     - _Requirements: 2.2, 2.3, 2.4, 3.3, 3.5, 3.6_
 
-  - [~] 3.5 Verify bug condition exploration test now passes
+  - [x] 3.5 Verify bug condition exploration test now passes
     - **Property 1: Expected Behavior** — Kafka Consumer Reconnection Config Present
     - **IMPORTANT**: Re-run the SAME test from task 1 — do NOT write a new test
     - The test from task 1 encodes the expected behavior (reconnection properties present, `application-docker.yml` exists)
@@ -102,7 +102,7 @@
     - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [~] 3.6 Verify preservation tests still pass
+  - [-] 3.6 Verify preservation tests still pass
     - **Property 2: Preservation** — Existing Consumer and Producer Configuration Unchanged
     - **IMPORTANT**: Re-run the SAME tests from task 2 — do NOT write new tests
     - Run `KafkaConfigPreservationTest` from step 2 in both services
