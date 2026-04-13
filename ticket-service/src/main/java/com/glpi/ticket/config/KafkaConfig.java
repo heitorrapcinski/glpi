@@ -51,6 +51,12 @@ public class KafkaConfig {
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        // Reconnection and timeout configuration for resilient broker connectivity
+        config.put(ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG, 1000L);
+        config.put(ConsumerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, 10000L);
+        config.put(ConsumerConfig.RETRY_BACKOFF_MS_CONFIG, 1000L);
+        config.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 60000);
+        config.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, 300000L);
         return new DefaultKafkaConsumerFactory<>(config);
     }
 

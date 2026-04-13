@@ -1,0 +1,124 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** — Kafka Consumer Missing Reconnection Config in Docker
+  - **CRITICAL**: This test MUST FAIL on unfixed code — failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior — it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists in both services' `KafkaConfig.consumerFactory()`
+  - **Scoped PBT Approach**: Scope the property to the concrete bug condition — `consumerFactory()` config map lacks reconnection properties AND no `application-docker.yml` exists
+  - Create `KafkaConfigBugConditionTest.java` in `ticket-service/src/test/java/com/glpi/ticket/config/`
+  - Use jqwik `@Property` to generate random bootstrap server strings and verify that `consumerFactory()` config map contains ALL of: `reconnect.backoff.ms`, `reconnect.backoff.max.ms`, `retry.backoff.ms`, `request.timeout.ms`, `connections.max.idle.ms`
+  - Assert that `application-docker.yml` exists at `src/main/resources/application-docker.yml` for both `notification-service` and `ticket-service`
+  - From Bug Condition in design: `isBugCondition(input)` = `(profileActive AND dockerYmlMissing) OR (noReconnectConfig AND brokerTemporarilyUnavailable)`
+  - From Expected Behavior in design: consumers SHALL include reconnection backoff properties and Docker profile YAML SHALL exist
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct — it proves the bug exists: config map lacks reconnection properties and `application-docker.yml` files are missing)
+  - Document counterexamples found (e.g., "consumerFactory() config does not contain `reconnect.backoff.ms`", "`application-docker.yml` not found")
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** — Existing Consumer and Producer Configuration Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Create `KafkaConfigPreservationTest.java` in `ticket-service/src/test/java/com/glpi/ticket/config/`
+  - Create `KafkaConfigPreservationTest.java` in `notification-service/src/test/java/com/glpi/notification/config/`
+  - **Observe on UNFIXED code (ticket-service)**:
+    - `consumerFactory()` config contains `bootstrap.servers` = value from `@Value` annotation
+    - `consumerFactory()` config contains `group.id` = `"ticket-service"`
+    - `consumerFactory()` config contains `key.deserializer` = `StringDeserializer.class`
+    - `consumerFactory()` config contains `value.deserializer` = `JsonDeserializer.class`
+    - `consumerFactory()` config contains `spring.json.trusted.packages` = `"*"`
+    - `consumerFactory()` config contains `auto.offset.reset` = `"earliest"`
+    - `producerFactory()` config contains `key.serializer` = `StringSerializer.class`
+    - `producerFactory()` config contains `value.serializer` = `JsonSerializer.class`
+  - **Observe on UNFIXED code (notification-service)**:
+    - Same consumer config observations as ticket-service but `group.id` = `"notification-service"`
+    - Same producer config observations
+    - DLQ error handler is configured with `ExponentialBackOff(1000L, 4.0)` and `maxAttempts=3`
+    - `kafkaListenerContainerFactory()` uses `AckMode.RECORD`
+  - Use jqwik `@Property` with `@ForAll` bootstrap server strings to verify that regardless of bootstrap server value, the preserved properties (group ID, deserializers, trusted packages, auto offset reset, serializers) remain unchanged
+  - Use jqwik `@Property` to verify that for any valid bootstrap server string, the `@Value` default fallback is `localhost:9092` (preservation of local dev connectivity)
+  - Write example-based tests for DLQ configuration preservation in notification-service (exponential backoff 1s base, multiplier 4.0, max 3 attempts)
+  - Verify tests pass on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+- [x] 3. Fix Kafka consumer connectivity in Docker
+
+  - [x] 3.1 Create `application-docker.yml` for notification-service
+    - Create `notification-service/src/main/resources/application-docker.yml`
+    - Set `spring.kafka.bootstrap-servers` to `${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}`
+    - This provides an explicit Docker profile override layer so the `docker` Spring profile resolves the correct broker address
+    - _Bug_Condition: isBugCondition(input) where profileActive AND dockerYmlMissing_
+    - _Expected_Behavior: Docker profile YAML exists and overrides bootstrap server to `kafka:29092`_
+    - _Preservation: Local development connectivity (`localhost:9092`) unaffected — this file only activates with `docker` profile_
+    - _Requirements: 2.1, 3.1_
+
+  - [x] 3.2 Create `application-docker.yml` for ticket-service
+    - Create `ticket-service/src/main/resources/application-docker.yml`
+    - Set `spring.kafka.bootstrap-servers` to `${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}`
+    - Same rationale as 3.1 — explicit Docker profile override
+    - _Bug_Condition: isBugCondition(input) where profileActive AND dockerYmlMissing_
+    - _Expected_Behavior: Docker profile YAML exists and overrides bootstrap server to `kafka:29092`_
+    - _Preservation: Local development connectivity (`localhost:9092`) unaffected_
+    - _Requirements: 2.2, 3.1_
+
+  - [x] 3.3 Add reconnection and timeout config to notification-service `KafkaConfig.java`
+    - Edit `notification-service/src/main/java/com/glpi/notification/config/KafkaConfig.java`
+    - In `consumerFactory()`, add to the config map:
+      - `ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG` → `1000` (1s initial backoff)
+      - `ConsumerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG` → `10000` (10s max backoff)
+      - `ConsumerConfig.RETRY_BACKOFF_MS_CONFIG` → `1000` (1s retry backoff)
+      - `ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG` → `60000` (60s request timeout)
+      - `ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG` → `300000` (5min idle timeout)
+    - Do NOT modify producer config, DLQ config, or any other existing consumer properties
+    - _Bug_Condition: isBugCondition(input) where noReconnectConfig AND brokerTemporarilyUnavailable_
+    - _Expected_Behavior: Consumer reconnects using configured backoff strategy_
+    - _Preservation: Existing consumer properties (group ID, deserializers, trusted packages, auto offset reset), DLQ routing (3 retries, exponential backoff 1s/4s/16s), and producer config unchanged_
+    - _Requirements: 2.1, 2.3, 2.4, 3.2, 3.4, 3.5, 3.6_
+
+  - [x] 3.4 Add reconnection and timeout config to ticket-service `KafkaConfig.java`
+    - Edit `ticket-service/src/main/java/com/glpi/ticket/config/KafkaConfig.java`
+    - In `consumerFactory()`, add to the config map:
+      - `ConsumerConfig.RECONNECT_BACKOFF_MS_CONFIG` → `1000`
+      - `ConsumerConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG` → `10000`
+      - `ConsumerConfig.RETRY_BACKOFF_MS_CONFIG` → `1000`
+      - `ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG` → `60000`
+      - `ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG` → `300000`
+    - Do NOT modify producer config or any other existing consumer properties
+    - _Bug_Condition: isBugCondition(input) where noReconnectConfig AND brokerTemporarilyUnavailable_
+    - _Expected_Behavior: Consumer reconnects using configured backoff strategy_
+    - _Preservation: Existing consumer properties (group ID, deserializers, trusted packages, auto offset reset) and producer config unchanged_
+    - _Requirements: 2.2, 2.3, 2.4, 3.3, 3.5, 3.6_
+
+  - [x] 3.5 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** — Kafka Consumer Reconnection Config Present
+    - **IMPORTANT**: Re-run the SAME test from task 1 — do NOT write a new test
+    - The test from task 1 encodes the expected behavior (reconnection properties present, `application-docker.yml` exists)
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run `KafkaConfigBugConditionTest` from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+  - [x] 3.6 Verify preservation tests still pass
+    - **Property 2: Preservation** — Existing Consumer and Producer Configuration Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 — do NOT write new tests
+    - Run `KafkaConfigPreservationTest` from step 2 in both services
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all preservation tests still pass after fix (no regressions to local dev connectivity, deserialization, DLQ routing, producer serialization, or env var overrides)
+
+- [x] 4. Checkpoint — Ensure all tests pass
+  - Run full test suite for both `notification-service` and `ticket-service`
+  - Ensure all property-based tests (bug condition + preservation) pass
+  - Ensure all existing tests (e.g., `PriorityMatrixServiceTest`, `StatusTransitionServiceTest`) still pass
+  - Ask the user if questions arise
+
+- [-] 5. Version control and release
+  - [ ] Ensure all previous tasks are complete and tests pass
+  - [ ] Remove SNAPSHOT suffix from all version references in the codebase
+  - [ ] Commit the version bump: "release: 1.0.5 - kafka-consumer-connectivity-fix"
+  - [ ] Merge branch into main/master
+  - [ ] Apply Git tag: 1.0.5 (without SNAPSHOT)
+  - [ ] Push branch, merge, and tag to remote
