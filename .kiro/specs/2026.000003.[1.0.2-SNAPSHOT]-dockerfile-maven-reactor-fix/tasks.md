@@ -1,12 +1,12 @@
 # Tasks — Dockerfile Maven Reactor Fix
 
-- [-] 1. Create bugfix branch and bump version to 1.0.2-SNAPSHOT
-  - [-] 1.1 Create and checkout branch `bugfix-2026.000003` from current HEAD
-  - [~] 1.2 Bump all version references in the codebase from `1.0.1` to `1.0.2-SNAPSHOT` (root pom.xml, all module pom.xml files, docker-compose.yml `${VERSION:-...}` defaults)
-  - [~] 1.3 Commit: `chore: bump version to 1.0.2-SNAPSHOT`
+- [x] 1. Create bugfix branch and bump version to 1.0.2-SNAPSHOT
+  - [x] 1.1 Create and checkout branch `bugfix-2026.000003` from current HEAD
+  - [x] 1.2 Bump all version references in the codebase from `1.0.1` to `1.0.2-SNAPSHOT` (root pom.xml, all module pom.xml files, docker-compose.yml `${VERSION:-...}` defaults)
+  - [x] 1.3 Commit: `chore: bump version to 1.0.2-SNAPSHOT`
 
-- [ ] 2. Fix all microservice Dockerfiles to copy all module POMs
-  - [~] 2.1 Update `api-gateway/Dockerfile` to copy all 10 module pom.xml files before running Maven
+- [-] 2. Fix all microservice Dockerfiles to copy all module POMs
+  - [-] 2.1 Update `api-gateway/Dockerfile` to copy all 10 module pom.xml files before running Maven
   - [~] 2.2 Update `identity-service/Dockerfile` to copy all 10 module pom.xml files before running Maven
   - [~] 2.3 Update `ticket-service/Dockerfile` to copy all 10 module pom.xml files before running Maven
   - [~] 2.4 Update `problem-service/Dockerfile` to copy all 10 module pom.xml files before running Maven
