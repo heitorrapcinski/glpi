@@ -1,5 +1,3 @@
-version: "3.9"
-
 # ─────────────────────────────────────────────────────────────────────────────
 # GLPI Microservices Backend — Docker Compose
 #
@@ -23,7 +21,7 @@ x-microservice-defaults: &microservice-defaults
     context: .
   environment:
     SPRING_PROFILES_ACTIVE: docker
-    KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+    KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
     JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
     JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
   depends_on:
@@ -45,8 +43,9 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok,srvr,stat"
     healthcheck:
-      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181 | grep imok"]
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -60,7 +59,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:${KAFKA_PORT:-9092}
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:${KAFKA_PORT:-9092}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -244,7 +244,7 @@ services:
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
       MONGODB_URI: ${IDENTITY_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_identity?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
     depends_on:
       mongodb:
         condition: service_healthy
@@ -260,7 +260,7 @@ services:
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
       MONGODB_URI: ${SLA_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_sla?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
       TICKET_SERVICE_URL: ${TICKET_SERVICE_URL:-http://ticket-service:8082}
     depends_on:
       identity-seeder:
@@ -279,7 +279,7 @@ services:
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
       MONGODB_URI: ${TICKET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_tickets?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
     depends_on:
       sla-seeder:
         condition: service_completed_successfully
@@ -297,7 +297,7 @@ services:
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
       MONGODB_URI: ${ASSET_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_assets?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
     depends_on:
       ticket-seeder:
         condition: service_completed_successfully
@@ -315,7 +315,7 @@ services:
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
       MONGODB_URI: ${KNOWLEDGE_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_knowledge?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
     depends_on:
       asset-seeder:
         condition: service_completed_successfully
@@ -333,7 +333,7 @@ services:
     entrypoint: ["java", "-jar", "app.jar"]
     environment:
       MONGODB_URI: ${NOTIFICATION_MONGODB_URI:-mongodb://glpi:glpi_secret@mongodb:27017/glpi_notifications?authSource=admin}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:29092}
     depends_on:
       knowledge-seeder:
         condition: service_completed_successfully

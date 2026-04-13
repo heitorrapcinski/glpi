@@ -126,7 +126,7 @@ Key variables:
 | Variable | Default | Description |
 |---|---|---|
 | `MONGODB_URI` | `mongodb://glpi:glpi_secret@mongodb:27017` | MongoDB connection URI |
-| `KAFKA_BOOTSTRAP_SERVERS` | `kafka:9092` | Kafka broker address |
+| `KAFKA_BOOTSTRAP_SERVERS` | `kafka:29092` | Kafka broker address |
 | `JWT_PRIVATE_KEY` | _(empty)_ | RS256 private key (PEM, base64-encoded) |
 | `JWT_PUBLIC_KEY` | _(empty)_ | RS256 public key (PEM, base64-encoded) |
 | `BCRYPT_COST` | `12` | BCrypt cost factor for password hashing |
