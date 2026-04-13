@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Write bug condition exploration test
+- [x] 1. Write bug condition exploration test
   - **Property 1: Bug Condition** — Swagger URLs Resolve to Internal Docker Hostnames
   - **CRITICAL**: This test MUST FAIL on unfixed code — failure confirms the bug exists
   - **DO NOT attempt to fix the test or the code when it fails**
@@ -18,7 +18,7 @@
   - Mark task complete when test is written, run, and failure is documented
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
   - **Property 2: Preservation** — Existing API Routing and JWT Authentication Unchanged
   - **IMPORTANT**: Follow observation-first methodology
   - Create test class `api-gateway/src/test/java/com/glpi/gateway/swagger/SwaggerRoutingPreservationProperties.java`
@@ -34,9 +34,9 @@
   - Mark task complete when tests are written, run, and passing on unfixed code
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 3. Fix Swagger gateway routing for Docker Compose
+- [x] 3. Fix Swagger gateway routing for Docker Compose
 
-  - [ ] 3.1 Add 8 gateway proxy routes for downstream OpenAPI specs in `application.yml`
+  - [x] 3.1 Add 8 gateway proxy routes for downstream OpenAPI specs in `application.yml`
     - Add routes BEFORE existing service routes for defensive ordering
     - Each route: `id: {service}-docs`, `uri: ${SERVICE_URL:http://localhost:PORT}`, `predicates: Path=/{service-name}/v3/api-docs`, `filters: StripPrefix=1`
     - Services: identity (8081), ticket (8082), problem (8083), change (8084), asset (8085), sla (8086), notification (8087), knowledge (8088)
@@ -45,7 +45,7 @@
     - _Preservation: existing routes (/auth/**, /users/**, /tickets/**, etc.) remain unchanged_
     - _Requirements: 2.2, 2.4_
 
-  - [ ] 3.2 Rewrite `springdoc.swaggerui.urls` to use gateway-relative paths in `application.yml`
+  - [x] 3.2 Rewrite `springdoc.swaggerui.urls` to use gateway-relative paths in `application.yml`
     - Replace each absolute URL (e.g., `${IDENTITY_SERVICE_URL:http://localhost:8081}/v3/api-docs`) with the gateway-relative path (e.g., `/identity-service/v3/api-docs`)
     - Apply to all 8 services
     - _Bug_Condition: configuredUrl is absolute with internal Docker hostname_
@@ -53,7 +53,7 @@
     - _Preservation: service names in the dropdown remain unchanged_
     - _Requirements: 2.1, 2.3_
 
-  - [ ] 3.3 Update `JwtAuthenticationFilter` to exempt doc and Swagger UI paths from JWT validation
+  - [x] 3.3 Update `JwtAuthenticationFilter` to exempt doc and Swagger UI paths from JWT validation
     - In `JwtAuthenticationFilter.java`, add to `PUBLIC_PATHS` or modify `isPublicPath()` to also match:
       - Any path ending with `/v3/api-docs` (covers gateway own spec + all 8 proxied specs)
       - `/swagger-ui.html`
@@ -65,7 +65,7 @@
     - _Preservation: isPublicPath returns same result for all non-doc, non-swagger paths_
     - _Requirements: 2.2, 3.2, 3.4_
 
-  - [ ] 3.4 Verify bug condition exploration test now passes
+  - [x] 3.4 Verify bug condition exploration test now passes
     - **Property 1: Expected Behavior** — Swagger URLs Use Gateway-Relative Paths
     - **IMPORTANT**: Re-run the SAME test from task 1 — do NOT write a new test
     - The test from task 1 encodes the expected behavior (relative paths, proxy routes, public JWT paths)
@@ -74,23 +74,23 @@
     - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [ ] 3.5 Verify preservation tests still pass
+  - [x] 3.5 Verify preservation tests still pass
     - **Property 2: Preservation** — Existing API Routing and JWT Authentication Unchanged
     - **IMPORTANT**: Re-run the SAME tests from task 2 — do NOT write new tests
     - Run preservation property tests from step 2
     - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
     - Confirm all tests still pass after fix (no regressions)
 
-- [ ] 4. Checkpoint — Ensure all tests pass
+- [x] 4. Checkpoint — Ensure all tests pass
   - Run full test suite for api-gateway module: `mvn -pl api-gateway test`
   - Ensure all property-based tests (bug condition + preservation) pass
   - Ensure no compilation errors or warnings
   - Ask the user if questions arise
 
 - [ ] 5. Version control and release
-  - [ ] 5.1 Ensure all previous tasks are complete and tests pass
-  - [ ] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [ ] 5.3 Commit the version bump: "release: 1.0.4 - swagger-gateway-routing-fix"
-  - [ ] 5.4 Merge branch into main/master
-  - [ ] 5.5 Apply Git tag: 1.0.4 (without SNAPSHOT)
-  - [ ] 5.6 Push branch, merge, and tag to remote
+  - [x] 5.1 Ensure all previous tasks are complete and tests pass
+  - [x] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [-] 5.3 Commit the version bump: "release: 1.0.4 - swagger-gateway-routing-fix"
+  - [~] 5.4 Merge branch into main/master
+  - [~] 5.5 Apply Git tag: 1.0.4 (without SNAPSHOT)
+  - [~] 5.6 Push branch, merge, and tag to remote
