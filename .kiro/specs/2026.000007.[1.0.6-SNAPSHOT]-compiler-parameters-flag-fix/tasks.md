@@ -49,7 +49,7 @@
   - Commit: `2026.000007.2: write preservation property tests for compiler parameters flag`
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [ ] 3. Fix for missing `-parameters` compiler flag and missing `application-docker.yml` files
+- [x] 3. Fix for missing `-parameters` compiler flag and missing `application-docker.yml` files
 
   - [x] 3.1 Add `-parameters` flag to `maven-compiler-plugin` in root `pom.xml`
     - Open `pom.xml` (root)
@@ -105,7 +105,7 @@
       - Root `pom.xml` retains existing `<source>`, `<target>`, `<encoding>` config
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [~] 4. Checkpoint — Ensure all tests pass
+- [-] 4. Checkpoint — Ensure all tests pass
   - Run `mvn test` across all modules from the project root
   - Verify all existing unit and integration tests pass without regressions
   - Verify both property-based test files pass (bug condition + preservation)
