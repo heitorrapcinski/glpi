@@ -193,7 +193,8 @@ class SwaggerRoutingPreservationProperties {
 
     /**
      * Invokes the private isPublicPath logic by reading PUBLIC_PATHS via reflection
-     * and replicating the startsWith check. Same approach as SwaggerRoutingBugConditionProperties.
+     * and replicating the full check including the additional endsWith/startsWith
+     * conditions. Same approach as SwaggerRoutingBugConditionProperties.
      */
     private boolean invokeIsPublicPath(String path) {
         try {
@@ -204,8 +205,11 @@ class SwaggerRoutingPreservationProperties {
             @SuppressWarnings("unchecked")
             List<String> publicPaths = (List<String>) field.get(null);
 
-            // Replicate the isPublicPath logic: path.startsWith(publicPath)
-            return publicPaths.stream().anyMatch(path::startsWith);
+            // Replicate the full isPublicPath logic to match the method under test
+            return publicPaths.stream().anyMatch(path::startsWith)
+                    || path.endsWith("/v3/api-docs")
+                    || path.startsWith("/swagger-ui")
+                    || path.startsWith("/webjars/");
         } catch (Exception e) {
             throw new RuntimeException("Failed to access JwtAuthenticationFilter.PUBLIC_PATHS", e);
         }
