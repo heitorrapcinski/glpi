@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Write bug condition exploration test
+- [x] 1. Write bug condition exploration test
   - **Property 1: Bug Condition** — Compiler Parameters Flag Missing and Docker Profile Files Absent
   - **CRITICAL**: This test MUST FAIL on unfixed code — failure confirms the bug exists
   - **DO NOT attempt to fix the test or the code when it fails**
@@ -26,7 +26,7 @@
   - Commit: `2026.000007.1: write bug condition exploration test for compiler parameters flag`
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
   - **Property 2: Preservation** — Non-Paginated Endpoints, Existing Kafka Config, and Docker Profile Integrity
   - **IMPORTANT**: Follow observation-first methodology
   - **Test location**: `identity-service/src/test/java/com/glpi/identity/compiler/CompilerParametersFlagPreservationProperties.java`
@@ -51,7 +51,7 @@
 
 - [ ] 3. Fix for missing `-parameters` compiler flag and missing `application-docker.yml` files
 
-  - [ ] 3.1 Add `-parameters` flag to `maven-compiler-plugin` in root `pom.xml`
+  - [x] 3.1 Add `-parameters` flag to `maven-compiler-plugin` in root `pom.xml`
     - Open `pom.xml` (root)
     - Locate the `maven-compiler-plugin` `<configuration>` block inside `<pluginManagement>`
     - Add `<parameters>true</parameters>` after the existing `<encoding>UTF-8</encoding>` line
@@ -62,18 +62,18 @@
     - _Preservation: Existing <source>, <target>, <encoding> config unchanged; all non-paginated endpoints unaffected_
     - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3_
 
-  - [ ] 3.2 Create `application-docker.yml` for identity-service
+  - [x] 3.2 Create `application-docker.yml` for identity-service
     - Create file: `identity-service/src/main/resources/application-docker.yml`
     - Content: `spring.kafka.bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}` (YAML format)
     - Follow the exact pattern from ticket-service and notification-service (spec 2026.000006)
     - _Requirements: 1.4, 2.4_
 
-  - [ ] 3.3 Create `application-docker.yml` for api-gateway
+  - [x] 3.3 Create `application-docker.yml` for api-gateway
     - Create file: `api-gateway/src/main/resources/application-docker.yml`
     - Content: same Kafka bootstrap-servers pattern
     - _Requirements: 1.4, 2.4_
 
-  - [ ] 3.4 Create `application-docker.yml` for problem-service, change-service, asset-service, sla-service, knowledge-service
+  - [x] 3.4 Create `application-docker.yml` for problem-service, change-service, asset-service, sla-service, knowledge-service
     - Create files:
       - `problem-service/src/main/resources/application-docker.yml`
       - `change-service/src/main/resources/application-docker.yml`
@@ -83,7 +83,7 @@
     - Each file follows the same Kafka bootstrap-servers pattern
     - _Requirements: 1.4, 2.4_
 
-  - [ ] 3.5 Verify bug condition exploration test now passes
+  - [x] 3.5 Verify bug condition exploration test now passes
     - **Property 1: Expected Behavior** — Compiler Parameters Flag Present and Docker Profile Files Exist
     - **IMPORTANT**: Re-run the SAME test from task 1 — do NOT write a new test
     - The test from task 1 encodes the expected behavior
@@ -94,7 +94,7 @@
     - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [ ] 3.6 Verify preservation tests still pass
+  - [x] 3.6 Verify preservation tests still pass
     - **Property 2: Preservation** — Non-Paginated Endpoints, Existing Kafka Config, and Docker Profile Integrity
     - **IMPORTANT**: Re-run the SAME tests from task 2 — do NOT write new tests
     - Run preservation property tests from step 2
@@ -105,7 +105,7 @@
       - Root `pom.xml` retains existing `<source>`, `<target>`, `<encoding>` config
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [ ] 4. Checkpoint — Ensure all tests pass
+- [~] 4. Checkpoint — Ensure all tests pass
   - Run `mvn test` across all modules from the project root
   - Verify all existing unit and integration tests pass without regressions
   - Verify both property-based test files pass (bug condition + preservation)
@@ -115,9 +115,9 @@
   - _Requirements: 3.3_
 
 - [ ] 5. Version control and release
-  - [ ] 5.1 Ensure all previous tasks are complete and tests pass
-  - [ ] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [ ] 5.3 Commit the version bump: "release: 1.0.6 - compiler-parameters-flag-fix"
-  - [ ] 5.4 Merge branch `bugfix-2026.000007` into main
-  - [ ] 5.5 Apply Git tag: `1.0.6`
-  - [ ] 5.6 Push branch, merge, and tag to remote
+  - [~] 5.1 Ensure all previous tasks are complete and tests pass
+  - [~] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [~] 5.3 Commit the version bump: "release: 1.0.6 - compiler-parameters-flag-fix"
+  - [~] 5.4 Merge branch `bugfix-2026.000007` into main
+  - [~] 5.5 Apply Git tag: `1.0.6`
+  - [~] 5.6 Push branch, merge, and tag to remote
