@@ -34,7 +34,7 @@ class SwaggerRoutingBugConditionProperties {
     @SuppressWarnings("unchecked")
     private Map<String, Object> loadApplicationYaml() {
         Yaml yaml = new Yaml();
-        Path yamlPath = Path.of("src/main/resources/application.yml");
+        Path yamlPath = Path.of("api-gateway/src/main/resources/application.yml");
         try (InputStream is = Files.newInputStream(yamlPath)) {
             return yaml.load(is);
         } catch (Exception e) {

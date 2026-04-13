@@ -71,7 +71,7 @@ class KafkaConfigBugConditionTest {
      */
     @Example
     void ticketService_applicationDockerYml_shallExist() {
-        File dockerYml = new File("src/main/resources/application-docker.yml");
+        File dockerYml = new File("ticket-service/src/main/resources/application-docker.yml");
         assertTrue(dockerYml.exists(),
                 "application-docker.yml not found at ticket-service/src/main/resources/application-docker.yml");
     }
@@ -86,7 +86,7 @@ class KafkaConfigBugConditionTest {
      */
     @Example
     void notificationService_applicationDockerYml_shallExist() {
-        File dockerYml = new File("../notification-service/src/main/resources/application-docker.yml");
+        File dockerYml = new File("notification-service/src/main/resources/application-docker.yml");
         assertTrue(dockerYml.exists(),
                 "application-docker.yml not found at notification-service/src/main/resources/application-docker.yml");
     }

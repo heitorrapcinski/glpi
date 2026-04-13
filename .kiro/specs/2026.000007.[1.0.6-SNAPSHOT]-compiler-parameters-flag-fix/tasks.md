@@ -1,0 +1,123 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** — Compiler Parameters Flag Missing and Docker Profile Files Absent
+  - **CRITICAL**: This test MUST FAIL on unfixed code — failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior — it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Test location**: `identity-service/src/test/java/com/glpi/identity/compiler/CompilerParametersFlagBugConditionProperties.java`
+  - **Scoped PBT Approach**: Use jqwik `@Property` with a provider of all affected controller classes to verify parameter name retention via reflection
+  - **Part A — Parameter Name Resolution (PRIMARY)**:
+    - Use reflection to load each paginated controller method (e.g., `UserController.listUsers`, `EntityController.listEntities`, `GroupController.listGroups`, `ProfileController.listProfiles`)
+    - For each method, get `java.lang.reflect.Parameter[]` and assert that parameter names are `page`, `size`, `sort`, `order` (not `arg0`, `arg1`, `arg2`, `arg3`)
+    - Provide a jqwik `@Provide` arbitrary over the 4 identity-service controller classes and their paginated method names
+    - On UNFIXED code: parameters will be named `arg0`, `arg1`, etc. → test FAILS (confirms bug)
+    - On FIXED code: parameters will retain real names → test PASSES
+  - **Part B — Docker Profile File Existence (SECONDARY)**:
+    - Assert that `application-docker.yml` exists in `src/main/resources/` for each of the 7 missing services: identity-service, api-gateway, problem-service, change-service, asset-service, sla-service, knowledge-service
+    - Use `java.nio.file.Files.exists()` with paths relative to the project root
+    - On UNFIXED code: files do not exist → test FAILS (confirms gap)
+    - On FIXED code: files exist with correct Kafka bootstrap-servers → test PASSES
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct — it proves the bug exists)
+  - Document counterexamples found (e.g., "UserController.listUsers parameter 0 is named 'arg0' instead of 'page'")
+  - Mark task complete when test is written, run, and failure is documented
+  - Commit: `2026.000007.1: write bug condition exploration test for compiler parameters flag`
+  - _Requirements: 1.1, 1.2, 1.3, 1.4_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** — Non-Paginated Endpoints, Existing Kafka Config, and Docker Profile Integrity
+  - **IMPORTANT**: Follow observation-first methodology
+  - **Test location**: `identity-service/src/test/java/com/glpi/identity/compiler/CompilerParametersFlagPreservationProperties.java`
+  - **Part A — Non-Paginated Endpoint Parameter Preservation**:
+    - Observe: non-paginated controller methods (e.g., `UserController.createUser`, `UserController.getUser`, `UserController.updateUser`, `UserController.deactivateUser`) do NOT use `@RequestParam(defaultValue=...)` without explicit `value` — they use `@PathVariable`, `@RequestBody`, or `@RequestHeader`
+    - Write jqwik `@Property`: for all non-paginated methods across identity-service controllers, verify that no `@RequestParam` annotation exists without an explicit `value` attribute (these methods are unaffected by the `-parameters` flag)
+    - Verify test PASSES on UNFIXED code (confirms these endpoints are not affected)
+  - **Part B — Existing Docker Profile File Preservation**:
+    - Observe: `ticket-service/src/main/resources/application-docker.yml` exists with content `spring.kafka.bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}`
+    - Observe: `notification-service/src/main/resources/application-docker.yml` exists with same Kafka bootstrap-servers pattern
+    - Write `@Example` tests asserting these 2 files exist and contain the expected Kafka config
+    - Verify test PASSES on UNFIXED code (confirms spec 2026.000006 files are intact)
+  - **Part C — Compiler Plugin Baseline Preservation**:
+    - Observe: root `pom.xml` contains `maven-compiler-plugin` with `<source>`, `<target>`, `<encoding>` configuration
+    - Write `@Example` test parsing `pom.xml` and asserting these 3 existing config elements are present
+    - Verify test PASSES on UNFIXED code (confirms existing compiler config is intact)
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - Commit: `2026.000007.2: write preservation property tests for compiler parameters flag`
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+- [x] 3. Fix for missing `-parameters` compiler flag and missing `application-docker.yml` files
+
+  - [x] 3.1 Add `-parameters` flag to `maven-compiler-plugin` in root `pom.xml`
+    - Open `pom.xml` (root)
+    - Locate the `maven-compiler-plugin` `<configuration>` block inside `<pluginManagement>`
+    - Add `<parameters>true</parameters>` after the existing `<encoding>UTF-8</encoding>` line
+    - This single line propagates to all 9 child modules via Maven plugin management inheritance
+    - Verify the configuration now reads: `<source>`, `<target>`, `<encoding>`, `<parameters>`
+    - _Bug_Condition: isBugCondition(input) where compilerParametersFlag = false AND input.endpoint IS paginated_list_endpoint_
+    - _Expected_Behavior: Compiled bytecode retains method parameter names; Spring resolves @RequestParam via reflection; paginated endpoints return HTTP 200_
+    - _Preservation: Existing <source>, <target>, <encoding> config unchanged; all non-paginated endpoints unaffected_
+    - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3_
+
+  - [x] 3.2 Create `application-docker.yml` for identity-service
+    - Create file: `identity-service/src/main/resources/application-docker.yml`
+    - Content: `spring.kafka.bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}` (YAML format)
+    - Follow the exact pattern from ticket-service and notification-service (spec 2026.000006)
+    - _Requirements: 1.4, 2.4_
+
+  - [x] 3.3 Create `application-docker.yml` for api-gateway
+    - Create file: `api-gateway/src/main/resources/application-docker.yml`
+    - Content: same Kafka bootstrap-servers pattern
+    - _Requirements: 1.4, 2.4_
+
+  - [x] 3.4 Create `application-docker.yml` for problem-service, change-service, asset-service, sla-service, knowledge-service
+    - Create files:
+      - `problem-service/src/main/resources/application-docker.yml`
+      - `change-service/src/main/resources/application-docker.yml`
+      - `asset-service/src/main/resources/application-docker.yml`
+      - `sla-service/src/main/resources/application-docker.yml`
+      - `knowledge-service/src/main/resources/application-docker.yml`
+    - Each file follows the same Kafka bootstrap-servers pattern
+    - _Requirements: 1.4, 2.4_
+
+  - [x] 3.5 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** — Compiler Parameters Flag Present and Docker Profile Files Exist
+    - **IMPORTANT**: Re-run the SAME test from task 1 — do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied:
+      - Part A: Compiled controller method parameters retain names (`page`, `size`, `sort`, `order`)
+      - Part B: All 7 `application-docker.yml` files exist with correct Kafka config
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+  - [x] 3.6 Verify preservation tests still pass
+    - **Property 2: Preservation** — Non-Paginated Endpoints, Existing Kafka Config, and Docker Profile Integrity
+    - **IMPORTANT**: Re-run the SAME tests from task 2 — do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix:
+      - Non-paginated endpoint parameters are unaffected
+      - ticket-service and notification-service `application-docker.yml` files unchanged
+      - Root `pom.xml` retains existing `<source>`, `<target>`, `<encoding>` config
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+- [x] 4. Checkpoint — Ensure all tests pass
+  - Run `mvn test` across all modules from the project root
+  - Verify all existing unit and integration tests pass without regressions
+  - Verify both property-based test files pass (bug condition + preservation)
+  - Ensure no SNAPSHOT version inconsistencies
+  - Ask the user if questions arise
+  - Commit: `2026.000007.4: verify all tests pass after compiler parameters flag fix`
+  - _Requirements: 3.3_
+
+- [ ] 5. Version control and release
+  - [x] 5.1 Ensure all previous tasks are complete and tests pass
+  - [x] 5.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] 5.3 Commit the version bump: "release: 1.0.6 - compiler-parameters-flag-fix"
+  - [-] 5.4 Merge branch `bugfix-2026.000007` into main
+  - [~] 5.5 Apply Git tag: `1.0.6`
+  - [~] 5.6 Push branch, merge, and tag to remote
