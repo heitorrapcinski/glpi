@@ -240,24 +240,24 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Wire timeline actions reusing ITIL shared components
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8_
 
-- [-] 17. Checkpoint — Ensure all ITIL module tests pass
+- [x] 17. Checkpoint — Ensure all ITIL module tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 18. Implement Asset/CMDB module (assets, software, licenses)
-  - [~] 18.1 Create AssetListPage and AssetDetailPage
+  - [x] 18.1 Create AssetListPage and AssetDetailPage
     - Create `src/pages/assets/AssetListPage.tsx` with type filter tab bar (All, Computers, Network Equipment, Monitors, Printers, Phones, Peripherals, Software) and SearchEngine columns: ID, name, type, status, location, assigned user, entity, serial, last update
     - Create `src/pages/assets/AssetDetailPage.tsx` with tabbed sections: General Information, Components (computers), Software (computers), Network Ports, Financial Information, Contracts, Linked Tickets, History
     - Navigate from asset to linked tickets/problems/changes
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8_
 
-  - [~] 18.2 Create SoftwareListPage and LicenseListPage
+  - [x] 18.2 Create SoftwareListPage and LicenseListPage
     - Create `src/pages/assets/SoftwareListPage.tsx` with columns: name, manufacturer, category, installations count, licenses count
     - Create `src/pages/assets/LicenseListPage.tsx` with columns: name, software, license type, serial, total seats, used seats, remaining seats, expiry date
     - License compliance color indicator: green (available), orange (>=80% used), red (over-licensed/expired)
     - Software detail page: general info, version list, installations per version
     - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [~] 19. Implement Knowledge Base module
+- [x] 19. Implement Knowledge Base module
   - Create `src/pages/knowledge/KnowledgeListPage.tsx` with category tree (left) and article list (right), full-text search input, FAQ badge indicator
   - Create `src/pages/knowledge/KnowledgeDetailPage.tsx` displaying: title, rendered rich text content, author, dates, view count, linked items
   - Increment view counter on article load via API
@@ -266,17 +266,17 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7_
 
 - [ ] 20. Implement Helpdesk home page and User Preferences page
-  - [~] 20.1 Create HelpdeskHomePage
+  - [x] 20.1 Create HelpdeskHomePage
     - Create `src/pages/HelpdeskHomePage.tsx` with search banner, tile cards (Create a Ticket, My Tickets, FAQ), tabbed section showing open and recently solved tickets
     - _Requirements: 4.2, 4.3, 4.4_
 
-  - [~] 20.2 Create PreferencesPage
+  - [x] 20.2 Create PreferencesPage
     - Create `src/pages/PreferencesPage.tsx` with settings: display language, theme/palette selector (live preview), layout mode, timeline order, items per page, sidebar collapsed state
     - Theme change applies immediately via `applyTheme()` updating CSS custom properties
     - Persist preferences locally and sync with backend when available
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5_
 
-- [~] 21. Implement Profile/Entity switching in UserMenu
+- [-] 21. Implement Profile/Entity switching in UserMenu
   - Implement profile selector dropdown in UserMenu fetching all user profiles from API
   - Implement entity selector with entity tree hierarchy display
   - Profile/entity switch obtains new JWT and reloads current view
