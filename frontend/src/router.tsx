@@ -3,6 +3,9 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import LoadingSkeleton from './components/common/LoadingSkeleton';
 import LoginPage from './pages/LoginPage';
+import AuthLayout from './layouts/AuthLayout';
+import CentralLayout from './layouts/CentralLayout';
+import HelpdeskLayout from './layouts/HelpdeskLayout';
 
 // ---------------------------------------------------------------------------
 // Lazy-loaded page components
@@ -112,19 +115,25 @@ function ProfileRedirect() {
 }
 
 // ---------------------------------------------------------------------------
-// AuthRoute — wraps a lazy page with RequireAuth + HelpdeskGuard + Suspense
+// Lazy — wraps children in Suspense with loading skeleton
 // ---------------------------------------------------------------------------
 
-function AuthRoute({ children }: { children: React.ReactNode }) {
-  return (
-    <RequireAuth>
-      <HelpdeskGuard>
-        <Suspense fallback={<LoadingSkeleton />}>
-          {children}
-        </Suspense>
-      </HelpdeskGuard>
-    </RequireAuth>
-  );
+function Lazy({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>;
+}
+
+// ---------------------------------------------------------------------------
+// LayoutSwitch — renders CentralLayout or HelpdeskLayout based on profile
+// ---------------------------------------------------------------------------
+
+function LayoutSwitch() {
+  const profileInterface = useAuthStore((s) => s.user?.profileInterface);
+
+  if (profileInterface === 'helpdesk') {
+    return <HelpdeskLayout />;
+  }
+
+  return <CentralLayout />;
 }
 
 // ---------------------------------------------------------------------------
@@ -134,45 +143,58 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
-      <Route path="/login" element={<LoginPage />} />
+      {/* Public — Auth layout */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+      </Route>
 
-      {/* Profile-based root redirect */}
-      <Route path="/" element={<RequireAuth><ProfileRedirect /></RequireAuth>} />
+      {/* Protected routes — profile-based layout */}
+      <Route
+        element={
+          <RequireAuth>
+            <HelpdeskGuard>
+              <LayoutSwitch />
+            </HelpdeskGuard>
+          </RequireAuth>
+        }
+      >
+        {/* Profile-based root redirect */}
+        <Route path="/" element={<ProfileRedirect />} />
 
-      {/* Dashboard */}
-      <Route path="/dashboard" element={<AuthRoute><DashboardPage /></AuthRoute>} />
+        {/* Dashboard */}
+        <Route path="/dashboard" element={<Lazy><DashboardPage /></Lazy>} />
 
-      {/* Helpdesk home */}
-      <Route path="/helpdesk" element={<AuthRoute><HelpdeskHomePage /></AuthRoute>} />
+        {/* Helpdesk home */}
+        <Route path="/helpdesk" element={<Lazy><HelpdeskHomePage /></Lazy>} />
 
-      {/* Tickets */}
-      <Route path="/tickets" element={<AuthRoute><TicketListPage /></AuthRoute>} />
-      <Route path="/tickets/new" element={<AuthRoute><TicketCreatePage /></AuthRoute>} />
-      <Route path="/tickets/:id" element={<AuthRoute><TicketDetailPage /></AuthRoute>} />
+        {/* Tickets */}
+        <Route path="/tickets" element={<Lazy><TicketListPage /></Lazy>} />
+        <Route path="/tickets/new" element={<Lazy><TicketCreatePage /></Lazy>} />
+        <Route path="/tickets/:id" element={<Lazy><TicketDetailPage /></Lazy>} />
 
-      {/* Problems */}
-      <Route path="/problems" element={<AuthRoute><ProblemListPage /></AuthRoute>} />
-      <Route path="/problems/new" element={<AuthRoute><ProblemCreatePage /></AuthRoute>} />
-      <Route path="/problems/:id" element={<AuthRoute><ProblemDetailPage /></AuthRoute>} />
+        {/* Problems */}
+        <Route path="/problems" element={<Lazy><ProblemListPage /></Lazy>} />
+        <Route path="/problems/new" element={<Lazy><ProblemCreatePage /></Lazy>} />
+        <Route path="/problems/:id" element={<Lazy><ProblemDetailPage /></Lazy>} />
 
-      {/* Changes */}
-      <Route path="/changes" element={<AuthRoute><ChangeListPage /></AuthRoute>} />
-      <Route path="/changes/new" element={<AuthRoute><ChangeCreatePage /></AuthRoute>} />
-      <Route path="/changes/:id" element={<AuthRoute><ChangeDetailPage /></AuthRoute>} />
+        {/* Changes */}
+        <Route path="/changes" element={<Lazy><ChangeListPage /></Lazy>} />
+        <Route path="/changes/new" element={<Lazy><ChangeCreatePage /></Lazy>} />
+        <Route path="/changes/:id" element={<Lazy><ChangeDetailPage /></Lazy>} />
 
-      {/* Assets */}
-      <Route path="/assets" element={<AuthRoute><AssetListPage /></AuthRoute>} />
-      <Route path="/assets/software" element={<AuthRoute><SoftwareListPage /></AuthRoute>} />
-      <Route path="/assets/licenses" element={<AuthRoute><LicenseListPage /></AuthRoute>} />
-      <Route path="/assets/:type/:id" element={<AuthRoute><AssetDetailPage /></AuthRoute>} />
+        {/* Assets */}
+        <Route path="/assets" element={<Lazy><AssetListPage /></Lazy>} />
+        <Route path="/assets/software" element={<Lazy><SoftwareListPage /></Lazy>} />
+        <Route path="/assets/licenses" element={<Lazy><LicenseListPage /></Lazy>} />
+        <Route path="/assets/:type/:id" element={<Lazy><AssetDetailPage /></Lazy>} />
 
-      {/* Knowledge */}
-      <Route path="/knowledge" element={<AuthRoute><KnowledgeListPage /></AuthRoute>} />
-      <Route path="/knowledge/:id" element={<AuthRoute><KnowledgeDetailPage /></AuthRoute>} />
+        {/* Knowledge */}
+        <Route path="/knowledge" element={<Lazy><KnowledgeListPage /></Lazy>} />
+        <Route path="/knowledge/:id" element={<Lazy><KnowledgeDetailPage /></Lazy>} />
 
-      {/* Preferences */}
-      <Route path="/preferences" element={<AuthRoute><PreferencesPage /></AuthRoute>} />
+        {/* Preferences */}
+        <Route path="/preferences" element={<Lazy><PreferencesPage /></Lazy>} />
+      </Route>
 
       {/* Catch-all — redirect to root for profile-based routing */}
       <Route path="*" element={<Navigate to="/" replace />} />
