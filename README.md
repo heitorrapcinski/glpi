@@ -66,8 +66,7 @@ src/main/java/com/glpi/{service}/
 | Component | Port | Purpose |
 |---|---|---|
 | MongoDB 7.x | 27017 | Persistent storage (one database per service) |
-| Apache Kafka 3.x | 9092 | Domain event bus |
-| Zookeeper | 2181 | Kafka coordination |
+| Apache Kafka 3.x (KRaft) | 9092 | Domain event bus |
 
 ---
 
@@ -95,7 +94,7 @@ docker compose logs -f identity-service
 ### Start infrastructure only (for local development)
 
 ```bash
-docker compose up -d zookeeper kafka mongodb
+docker compose up -d kafka mongodb
 ```
 
 Then run individual services from your IDE or with:
