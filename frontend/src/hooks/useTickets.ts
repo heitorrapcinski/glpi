@@ -145,6 +145,30 @@ export interface SolutionFormData {
   solutionTypeId?: string;
 }
 
+export interface Document {
+  id: string;
+  filename: string;
+  filepath: string;
+  mime: string;
+  authorId: string;
+  authorName?: string;
+  createdAt: string;
+}
+
+export interface LogEntry {
+  id: string;
+  message: string;
+  createdAt: string;
+}
+
+export type TimelineEntry =
+  | { type: 'followup'; data: Followup }
+  | { type: 'task'; data: Task }
+  | { type: 'solution'; data: Solution }
+  | { type: 'validation'; data: Validation }
+  | { type: 'document'; data: Document }
+  | { type: 'log'; data: LogEntry };
+
 // ---------------------------------------------------------------------------
 // Query key factory
 // ---------------------------------------------------------------------------
