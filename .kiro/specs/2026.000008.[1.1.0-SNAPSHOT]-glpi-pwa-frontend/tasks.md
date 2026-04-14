@@ -193,7 +193,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - SLA deadline indicators: green (on track), orange (approaching), red (breached)
     - _Requirements: 6.3, 6.4, 6.5, 6.7, 6.8_
 
-  - [-] 13.3 Create timeline action forms
+  - [x] 13.3 Create timeline action forms
     - Create `src/components/itil/FollowupForm.tsx` — Rich_Text_Editor + private/public toggle
     - Create `src/components/itil/TaskForm.tsx` — Rich_Text_Editor, assigned user selector, date pickers, duration, status (TODO/DONE)
     - Create `src/components/itil/SolutionForm.tsx` — Rich_Text_Editor + solution type selector
@@ -201,14 +201,14 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - _Requirements: 7.2, 7.3, 7.4, 7.6_
 
 - [ ] 14. Implement Ticket module (list, detail, create)
-  - [~] 14.1 Create TicketListPage
+  - [x] 14.1 Create TicketListPage
     - Create `src/pages/tickets/TicketListPage.tsx` using SearchEngine with columns: ID, status icon, title, requester, assigned, priority, last update, entity
     - Implement filters: status, priority, entity, assigned user, category
     - Row click navigates to `/tickets/{id}`
     - Bulk actions: change status, assign, delete via checkboxes and toolbar
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8_
 
-  - [~] 14.2 Create TicketDetailPage
+  - [x] 14.2 Create TicketDetailPage
     - Create `src/pages/tickets/TicketDetailPage.tsx` with two-column layout: Timeline (8/12) + FieldsPanel (4/12)
     - Display ticket title and ID in header
     - Wire Timeline actions (followup, task, solution) to API hooks
@@ -216,7 +216,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Responsive: stack to single column below 768px
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 7.1, 7.2, 7.3, 7.4, 7.5, 7.7, 18.3_
 
-  - [~] 14.3 Create TicketCreatePage
+  - [x] 14.3 Create TicketCreatePage
     - Create `src/pages/tickets/TicketCreatePage.tsx` with form: type (Incident/Request), title, content (RichTextEditor), category (filtered by type), urgency (filtered by entity mask), entity, actors
     - Auto-populate requester with current user
     - On submit POST to `/tickets`, navigate to detail on success
@@ -224,7 +224,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Simplified form for helpdesk interface (title, content, urgency, category only)
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7_
 
-- [~] 15. Implement Problem module (list, detail, create)
+- [x] 15. Implement Problem module (list, detail, create)
   - Create `src/pages/problems/ProblemListPage.tsx` using SearchEngine with columns: ID, status, title, priority, assigned, entity, linked tickets count, last update
   - Create `src/pages/problems/ProblemDetailPage.tsx` with two-column layout, additional FieldsPanel sections for impact analysis, root cause, symptom description (each with RichTextEditor)
   - Display linked tickets with clickable navigation
@@ -232,7 +232,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Wire timeline actions (followup, task, solution) reusing ITIL shared components
   - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6_
 
-- [~] 16. Implement Change module (list, detail, create)
+- [x] 16. Implement Change module (list, detail, create)
   - Create `src/pages/changes/ChangeListPage.tsx` using SearchEngine with columns: ID, status, title, priority, assigned, entity, last update
   - Create `src/pages/changes/ChangeDetailPage.tsx` with two-column layout, additional FieldsPanel sections for planning documents (impact, control list, rollout plan, backout plan, checklist), validation workflow display with approve/reject buttons
   - Display linked tickets and problems with clickable navigation
@@ -240,7 +240,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Wire timeline actions reusing ITIL shared components
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8_
 
-- [~] 17. Checkpoint — Ensure all ITIL module tests pass
+- [-] 17. Checkpoint — Ensure all ITIL module tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 18. Implement Asset/CMDB module (assets, software, licenses)
