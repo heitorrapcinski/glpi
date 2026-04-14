@@ -92,7 +92,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Create `src/stores/uiStore.ts` for transient UI state (modals, sidebar toggle)
     - _Requirements: 16.1, 16.2, 16.4_
 
-  - [-] 6.2 Implement router with lazy loading and auth guard
+  - [x] 6.2 Implement router with lazy loading and auth guard
     - Create `src/router.tsx` with all routes from the routing map, using `React.lazy` and `Suspense` for code splitting
     - Implement `RequireAuth` wrapper that checks `authStore.isAuthenticated` and redirects to `/login` with `returnTo` param
     - Implement `isHelpdeskRouteAllowed` function for helpdesk profile route restriction
@@ -111,7 +111,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - **Validates: Requirements 12.3**
 
 - [ ] 7. Implement shared UI components (common and navigation)
-  - [~] 7.1 Create common shared components
+  - [x] 7.1 Create common shared components
     - Create `src/components/common/StatusBadge.tsx` — colored badge using STATUS_CONFIG
     - Create `src/components/common/PriorityBadge.tsx` — colored indicator using PRIORITY_CONFIG
     - Create `src/components/common/ActorBadge.tsx` — user avatar/initials badge
@@ -121,11 +121,11 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Create `src/components/common/Pagination.tsx` — page controls with configurable page size
     - _Requirements: 5.6, 5.7, 6.7, 7.6, 22.1, 22.2, 22.5, 24.1, 24.2, 24.3, 24.5_
 
-  - [~] 7.2 Create SearchEngine reusable data table component
+  - [x] 7.2 Create SearchEngine reusable data table component
     - Create `src/components/common/SearchEngine.tsx` with configurable columns, server-side pagination via TanStack Query, column sorting, filter controls, checkbox selection for bulk actions, horizontal scroll on narrow viewports, pagination footer
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.8, 18.5_
 
-  - [~] 7.3 Create navigation components
+  - [x] 7.3 Create navigation components
     - Create `src/components/navigation/Sidebar.tsx` — vertical nav with GLPI logo, collapsible menu sections (Assets, Assistance, Management, Tools, Administration with "coming soon"), collapsed mode (icons only), sidebar colors matching legacy
     - Create `src/components/navigation/TopBar.tsx` — breadcrumbs, global search input, user menu
     - Create `src/components/navigation/Breadcrumbs.tsx` — route-based breadcrumb trail
@@ -139,7 +139,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Test Sidebar collapse/expand, TopBar rendering, GlobalSearch debounce
     - _Requirements: 5.6, 5.7, 24.1, 24.5_
 
-- [~] 8. Implement layouts (Central, Helpdesk, Auth)
+- [x] 8. Implement layouts (Central, Helpdesk, Auth)
   - Create `src/layouts/CentralLayout.tsx` — Sidebar (left, 15rem expanded / 70px collapsed) + TopBar (top) + content area (right) with light background
   - Create `src/layouts/HelpdeskLayout.tsx` — horizontal top nav, no sidebar
   - Create `src/layouts/AuthLayout.tsx` — centered card with GLPI logo matching legacy login card
@@ -147,7 +147,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Implement responsive behavior: sidebar collapses to hamburger below 992px, content stacks below 768px
   - _Requirements: 3.1, 3.4, 3.5, 3.8, 4.1, 18.1, 18.2, 18.6, 22.1_
 
-- [~] 9. Implement authentication pages (Login, 2FA)
+- [-] 9. Implement authentication pages (Login, 2FA)
   - Create `src/pages/LoginPage.tsx` with username/password fields, "Remember me" checkbox, sign-in button, matching legacy login card layout
   - Implement login form submission calling `authStore.login()`, handle HTTP 401 (invalid credentials), HTTP 401 with account locked error message, HTTP 403 with 2FA_REQUIRED code
   - Create TOTP code input field for 2FA flow calling `authStore.loginWith2FA()`
