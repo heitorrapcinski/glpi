@@ -22,7 +22,7 @@ public class RequestLoggingFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return Integer.MIN_VALUE; // Run first to capture full latency
+        return -100; // Run after JwtAuthenticationFilter (-200) so X-User-Id is available
     }
 
     @Override
@@ -32,7 +32,6 @@ public class RequestLoggingFilter implements GlobalFilter, Ordered {
 
         String method = request.getMethod().name();
         String path = request.getURI().getPath();
-        String userId = request.getHeaders().getFirst("X-User-Id");
 
         return chain.filter(exchange).doFinally(signalType -> {
             long latencyMs = Instant.now().toEpochMilli() - startTime;
@@ -40,9 +39,12 @@ public class RequestLoggingFilter implements GlobalFilter, Ordered {
                     ? exchange.getResponse().getStatusCode().value()
                     : 0;
 
+            // Read X-User-Id from the (possibly mutated) request on the exchange
+            String userId = exchange.getRequest().getHeaders().getFirst("X-User-Id");
+
             log.info("timestamp={} method={} path={} userId={} status={} latencyMs={}",
                     Instant.now(), method, path,
-                    userId != null ? userId : "anonymous",
+                    userId != null && !userId.isBlank() ? userId : "anonymous",
                     statusCode, latencyMs);
         });
     }

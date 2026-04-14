@@ -44,6 +44,20 @@ public class AssetController {
 
     // ---- Asset CRUD by type ----
 
+    @GetMapping
+    @Operation(summary = "List all assets (paginated)")
+    public PagedResponse<Asset> listAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "ASC") String order,
+            @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
+        int clampedSize = Math.min(Math.max(size, 1), 500);
+        List<Asset> assets = assetRepository.findAllNotDeleted(page, clampedSize);
+        long total = assetRepository.countAllNotDeleted();
+        return PagedResponse.of(assets, total, page, clampedSize);
+    }
+
     @GetMapping("/{type}")
     @Operation(summary = "List assets by type (paginated)")
     public PagedResponse<Asset> listByType(
@@ -54,7 +68,7 @@ public class AssetController {
             @RequestParam(defaultValue = "ASC") String order,
             @RequestParam(value = "expand_dropdowns", required = false) Boolean expandDropdowns) {
         int clampedSize = Math.min(Math.max(size, 1), 500);
-        AssetType assetType = AssetType.valueOf(type);
+        AssetType assetType = parseAssetType(type);
         List<Asset> assets = assetRepository.findByType(assetType, page, clampedSize);
         long total = assetRepository.countByType(assetType);
         return PagedResponse.of(assets, total, page, clampedSize);
@@ -65,7 +79,7 @@ public class AssetController {
     @Operation(summary = "Create a new asset of the given type")
     public Asset createAsset(@PathVariable String type,
                              @Valid @RequestBody CreateAssetCommand command) {
-        AssetType assetType = AssetType.valueOf(type);
+        AssetType assetType = parseAssetType(type);
         return createAssetUseCase.createAsset(new CreateAssetCommand(
                 assetType, command.name(), command.entityId(),
                 command.serial(), command.otherSerial(), command.stateId(),
@@ -170,5 +184,17 @@ public class AssetController {
         return commands.stream()
                 .map(createAssetUseCase::createAsset)
                 .toList();
+    }
+
+    /**
+     * Parse asset type from path variable using case-insensitive matching.
+     */
+    private AssetType parseAssetType(String type) {
+        for (AssetType at : AssetType.values()) {
+            if (at.name().equalsIgnoreCase(type)) {
+                return at;
+            }
+        }
+        throw new IllegalArgumentException("Unknown asset type: " + type);
     }
 }

@@ -174,7 +174,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   // refreshAccessToken — POST /auth/refresh
   // -------------------------------------------------------------------------
   async refreshAccessToken() {
-    const { refreshToken, rememberMe } = get();
+    const { refreshToken } = get();
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }

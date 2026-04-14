@@ -129,7 +129,6 @@ export default function LoginPage() {
 
   const login = useAuthStore((s) => s.login);
   const loginWith2FA = useAuthStore((s) => s.loginWith2FA);
-  const user = useAuthStore((s) => s.user);
   const isLoading = useAuthStore((s) => s.isLoading);
 
   // Login form state

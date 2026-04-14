@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore, type UserContext } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore';
 
 // ---------------------------------------------------------------------------
 // Query key factory

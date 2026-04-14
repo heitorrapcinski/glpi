@@ -84,6 +84,7 @@ export interface Validation {
   status: number;
   comment: string | null;
   order: number;
+  createdAt: string;
 }
 
 export interface SlaContext {

@@ -16,6 +16,9 @@ import type {
   SolutionFormData,
 } from './useTickets';
 
+// Re-export Actor for consumers
+export type { Actor };
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------

@@ -4,7 +4,6 @@ import StatusBadge from '@/components/common/StatusBadge';
 import PriorityBadge from '@/components/common/PriorityBadge';
 import ActorBadge from '@/components/common/ActorBadge';
 import { getSlaIndicatorColor } from '@/utils/status';
-import { getPriorityConfig } from '@/utils/priority';
 import type { Actor, SlaContext } from '@/hooks/useTickets';
 
 // ---------------------------------------------------------------------------
