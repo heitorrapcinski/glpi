@@ -73,23 +73,30 @@ const contentStyle: React.CSSProperties = {
 export default function HelpdeskLayout() {
   return (
     <div style={wrapperStyle}>
-      <nav style={navBarStyle} aria-label="Helpdesk navigation">
-        <div style={navLeftStyle}>
-          <Link to="/helpdesk" style={logoLinkStyle} aria-label="GLPI Home">
-            <span style={{ fontSize: '1.5rem' }} aria-hidden="true">🔧</span>
-            <span style={logoTextStyle}>GLPI</span>
-          </Link>
-          <div style={navLinksStyle}>
-            <Link to="/helpdesk" style={navLinkStyle}>Home</Link>
-            <Link to="/tickets/new" style={navLinkStyle}>Create Ticket</Link>
-            <Link to="/tickets" style={navLinkStyle}>My Tickets</Link>
-            <Link to="/knowledge" style={navLinkStyle}>FAQ</Link>
-          </div>
-        </div>
-        <UserMenu />
-      </nav>
+      {/* Skip to main content link for keyboard users */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
 
-      <main style={contentStyle}>
+      <header>
+        <nav style={navBarStyle} aria-label="Helpdesk navigation">
+          <div style={navLeftStyle}>
+            <Link to="/helpdesk" style={logoLinkStyle} aria-label="GLPI Home">
+              <span style={{ fontSize: '1.5rem' }} aria-hidden="true">🔧</span>
+              <span style={logoTextStyle}>GLPI</span>
+            </Link>
+            <div style={navLinksStyle} className="helpdesk-nav-links">
+              <Link to="/helpdesk" style={navLinkStyle}>Home</Link>
+              <Link to="/tickets/new" style={navLinkStyle}>Create Ticket</Link>
+              <Link to="/tickets" style={navLinkStyle}>My Tickets</Link>
+              <Link to="/knowledge" style={navLinkStyle}>FAQ</Link>
+            </div>
+          </div>
+          <UserMenu />
+        </nav>
+      </header>
+
+      <main id="main-content" style={contentStyle} role="main">
         <Outlet />
       </main>
     </div>

@@ -48,14 +48,14 @@ const logoTextStyle: React.CSSProperties = {
 
 export default function AuthLayout() {
   return (
-    <div style={pageStyle} className="page-anonymous">
-      <div style={cardStyle}>
+    <main style={pageStyle} className="page-anonymous" role="main">
+      <section style={cardStyle} aria-label="Authentication">
         <div style={logoAreaStyle}>
           <span style={logoIconStyle} aria-hidden="true">🔧</span>
           <span style={logoTextStyle}>GLPI</span>
         </div>
         <Outlet />
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

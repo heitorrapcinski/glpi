@@ -42,7 +42,7 @@ const rightStyle: React.CSSProperties = {
 export default function TopBar() {
   return (
     <header style={topBarStyle} role="banner">
-      <div style={leftStyle}>
+      <div style={leftStyle} className="breadcrumbs-container">
         <Breadcrumbs />
       </div>
       <div style={rightStyle}>

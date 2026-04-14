@@ -286,7 +286,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
 - [x] 22. Checkpoint — Ensure all feature module tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 23. Implement PWA capabilities (service worker, manifest, offline support)
+- [x] 23. Implement PWA capabilities (service worker, manifest, offline support)
   - Create `public/manifest.json` with app name "GLPI", short name "GLPI", start URL, display "standalone", theme color #2f3f64, background color #f5f7fb, icons (192x192, 512x512)
   - Configure Workbox via vite-plugin-pwa: CacheFirst for app shell and static assets, NetworkFirst for API requests, StaleWhileRevalidate for images
   - Implement offline indicator banner when `navigator.onLine` is false
@@ -294,7 +294,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Create PWA icons in `public/icons/`
   - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6_
 
-- [~] 24. Implement responsive design refinements and accessibility audit
+- [-] 24. Implement responsive design refinements and accessibility audit
   - Ensure touch-friendly targets (min 44x44px) on mobile viewports
   - Verify semantic HTML5 elements across all layouts and pages (nav, main, aside, header, footer, article, section)
   - Add ARIA labels on all icon buttons, status badges, and action menus

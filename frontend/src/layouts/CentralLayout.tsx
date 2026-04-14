@@ -97,6 +97,11 @@ export default function CentralLayout() {
 
   return (
     <div style={wrapperStyle}>
+      {/* Skip to main content link for keyboard users */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
       {/* Desktop sidebar */}
       {!isMobile && <Sidebar />}
 
@@ -116,7 +121,10 @@ export default function CentralLayout() {
             <div
               style={overlayStyle}
               onClick={closeMobileSidebar}
-              aria-hidden="true"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') closeMobileSidebar();
+              }}
+              role="presentation"
             />
           )}
 
@@ -129,7 +137,7 @@ export default function CentralLayout() {
       {/* Content area */}
       <div style={contentWrapperStyle}>
         <TopBar />
-        <main style={mainStyle}>
+        <main id="main-content" style={mainStyle} role="main">
           <Outlet />
         </main>
       </div>
