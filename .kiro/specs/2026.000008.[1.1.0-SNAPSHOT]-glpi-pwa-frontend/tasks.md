@@ -322,9 +322,9 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - [x] 27.1 Ensure all previous tasks are complete and tests pass
   - [x] 27.2 Remove SNAPSHOT suffix from all version references in the codebase
   - [x] 27.3 Commit the version bump: "release: 1.1.0 - glpi-pwa-frontend"
-  - [-] 27.4 Merge branch into main/master
-  - [~] 27.5 Apply Git tag: 1.1.0 (without SNAPSHOT)
-  - [~] 27.6 Push branch, merge, and tag to remote
+  - [x] 27.4 Merge branch into main/master
+  - [x] 27.5 Apply Git tag: 1.1.0 (without SNAPSHOT)
+  - [x] 27.6 Push branch, merge, and tag to remote
 
 ## Notes
 
