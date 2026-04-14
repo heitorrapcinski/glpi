@@ -14,7 +14,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Create `src/main.tsx` entry point and `src/App.tsx` root component with provider wrappers (QueryClientProvider, BrowserRouter)
   - Create `src/i18n/index.ts` with react-i18next configuration and `src/i18n/locales/en-US.json` with initial empty namespace
   - Create `src/test-setup.ts` for Vitest global setup
-  - _Requirements: 20.1, 20.2, 23.1, 23.2_
+  - _Requirements: 20.1, 20.2, 23.1, 23.2, 23.3_
 
 - [ ] 2. Implement design token system, theme engine, and CSS foundation
   - [x] 2.1 Create base design tokens and palette CSS files
@@ -35,15 +35,16 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
 
 - [ ] 3. Implement HTTP client, auth store, and token management
   - [x] 3.1 Create Axios HTTP client with interceptors
-    - Create `src/api/client.ts` with Axios instance: base URL `/api`, request interceptor to attach JWT Bearer header, response interceptor for 401 refresh flow (queue concurrent requests), 429 rate limit handling with Retry-After, network error detection
+    - Create `src/api/client.ts` with Axios instance: base URL `/api`, request interceptor to attach JWT Bearer header, response interceptor for 401 refresh flow (queue concurrent requests and retry), 429 rate limit handling with Retry-After, network error detection with connection error banner
     - Create `src/api/endpoints.ts` with API endpoint constants for all services
     - Create `src/api/types.ts` with `ApiResponse<T>`, `PaginationMeta`, `ApiError` interfaces
-    - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6_
+    - _Requirements: 1.6, 1.7, 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 24.6_
 
   - [x] 3.2 Implement auth store with Zustand
     - Create `src/stores/authStore.ts` with `AuthState` interface: accessToken, refreshToken, user (UserContext), isAuthenticated, isLoading, rememberMe
     - Implement `login`, `loginWith2FA`, `logout`, `refreshAccessToken`, `switchProfile`, `switchEntity` actions
     - Token storage: access token in memory only, refresh token in localStorage when rememberMe is checked
+    - On app load: check localStorage for refresh token, attempt silent refresh, restore session or redirect to login
     - _Requirements: 1.2, 1.3, 1.4, 1.5, 1.9, 2.3, 2.5_
 
   - [ ]* 3.3 Write property test for JWT Authorization header attachment (Property 1)
@@ -98,7 +99,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Implement `isHelpdeskRouteAllowed` function for helpdesk profile route restriction
     - Implement profile-based redirect: `/dashboard` for central, `/helpdesk` for helpdesk
     - Create `src/components/common/LoadingSkeleton.tsx` for Suspense fallback
-    - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 4.5_
+    - _Requirements: 4.5, 20.1, 20.2, 20.3, 20.4, 20.5_
 
   - [ ]* 6.3 Write property tests for auth guard and helpdesk route restriction (Properties 2, 12)
     - **Property 2: Helpdesk route restriction** — non-allowed routes redirect to `/helpdesk` when profile is helpdesk
@@ -167,7 +168,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Create `src/hooks/useKnowledge.ts` — list, detail, search, view counter increment
   - Create `src/hooks/useSearch.ts` — global search with debounce and categorized results
   - Create `src/hooks/useDashboard.ts` — dashboard widget data (counters, charts, activity feed)
-  - _Requirements: 5.1, 6.1, 7.5, 8.4, 9.1, 10.1, 11.1, 12.1, 13.1, 14.1, 15.2_
+  - _Requirements: 5.1, 6.1, 7.5, 8.4, 9.1, 10.1, 11.1, 12.1, 13.1, 13.7, 14.1, 15.2, 15.3_
 
 - [x] 12. Implement Dashboard page
   - Create `src/pages/DashboardPage.tsx` as default landing page for Central_Interface
@@ -198,7 +199,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Create `src/components/itil/TaskForm.tsx` — Rich_Text_Editor, assigned user selector, date pickers, duration, status (TODO/DONE)
     - Create `src/components/itil/SolutionForm.tsx` — Rich_Text_Editor + solution type selector
     - Create `src/components/itil/ActorSelector.tsx` — user/group/supplier search and selection
-    - _Requirements: 7.2, 7.3, 7.4, 7.6_
+    - _Requirements: 7.2, 7.3, 7.4, 7.5, 7.6_
 
 - [ ] 14. Implement Ticket module (list, detail, create)
   - [x] 14.1 Create TicketListPage
@@ -318,7 +319,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
 - [x] 26. Final checkpoint — Ensure all tests pass and application is fully integrated
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 27. Version control and release
+- [x] 27. Version control and release
   - [x] 27.1 Ensure all previous tasks are complete and tests pass
   - [x] 27.2 Remove SNAPSHOT suffix from all version references in the codebase
   - [x] 27.3 Commit the version bump: "release: 1.1.0 - glpi-pwa-frontend"
