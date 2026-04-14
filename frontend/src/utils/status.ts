@@ -125,3 +125,32 @@ export function getSlaIndicatorColor(
 
   return percentRemaining > 0.25 ? 'green' : 'orange';
 }
+
+// ---------------------------------------------------------------------------
+// License compliance color
+// ---------------------------------------------------------------------------
+
+export type LicenseComplianceColor = 'green' | 'orange' | 'red';
+
+/**
+ * Determines the license compliance indicator color based on seat usage.
+ *
+ * @param totalSeats - Total number of licensed seats (must be > 0).
+ * @param usedSeats  - Number of seats currently in use.
+ * @returns `'green'` when usage < 80 %, `'orange'` when 80–100 %, or
+ *          `'red'` when over-licensed (usedSeats > totalSeats).
+ */
+export function getLicenseComplianceColor(
+  totalSeats: number,
+  usedSeats: number,
+): LicenseComplianceColor {
+  if (totalSeats <= 0 || usedSeats > totalSeats) {
+    return 'red';
+  }
+
+  const ratio = usedSeats / totalSeats;
+  if (ratio >= 0.8) {
+    return 'orange';
+  }
+  return 'green';
+}
