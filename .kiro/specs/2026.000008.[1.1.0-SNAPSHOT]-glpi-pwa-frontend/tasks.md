@@ -294,7 +294,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Create PWA icons in `public/icons/`
   - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6_
 
-- [-] 24. Implement responsive design refinements and accessibility audit
+- [x] 24. Implement responsive design refinements and accessibility audit
   - Ensure touch-friendly targets (min 44x44px) on mobile viewports
   - Verify semantic HTML5 elements across all layouts and pages (nav, main, aside, header, footer, article, section)
   - Add ARIA labels on all icon buttons, status badges, and action menus
@@ -305,7 +305,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Hide non-essential UI on mobile (breadcrumbs, secondary toolbars)
   - _Requirements: 18.1, 18.3, 18.4, 18.5, 18.6, 22.1, 22.2, 22.3, 22.4, 22.5, 22.6, 23.5_
 
-- [~] 25. Implement containerization and Docker Compose integration
+- [x] 25. Implement containerization and Docker Compose integration
   - Create `frontend/Dockerfile` with multi-stage build: Node.js build stage (`npm run build`) + Nginx Alpine runtime stage
   - Create `frontend/nginx/default.conf` with `/api/` proxy pass to API Gateway service and SPA fallback
   - Docker image runs as non-root user
@@ -315,7 +315,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Verify buildable with `docker compose build frontend`
   - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6_
 
-- [~] 26. Final checkpoint — Ensure all tests pass and application is fully integrated
+- [-] 26. Final checkpoint — Ensure all tests pass and application is fully integrated
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 27. Version control and release
