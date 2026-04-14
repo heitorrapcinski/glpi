@@ -276,14 +276,14 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - Persist preferences locally and sync with backend when available
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5_
 
-- [-] 21. Implement Profile/Entity switching in UserMenu
+- [x] 21. Implement Profile/Entity switching in UserMenu
   - Implement profile selector dropdown in UserMenu fetching all user profiles from API
   - Implement entity selector with entity tree hierarchy display
   - Profile/entity switch obtains new JWT and reloads current view
   - Display current profile name and entity name in TopBar matching legacy layout
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-- [~] 22. Checkpoint — Ensure all feature module tests pass
+- [-] 22. Checkpoint — Ensure all feature module tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [~] 23. Implement PWA capabilities (service worker, manifest, offline support)
