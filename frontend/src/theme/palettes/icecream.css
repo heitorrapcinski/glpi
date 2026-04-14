@@ -1,0 +1,13 @@
+/**
+ * Ice Cream palette — deep blue sidebar with red accent.
+ */
+[data-glpi-theme="icecream"] {
+  --tblr-primary-rgb: 213, 79, 88;
+  --tblr-primary-fg: #f3edd3;
+  --tblr-secondary: #113f59;
+  --tblr-secondary-fg: #a9e3e4;
+  --tblr-link-color-rgb: 20, 146, 148;
+  --glpi-mainmenu-bg: #113f59;
+  --glpi-mainmenu-fg: #f3edd3;
+  --glpi-helpdesk-header: hsl(203deg, 63%, 85%);
+}

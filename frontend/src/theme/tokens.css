@@ -1,0 +1,150 @@
+/**
+ * GLPI PWA Frontend — Base Design Tokens
+ *
+ * These CSS custom properties define the default (light) theme values.
+ * Individual palettes override a subset of these via data-attribute selectors.
+ */
+
+:root {
+  /* ── Sidebar / Main Menu ─────────────────────────────────────────── */
+  --glpi-mainmenu-bg: #2f3f64;
+  --glpi-mainmenu-fg: #f4f6fa;
+  --glpi-mainmenu-fg-muted: #f4f6fa99;
+  --glpi-mainmenu-active-bg: color-mix(in srgb, var(--glpi-mainmenu-bg), white 45%);
+
+  /* ── Primary Accent ──────────────────────────────────────────────── */
+  --tblr-primary-rgb: 254, 201, 92;
+  --tblr-primary: rgb(var(--tblr-primary-rgb));
+  --tblr-primary-fg: #1e293b;
+  --tblr-primary-darken: color-mix(in srgb, var(--tblr-primary), black 10%);
+
+  /* ── Secondary / Muted ───────────────────────────────────────────── */
+  --tblr-secondary: #606f91;
+  --tblr-secondary-fg: var(--tblr-body-bg);
+  --tblr-tertiary: #8a97ab;
+  --tblr-muted: var(--tblr-secondary);
+
+  /* ── Links ───────────────────────────────────────────────────────── */
+  --tblr-link-color-rgb: 58, 86, 147;
+  --tblr-link-color: rgb(var(--tblr-link-color-rgb));
+
+  /* ── Backgrounds / Surfaces ──────────────────────────────────────── */
+  --tblr-body-bg: #f5f7fb;
+  --tblr-bg-surface: #fff;
+  --tblr-bg-surface-secondary: #fafbfc;
+  --tblr-light: #fafbfc;
+  --tblr-dark: #101923;
+
+  /* ── Info ─────────────────────────────────────────────────────────── */
+  --tblr-info: #80abe4;
+
+  /* ── Timeline Colors ─────────────────────────────────────────────── */
+  --glpi-timeline-itil-content-bg: #e2f2e3;
+  --glpi-timeline-itil-content-fg: #155210;
+  --glpi-timeline-itil-content-border-color: #87aa8a;
+
+  --glpi-timeline-fup-bg: #ececec;
+  --glpi-timeline-fup-fg: #535353;
+  --glpi-timeline-fup-border-color: #b3b3b3;
+
+  --glpi-timeline-task-bg: #ffe8b9;
+  --glpi-timeline-task-fg: #38301f;
+  --glpi-timeline-task-border-color: #e5c88c;
+
+  --glpi-timeline-solution-bg: #9fd6ed;
+  --glpi-timeline-solution-fg: #27363b;
+  --glpi-timeline-solution-border-color: #90c2d8;
+
+  --glpi-timeline-document-bg: #80cead;
+  --glpi-timeline-document-fg: #21352c;
+  --glpi-timeline-document-border-color: #68b997;
+
+  --glpi-timeline-log-bg: #cacaca21;
+  --glpi-timeline-badge-bg: rgb(97 97 97 / 15%);
+  --glpi-timeline-badge-fg: rgb(43 43 43 / 80%);
+
+  /* ── Top Bar ─────────────────────────────────────────────────────── */
+  --glpi-topbar-height: 79px;
+  --glpi-contextbar-height: 56px;
+  --glpi-content-margin: 24px;
+
+  /* ── Helpdesk ────────────────────────────────────────────────────── */
+  --glpi-helpdesk-header: hsl(from var(--glpi-mainmenu-bg) h s 80);
+  --glpi-helpdesk-tiles-section-bg: #f6f8fb;
+  --glpi-helpdesk-tabs-section-bg: #fff;
+
+  /* ── ITIL Secondary ──────────────────────────────────────────────── */
+  --glpi-itil-secondary-bg: #f5f5f5;
+
+  /* ── Badges ──────────────────────────────────────────────────────── */
+  --tblr-badge-bg: var(--tblr-secondary);
+  --tblr-badge-color: var(--tblr-secondary-fg);
+  --glpi-badge-bg: color-mix(in srgb, var(--tblr-link-color), var(--tblr-light) 91%);
+  --glpi-badge-fg: var(--tblr-link-color);
+
+  /* ── Form Headers ────────────────────────────────────────────────── */
+  --glpi-form-header-fg: #055cad;
+  --glpi-form-header-bg: color-mix(in srgb, var(--glpi-form-header-fg), var(--tblr-bg-surface) 90%);
+  --glpi-form-header-border-color: color-mix(in srgb, var(--glpi-form-header-fg), var(--tblr-bg-surface) 75%);
+
+  /* ── Tabs ─────────────────────────────────────────────────────────── */
+  --glpi-tabs-bg: color-mix(in srgb, var(--tblr-bg-surface), black 1.5%);
+  --glpi-tabs-fg: var(--tblr-muted);
+  --glpi-tabs-border-color: var(--tblr-border-color);
+  --glpi-tabs-active-bg: var(--tblr-bg-surface);
+  --glpi-tabs-active-fg: var(--tblr-body-color);
+  --glpi-tabs-active-border-color: var(--glpi-tabs-border-color);
+
+  /* ── Search ──────────────────────────────────────────────────────── */
+  --glpi-search-bg: var(--tblr-bg-surface-tertiary);
+  --glpi-search-fg: var(--tblr-body-color);
+  --glpi-search-border-color: var(--tblr-border-color);
+
+  /* ── Hover ───────────────────────────────────────────────────────── */
+  --glpi-hover-bg: rgb(var(--tblr-secondary-rgb), 0.08);
+
+  /* ── Scrollbar ───────────────────────────────────────────────────── */
+  --glpi-scrollbar-thumb-color: color-mix(in srgb, var(--tblr-secondary), transparent 20%);
+  --glpi-scrollbar-track-color: transparent;
+}
+
+/**
+ * Dark mode base overrides.
+ * Applied by any palette that sets data-glpi-theme-dark="1".
+ */
+:root[data-glpi-theme-dark="1"] {
+  --tblr-dark: #000;
+  --tblr-light: #e6e6e6;
+  --tblr-info: #5885c0;
+  --tblr-body-bg: #000;
+  --tblr-body-color: #e6e6e6;
+  --tblr-bg-surface: color-mix(in srgb, var(--tblr-body-bg), black 2%);
+
+  --glpi-tabs-active-bg: color-mix(in srgb, var(--tblr-bg-surface), white 10%);
+  --glpi-tabs-border-color: transparent;
+  --glpi-scrollbar-thumb-color: color-mix(in srgb, var(--tblr-secondary), transparent 75%);
+
+  --glpi-timeline-itil-content-bg: #212221d3;
+  --glpi-timeline-itil-content-fg: #85bd81;
+  --glpi-timeline-itil-content-border-color: #1d201db4;
+
+  --glpi-timeline-fup-bg: #222;
+  --glpi-timeline-fup-fg: #acacac;
+  --glpi-timeline-fup-border-color: #3b3b3b;
+
+  --glpi-timeline-task-bg: #2722172f;
+  --glpi-timeline-task-fg: #ccb686;
+  --glpi-timeline-task-border-color: #363532;
+
+  --glpi-timeline-solution-bg: #3a4d55;
+  --glpi-timeline-solution-fg: #89bfd3;
+  --glpi-timeline-solution-border-color: #435963;
+
+  --glpi-timeline-document-bg: #2b4137;
+  --glpi-timeline-document-fg: #68b997;
+
+  --glpi-timeline-badge-bg: rgb(104 104 104 / 15%);
+  --glpi-timeline-badge-fg: rgb(236 236 236 / 80%);
+
+  --glpi-badge-bg: color-mix(in srgb, var(--tblr-link-color), var(--tblr-dark) 85%);
+}

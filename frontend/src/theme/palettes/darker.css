@@ -1,0 +1,32 @@
+/**
+ * Darker palette — full dark mode variant.
+ */
+[data-glpi-theme="darker"] {
+  --tblr-dark: #242323;
+  --tblr-light: #aaa;
+  --tblr-body-bg: #1f1e1e;
+  --tblr-body-color: #aaa;
+  --tblr-bg-surface: #242323;
+  --tblr-primary-rgb: 107, 107, 107;
+  --tblr-primary-fg: #aaa;
+  --tblr-secondary: #737572;
+  --tblr-secondary-fg: #f3f3f3;
+  --tblr-link-color-rgb: 136, 136, 136;
+  --tblr-muted: #aaa;
+  --tblr-badge-bg: var(--tblr-light);
+  --tblr-badge-color: var(--tblr-dark);
+  --glpi-mainmenu-bg: #242323;
+  --glpi-mainmenu-fg: #f4f6fa;
+  --glpi-helpdesk-header: #1f1e1e;
+  --glpi-helpdesk-tiles-section-bg: hsl(0deg, 1.6%, 20%);
+  --glpi-helpdesk-tabs-section-bg: hsl(0deg, 1.6%, 10%);
+  --glpi-form-header-border-color: transparent;
+  --glpi-form-header-fg: var(--tblr-light);
+  --glpi-tabs-bg: #222121;
+  --glpi-tabs-fg: var(--tblr-light);
+  --glpi-tabs-border-color: transparent;
+  --glpi-tabs-active-bg: #3a3938;
+  --glpi-tabs-active-fg: var(--tblr-muted);
+  --glpi-tabs-active-border-color: transparent;
+  --glpi-itil-secondary-bg: #222121;
+}

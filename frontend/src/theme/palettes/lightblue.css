@@ -1,0 +1,13 @@
+/**
+ * Light Blue palette — blue sidebar with sky accent.
+ */
+[data-glpi-theme="lightblue"] {
+  --tblr-primary-rgb: 200, 234, 253;
+  --tblr-secondary: #656d77;
+  --tblr-link-color-rgb: 44, 115, 167;
+  --tblr-badge-bg: #d0d9f0;
+  --tblr-badge-color: rgb(58, 73, 102);
+  --glpi-mainmenu-bg: #1a7ab2;
+  --glpi-mainmenu-fg: #f4f6fa;
+  --glpi-helpdesk-header: hsl(203deg, 70%, 85%);
+}

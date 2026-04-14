@@ -27,3 +27,8 @@ tests/
 # ─── Logs ─────────────────────────────────────────────────────────────────
 *.log
 logs/
+
+# ─── Frontend build artifacts (rebuilt inside Docker) ─────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/

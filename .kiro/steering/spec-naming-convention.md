@@ -24,7 +24,7 @@ All specs must follow a strict naming pattern to ensure traceability and version
 ### Full Example
 
 ```
-.kiro/specs/2026/2026.000001.[1.0.0-SNAPSHOT]-user-authentication/
+.kiro/specs/2026.000001.[1.0.0-SNAPSHOT]-user-authentication/
 ```
 
 ## Version Control Rules
