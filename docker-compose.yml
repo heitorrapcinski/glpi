@@ -74,6 +74,24 @@ services:
       timeout: 5s
       retries: 5
 
+  # ─── Frontend ────────────────────────────────────────────────────────────
+
+  frontend:
+    <<: *service-defaults
+    image: glpi/frontend:${VERSION}
+    container_name: glpi-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        API_GATEWAY_URL: /api
+        APP_VERSION: ${VERSION}
+        PUBLIC_URL: /
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - api-gateway
+
   # ─── Microservices ─────────────────────────────────────────────────────────
 
   api-gateway:
