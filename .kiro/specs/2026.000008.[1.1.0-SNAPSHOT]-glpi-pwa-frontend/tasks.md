@@ -155,10 +155,10 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Handle `returnTo` query parameter for redirect after login
   - _Requirements: 1.1, 1.2, 1.4, 1.5, 1.7, 1.8, 1.9, 1.10, 20.5_
 
-- [-] 10. Checkpoint — Ensure all tests pass, verify login flow and layout rendering
+- [x] 10. Checkpoint — Ensure all tests pass, verify login flow and layout rendering
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 11. Implement TanStack Query hooks for all API modules
+- [x] 11. Implement TanStack Query hooks for all API modules
   - Create `src/hooks/useAuth.ts` — auth operations hook wrapping authStore actions
   - Create `src/hooks/useTickets.ts` — list (paginated, filtered, sorted), detail, create, update, add followup/task/solution
   - Create `src/hooks/useProblems.ts` — list, detail, create, update, add followup/task/solution
@@ -169,7 +169,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Create `src/hooks/useDashboard.ts` — dashboard widget data (counters, charts, activity feed)
   - _Requirements: 5.1, 6.1, 7.5, 8.4, 9.1, 10.1, 11.1, 12.1, 13.1, 14.1, 15.2_
 
-- [~] 12. Implement Dashboard page
+- [x] 12. Implement Dashboard page
   - Create `src/pages/DashboardPage.tsx` as default landing page for Central_Interface
   - Create `src/components/dashboard/CounterWidget.tsx` — clickable counter cards (open tickets, my assigned, overdue)
   - Create `src/components/dashboard/BarChartWidget.tsx` — tickets by status bar chart using Recharts
@@ -179,21 +179,21 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5_
 
 - [ ] 13. Implement ITIL shared components (Timeline, FieldsPanel, forms)
-  - [~] 13.1 Create Timeline and TimelineEntry components
+  - [x] 13.1 Create Timeline and TimelineEntry components
     - Create `src/components/itil/Timeline.tsx` — chronological entry list with configurable order (newest/oldest first)
     - Create `src/components/itil/TimelineEntry.tsx` — single entry with colored left border per type (followup=#ececec, task=#ffe8b9, solution=#9fd6ed, document=#80cead)
     - Render action buttons at bottom: Add Followup, Add Task, Add Solution, Add Document
     - Display approve/reject buttons on pending solution entries for users with validation rights
     - _Requirements: 6.2, 7.1, 7.7_
 
-  - [~] 13.2 Create FieldsPanel component
+  - [x] 13.2 Create FieldsPanel component
     - Create `src/components/itil/FieldsPanel.tsx` — collapsible right-side panel with accordion sections: Status, Dates, Actors, Priority/Urgency/Impact, Category, SLA, Linked Items
     - Implement collapsed mode (90px icon strip) and expanded mode (4/12 width)
     - Field updates send PATCH requests to API
     - SLA deadline indicators: green (on track), orange (approaching), red (breached)
     - _Requirements: 6.3, 6.4, 6.5, 6.7, 6.8_
 
-  - [~] 13.3 Create timeline action forms
+  - [-] 13.3 Create timeline action forms
     - Create `src/components/itil/FollowupForm.tsx` — Rich_Text_Editor + private/public toggle
     - Create `src/components/itil/TaskForm.tsx` — Rich_Text_Editor, assigned user selector, date pickers, duration, status (TODO/DONE)
     - Create `src/components/itil/SolutionForm.tsx` — Rich_Text_Editor + solution type selector

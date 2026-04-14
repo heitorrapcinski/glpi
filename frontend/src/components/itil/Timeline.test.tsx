@@ -179,7 +179,7 @@ describe('Timeline', () => {
     expect(screen.getByRole('button', { name: 'Add Document' })).toBeInTheDocument();
   });
 
-  it('toggles form placeholder when action button is clicked', () => {
+  it('toggles followup form when action button is clicked', () => {
     render(
       <Timeline
         entries={[]}
@@ -192,11 +192,11 @@ describe('Timeline', () => {
 
     const btn = screen.getByRole('button', { name: 'Add Followup' });
     fireEvent.click(btn);
-    expect(screen.getByText(/Followup form placeholder/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Add followup form')).toBeInTheDocument();
 
     // Click again to close
     fireEvent.click(btn);
-    expect(screen.queryByText(/Followup form placeholder/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Add followup form')).not.toBeInTheDocument();
   });
 
   it('switches form when a different action button is clicked', () => {
@@ -211,11 +211,11 @@ describe('Timeline', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Add Followup' }));
-    expect(screen.getByText(/Followup form placeholder/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Add followup form')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Add Task' }));
-    expect(screen.queryByText(/Followup form placeholder/)).not.toBeInTheDocument();
-    expect(screen.getByText(/Task form placeholder/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Add followup form')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Add task form')).toBeInTheDocument();
   });
 });
 

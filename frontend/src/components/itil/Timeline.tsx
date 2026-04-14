@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import type {
   TimelineEntry as TEntry,
@@ -7,6 +7,10 @@ import type {
   SolutionFormData,
 } from '@/hooks/useTickets';
 import TimelineEntry from './TimelineEntry';
+import FollowupForm from './FollowupForm';
+import TaskForm from './TaskForm';
+import SolutionForm from './SolutionForm';
+import type { ActorOption } from './ActorSelector';
 
 // ---------------------------------------------------------------------------
 // Timeline — Chronological entry list with action buttons
@@ -21,6 +25,10 @@ export interface TimelineProps {
   canApprove?: boolean;
   onApproveSolution?: (solutionId: string) => void;
   onRejectSolution?: (solutionId: string) => void;
+  /** Available users for the task assigned-user selector. */
+  userOptions?: ActorOption[];
+  /** Available solution types for the solution form. */
+  solutionTypes?: { id: string; name: string }[];
 }
 
 type ActionForm = 'followup' | 'task' | 'solution' | 'document' | null;
@@ -74,7 +82,7 @@ const actionBtn: CSSProperties = {
   cursor: 'pointer',
 };
 
-const formPlaceholder: CSSProperties = {
+const documentPlaceholder: CSSProperties = {
   padding: '1rem',
   marginTop: '0.75rem',
   borderRadius: '6px',
@@ -105,6 +113,8 @@ export default function Timeline({
   canApprove = false,
   onApproveSolution,
   onRejectSolution,
+  userOptions = [],
+  solutionTypes = [],
 }: TimelineProps) {
   const [activeForm, setActiveForm] = useState<ActionForm>(null);
 
@@ -113,6 +123,32 @@ export default function Timeline({
   const toggleForm = (form: ActionForm) => {
     setActiveForm((prev) => (prev === form ? null : form));
   };
+
+  const closeForm = useCallback(() => setActiveForm(null), []);
+
+  const handleFollowupSubmit = useCallback(
+    (data: FollowupFormData) => {
+      onAddFollowup(data);
+      setActiveForm(null);
+    },
+    [onAddFollowup],
+  );
+
+  const handleTaskSubmit = useCallback(
+    (data: TaskFormData) => {
+      onAddTask(data);
+      setActiveForm(null);
+    },
+    [onAddTask],
+  );
+
+  const handleSolutionSubmit = useCallback(
+    (data: SolutionFormData) => {
+      onAddSolution(data);
+      setActiveForm(null);
+    },
+    [onAddSolution],
+  );
 
   return (
     <div style={container} role="region" aria-label="Timeline">
@@ -132,13 +168,19 @@ export default function Timeline({
         )}
       </div>
 
-      {/* Action form placeholder — forms will be wired in task 13.3 */}
-      {activeForm && (
-        <div style={formPlaceholder} role="region" aria-label={`Add ${activeForm} form`}>
-          {activeForm === 'followup' && 'Followup form placeholder — will be implemented in task 13.3'}
-          {activeForm === 'task' && 'Task form placeholder — will be implemented in task 13.3'}
-          {activeForm === 'solution' && 'Solution form placeholder — will be implemented in task 13.3'}
-          {activeForm === 'document' && 'Document form placeholder — will be implemented in task 13.3'}
+      {/* Action forms */}
+      {activeForm === 'followup' && (
+        <FollowupForm onSubmit={handleFollowupSubmit} onCancel={closeForm} />
+      )}
+      {activeForm === 'task' && (
+        <TaskForm onSubmit={handleTaskSubmit} onCancel={closeForm} userOptions={userOptions} />
+      )}
+      {activeForm === 'solution' && (
+        <SolutionForm onSubmit={handleSolutionSubmit} onCancel={closeForm} solutionTypes={solutionTypes} />
+      )}
+      {activeForm === 'document' && (
+        <div style={documentPlaceholder} role="region" aria-label="Add document form">
+          Document upload form — coming soon
         </div>
       )}
 
