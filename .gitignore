@@ -27,10 +27,6 @@ target/
 *.log
 logs/
 
-# ─── Test caches ──────────────────────────────────────────────────────────
-.jqwik-database
-.jqwik-database/
-
 # ─── OS generated ─────────────────────────────────────────────────────────
 Thumbs.db
 ehthumbs.db

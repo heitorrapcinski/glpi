@@ -37,8 +37,6 @@
         <spring-cloud.version>2023.0.3</spring-cloud.version>
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc.version>2.6.0</springdoc.version>
-        <jqwik.version>1.9.1</jqwik.version>
-        <mockito.version>5.14.2</mockito.version>
     </properties>
 
     <dependencyManagement>
@@ -112,36 +110,6 @@
                 <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
-
-            <!-- jqwik (property-based testing) -->
-            <dependency>
-                <groupId>net.jqwik</groupId>
-                <artifactId>jqwik</artifactId>
-                <version>${jqwik.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- JUnit 5 -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>5.11.3</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- Mockito -->
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-junit-jupiter</artifactId>
-                <version>${mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -169,21 +137,6 @@
                         <target>${java.version}</target>
                         <encoding>UTF-8</encoding>
                         <parameters>true</parameters>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.1</version>
-                    <configuration>
-                        <!-- Required for jqwik to work alongside JUnit 5 -->
-                        <includes>
-                            <include>**/*Test.java</include>
-                            <include>**/*Tests.java</include>
-                            <include>**/*Properties.java</include>
-                        </includes>
-                        <!-- Run tests from the multi-module project root so relative paths resolve correctly -->
-                        <workingDirectory>${maven.multiModuleProjectDirectory}</workingDirectory>
                     </configuration>
                 </plugin>
             </plugins>
