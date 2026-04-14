@@ -147,7 +147,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Implement responsive behavior: sidebar collapses to hamburger below 992px, content stacks below 768px
   - _Requirements: 3.1, 3.4, 3.5, 3.8, 4.1, 18.1, 18.2, 18.6, 22.1_
 
-- [-] 9. Implement authentication pages (Login, 2FA)
+- [x] 9. Implement authentication pages (Login, 2FA)
   - Create `src/pages/LoginPage.tsx` with username/password fields, "Remember me" checkbox, sign-in button, matching legacy login card layout
   - Implement login form submission calling `authStore.login()`, handle HTTP 401 (invalid credentials), HTTP 401 with account locked error message, HTTP 403 with 2FA_REQUIRED code
   - Create TOTP code input field for 2FA flow calling `authStore.loginWith2FA()`
@@ -155,7 +155,7 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Handle `returnTo` query parameter for redirect after login
   - _Requirements: 1.1, 1.2, 1.4, 1.5, 1.7, 1.8, 1.9, 1.10, 20.5_
 
-- [~] 10. Checkpoint — Ensure all tests pass, verify login flow and layout rendering
+- [-] 10. Checkpoint — Ensure all tests pass, verify login flow and layout rendering
   - Ensure all tests pass, ask the user if questions arise.
 
 - [~] 11. Implement TanStack Query hooks for all API modules
