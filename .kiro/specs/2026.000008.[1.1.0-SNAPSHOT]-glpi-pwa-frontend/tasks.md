@@ -315,13 +315,13 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
   - Verify buildable with `docker compose build frontend`
   - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6_
 
-- [-] 26. Final checkpoint — Ensure all tests pass and application is fully integrated
+- [x] 26. Final checkpoint — Ensure all tests pass and application is fully integrated
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 27. Version control and release
-  - [~] 27.1 Ensure all previous tasks are complete and tests pass
-  - [~] 27.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 27.3 Commit the version bump: "release: 1.1.0 - glpi-pwa-frontend"
+  - [x] 27.1 Ensure all previous tasks are complete and tests pass
+  - [x] 27.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [-] 27.3 Commit the version bump: "release: 1.1.0 - glpi-pwa-frontend"
   - [~] 27.4 Merge branch into main/master
   - [~] 27.5 Apply Git tag: 1.1.0 (without SNAPSHOT)
   - [~] 27.6 Push branch, merge, and tag to remote
