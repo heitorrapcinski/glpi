@@ -6,7 +6,7 @@ spring:
     name: knowledge-service
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/knowledge_db}
+      uri: ${MONGODB_URI:mongodb://glpi:glpi_secret@localhost:27017/glpi_knowledge?authSource=admin}
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
