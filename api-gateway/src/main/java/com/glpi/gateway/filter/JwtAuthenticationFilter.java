@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -128,12 +129,20 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             }
         }
 
-        return request.mutate()
-                .header("X-User-Id", userId != null ? userId : "")
-                .header("X-Entity-Id", entityId != null ? entityId : "")
-                .header("X-Profile-Id", profileId != null ? profileId : "")
-                .header("X-User-Rights", rightsBase64)
-                .build();
+        // Build new writable headers from the original (avoids ReadOnlyHttpHeaders issue)
+        HttpHeaders writableHeaders = new HttpHeaders();
+        writableHeaders.putAll(request.getHeaders());
+        writableHeaders.set("X-User-Id", userId != null ? userId : "");
+        writableHeaders.set("X-Entity-Id", entityId != null ? entityId : "");
+        writableHeaders.set("X-Profile-Id", profileId != null ? profileId : "");
+        writableHeaders.set("X-User-Rights", rightsBase64);
+
+        return new ServerHttpRequestDecorator(request) {
+            @Override
+            public HttpHeaders getHeaders() {
+                return writableHeaders;
+            }
+        };
     }
 
     private Mono<Void> writeErrorResponse(ServerWebExchange exchange, HttpStatus status, String errorCode) {
