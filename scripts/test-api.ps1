@@ -51,6 +51,12 @@ $usersResponse | ConvertFrom-Json | ConvertTo-Json -Depth 5 | Write-Host
 # ─── List Users (internal) ───────────────────────────────────────────────
 Write-Host "`n[3/3] Listing users (internal — inside gateway container)..." -ForegroundColor Yellow
 
+$distro = docker compose exec api-gateway sh -c "cat /etc/os-release 2>/dev/null | head -2"
+Write-Host "  Container OS: $distro" -ForegroundColor DarkGray
+
+Write-Host "  curl command:`n" -ForegroundColor DarkGray
+Write-Host "  docker compose exec api-gateway sh -c `"wget -qO- --header='Authorization: Bearer $token' http://localhost:8080/users`"`n"
+
 $internalResponse = docker compose exec api-gateway sh -c "wget -qO- --header='Authorization: Bearer $token' http://localhost:8080/users"
 
 Write-Host "  Response:`n" -ForegroundColor Green
