@@ -83,16 +83,16 @@ This plan implements the GLPI PWA Frontend as a React 18 + TypeScript + Vite app
     - **Property 13: Date and number formatting locale consistency** — output matches Intl API
     - **Validates: Requirements 5.2, 8.5, 14.4, 19.4, 23.4, 24.4**
 
-- [-] 5. Checkpoint — Ensure all infrastructure tests pass
+- [x] 5. Checkpoint — Ensure all infrastructure tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. Implement preferences store, UI store, and routing with auth guard
-  - [~] 6.1 Create preferences and UI stores
+  - [x] 6.1 Create preferences and UI stores
     - Create `src/stores/preferencesStore.ts` with theme, locale, layoutMode, timelineOrder, itemsPerPage, sidebarCollapsed — persisted to localStorage
     - Create `src/stores/uiStore.ts` for transient UI state (modals, sidebar toggle)
     - _Requirements: 16.1, 16.2, 16.4_
 
-  - [~] 6.2 Implement router with lazy loading and auth guard
+  - [-] 6.2 Implement router with lazy loading and auth guard
     - Create `src/router.tsx` with all routes from the routing map, using `React.lazy` and `Suspense` for code splitting
     - Implement `RequireAuth` wrapper that checks `authStore.isAuthenticated` and redirects to `/login` with `returnTo` param
     - Implement `isHelpdeskRouteAllowed` function for helpdesk profile route restriction
