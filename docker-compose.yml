@@ -4,7 +4,6 @@
 # Usage:
 #   Start all infrastructure + services:   docker compose up -d
 #   Start infrastructure only:             docker compose up -d zookeeper kafka mongodb
-#   Run seeders (seed profile):            docker compose --profile seed up
 #
 # All environment variables are defined in the .env file at the project root.
 # See .env.example for all available variables and their documented defaults.
@@ -250,118 +249,6 @@ services:
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       SERVER_PORT: 8088
       MONGODB_URI: ${KNOWLEDGE_MONGODB_URI}
-
-  # ─── Seeders (profile: seed) ───────────────────────────────────────────────
-  # Run with: docker compose --profile seed up
-  # Seeders run the service with seed data on startup and exit.
-  # Dependency order: Identity → SLA → Ticket → Asset → Knowledge → Notification
-
-  identity-seeder:
-    <<: *service-defaults
-    profiles: ["seed"]
-    image: glpi/identity-service:${VERSION}
-    container_name: glpi-identity-seeder
-    entrypoint: ["java", "-jar", "app.jar"]
-    environment:
-      MONGODB_URI: ${IDENTITY_MONGODB_URI}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    restart: "no"
-
-  sla-seeder:
-    <<: *service-defaults
-    profiles: ["seed"]
-    image: glpi/sla-service:${VERSION}
-    container_name: glpi-sla-seeder
-    entrypoint: ["java", "-jar", "app.jar"]
-    environment:
-      MONGODB_URI: ${SLA_MONGODB_URI}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-      TICKET_SERVICE_URL: ${TICKET_SERVICE_URL}
-    depends_on:
-      identity-seeder:
-        condition: service_completed_successfully
-      mongodb:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    restart: "no"
-
-  ticket-seeder:
-    <<: *service-defaults
-    profiles: ["seed"]
-    image: glpi/ticket-service:${VERSION}
-    container_name: glpi-ticket-seeder
-    entrypoint: ["java", "-jar", "app.jar"]
-    environment:
-      MONGODB_URI: ${TICKET_MONGODB_URI}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-    depends_on:
-      sla-seeder:
-        condition: service_completed_successfully
-      mongodb:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    restart: "no"
-
-  asset-seeder:
-    <<: *service-defaults
-    profiles: ["seed"]
-    image: glpi/asset-service:${VERSION}
-    container_name: glpi-asset-seeder
-    entrypoint: ["java", "-jar", "app.jar"]
-    environment:
-      MONGODB_URI: ${ASSET_MONGODB_URI}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-    depends_on:
-      ticket-seeder:
-        condition: service_completed_successfully
-      mongodb:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    restart: "no"
-
-  knowledge-seeder:
-    <<: *service-defaults
-    profiles: ["seed"]
-    image: glpi/knowledge-service:${VERSION}
-    container_name: glpi-knowledge-seeder
-    entrypoint: ["java", "-jar", "app.jar"]
-    environment:
-      MONGODB_URI: ${KNOWLEDGE_MONGODB_URI}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-    depends_on:
-      asset-seeder:
-        condition: service_completed_successfully
-      mongodb:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    restart: "no"
-
-  notification-seeder:
-    <<: *service-defaults
-    profiles: ["seed"]
-    image: glpi/notification-service:${VERSION}
-    container_name: glpi-notification-seeder
-    entrypoint: ["java", "-jar", "app.jar"]
-    environment:
-      MONGODB_URI: ${NOTIFICATION_MONGODB_URI}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-    depends_on:
-      knowledge-seeder:
-        condition: service_completed_successfully
-      mongodb:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    restart: "no"
 
 # ─── Volumes ───────────────────────────────────────────────────────────────
 volumes:

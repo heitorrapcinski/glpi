@@ -51,6 +51,13 @@ Manages Configuration Items (CIs) in the CMDB including computers, network equip
 mvn -pl common,asset-service -am spring-boot:run -pl asset-service
 ```
 
+## Default Seeded Data
+
+On first startup (empty database), `AssetSeeder` seeds:
+
+- **5 asset states**: In Stock, In Use, Maintenance, Retired, Disposed
+- **1 root location** (id=`0`, name=`Root Location`)
+
 ## API Documentation
 
 - OpenAPI spec: `http://localhost:8085/v3/api-docs`

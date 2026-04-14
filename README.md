@@ -92,13 +92,6 @@ docker compose ps
 docker compose logs -f identity-service
 ```
 
-### Run seeders (populate default data)
-
-```bash
-# Seeds default profiles, users, root entity, and SLA calendar
-docker compose --profile seed up
-```
-
 ### Start infrastructure only (for local development)
 
 ```bash
@@ -151,14 +144,26 @@ Key variables:
 
 ---
 
+## Default Seeded Data
+
+Each service that requires initial data seeds it automatically on first startup (when collections are empty). No separate seeder step is needed.
+
+| Service | Seeder Class | Records |
+|---|---|---|
+| Identity Service | `IdentitySeeder` | 1 root entity, 8 profiles (Self-Service, Observer, Admin, Super-Admin, Hotliner, Technician, Supervisor, Read-Only), 4 users (glpi, post-only, tech, normal) |
+| Ticket Service | `TicketSeeder` | 1 default ITIL priority matrix (5×5 urgency × impact) |
+| SLA Service | `SlaSeeder` | 1 default calendar (Mon–Fri 08:00–20:00) |
+| Asset Service | `AssetSeeder` | 5 asset states (In Stock, In Use, Maintenance, Retired, Disposed), 1 root location |
+| Knowledge Service | `KnowledgeSeeder` | 1 root KB category |
+| Notification Service | `NotificationSeeder` | 8 default notification templates (ticket, problem, change events) |
+
+---
+
 ## Building
 
 ```bash
 # Build all modules
 mvn clean package -DskipTests
-
-# Build and run tests
-mvn clean verify
 
 # Build a specific service
 mvn -pl identity-service clean package
@@ -179,8 +184,6 @@ mvn -pl identity-service clean package
 | API Docs | SpringDoc OpenAPI 3.0 |
 | Build | Maven (multi-module) |
 | Containerization | Docker + Docker Compose |
-| Testing (unit) | JUnit 5 + Mockito |
-| Testing (property) | jqwik |
 
 ---
 

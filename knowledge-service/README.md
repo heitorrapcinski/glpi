@@ -49,6 +49,12 @@ mvn -pl common,knowledge-service -am package -DskipTests
 java -jar knowledge-service/target/knowledge-service-1.0.1.jar
 ```
 
+## Default Seeded Data
+
+On first startup (empty database), `KnowledgeSeeder` seeds:
+
+- **1 root KB category** (id=`0`, name=`Root`)
+
 ## API Documentation
 
 - OpenAPI spec: `http://localhost:8088/v3/api-docs`

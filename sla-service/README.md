@@ -69,6 +69,12 @@ Service starts on port **8086**.
 |---|---|---|
 | `sla.events` | Producer | `SlaEscalationTriggered` |
 
+## Default Seeded Data
+
+On first startup (empty database), `SlaSeeder` seeds:
+
+- **1 default calendar** (id=`1`, name=`Default`): Monday through Friday, 08:00–20:00
+
 ## API Documentation
 
 - OpenAPI spec: `http://localhost:8086/v3/api-docs`

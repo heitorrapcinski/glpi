@@ -111,7 +111,7 @@ docker compose up identity-service
 
 ## Default Seeded Data
 
-On first startup (empty database), the service seeds:
+On first startup (empty database), `IdentitySeeder` seeds:
 
 - **Root entity** (id=`0`, name=`Root Entity`)
 - **8 default profiles**: Self-Service, Observer, Admin, Super-Admin, Hotliner, Technician, Supervisor, Read-Only

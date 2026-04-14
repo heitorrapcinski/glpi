@@ -87,6 +87,12 @@ mvn spring-boot:run
 |---|---|
 | `tickets.events` | `TicketCreated`, `TicketUpdated`, `TicketDeleted`, `TicketSolved`, `TicketReopened`, `TicketFollowupAdded`, `TicketTaskCompleted`, `TicketValidationRequested`, `TicketValidationApproved`, `TicketValidationRefused` |
 
+## Default Seeded Data
+
+On first startup (empty database), `TicketSeeder` seeds:
+
+- **1 default ITIL priority matrix** (id=`default`, entity=`0`): 5×5 urgency × impact grid mapping to priorities 1–6
+
 ## API Documentation
 
 - OpenAPI spec: `GET /v3/api-docs`

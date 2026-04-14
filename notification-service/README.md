@@ -72,11 +72,11 @@ mvn spring-boot:run
 
 Failed messages after 3 retries are routed to `{topic}.dlq`.
 
-## Default Seeded Templates
+## Default Seeded Data
 
-- `ticket.created`, `ticket.solved`, `ticket.closed`, `ticket.validation.requested`
-- `problem.created`, `problem.solved`
-- `change.created`, `change.validation.approved`
+On first startup (empty database), `NotificationSeeder` seeds:
+
+- **8 notification templates**: `ticket.created`, `ticket.solved`, `ticket.closed`, `ticket.validation.requested`, `problem.created`, `problem.solved`, `change.created`, `change.validation.approved`
 
 ## API Documentation
 
