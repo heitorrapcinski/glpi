@@ -120,7 +120,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
 - [x] 5. Checkpoint — Verify core infrastructure
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 6. Implement Login page
+- [x] 6. Implement Login page
   - [x] 6.1 Adapt SignInForm component for GLPI authentication
     - Adapt `src/components/auth/SignInForm.tsx` from the template to include username, password, and optional TOTP code input fields
     - Add client-side validation: reject empty or whitespace-only username and password before sending the request
@@ -132,7 +132,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - On 5xx or network error, display an inline Alert (error variant) with server connectivity message
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 11.8_
 
-  - [-] 6.2 Adapt SignIn page and AuthPageLayout
+  - [x] 6.2 Adapt SignIn page and AuthPageLayout
     - Adapt `src/pages/AuthPages/SignIn.tsx` to use the modified SignInForm
     - Ensure `AuthPageLayout.tsx` provides the full-page auth layout with theme toggle support
     - If user is already authenticated, redirect to Dashboard (`/`)
@@ -153,7 +153,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - _Requirements: 3.1, 3.2, 3.5, 3.6, 3.7, 3.8, 3.9_
 
 - [ ] 7. Implement route protection and routing
-  - [~] 7.1 Create ProtectedRoute component
+  - [-] 7.1 Create ProtectedRoute component
     - Create `src/components/routes/ProtectedRoute.tsx`
     - Read `isAuthenticated` and `isLoading` from AuthContext
     - While `isLoading`, render a loading spinner
