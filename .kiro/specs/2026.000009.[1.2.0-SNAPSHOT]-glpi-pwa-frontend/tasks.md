@@ -42,23 +42,23 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Create `frontend/.env.example` with `VITE_API_GATEWAY_URL=/api` and `VITE_APP_VERSION=1.2.0-SNAPSHOT`
     - _Requirements: 1.3, 1.4, 10.4_
 
-- [-] 2. Checkpoint — Verify scaffolding
+- [x] 2. Checkpoint — Verify scaffolding
   - Ensure the project compiles with `npm run build` (no TypeScript errors)
   - Ensure all tests pass, ask the user if questions arise
 
 - [ ] 3. Implement core infrastructure (types, API client, auth service)
-  - [~] 3.1 Create TypeScript auth types
+  - [x] 3.1 Create TypeScript auth types
     - Create `src/types/auth.ts` with `LoginRequest`, `AuthResponse`, `RefreshRequest`, and `ApiError` interfaces as defined in the design document
     - _Requirements: 3.3, 4.1, 8.1_
 
-  - [~] 3.2 Implement Axios HTTP client with interceptors
+  - [x] 3.2 Implement Axios HTTP client with interceptors
     - Create `src/services/api.ts` with an Axios instance
     - Set base URL from `import.meta.env.VITE_API_GATEWAY_URL || '/api'`
     - Implement request interceptor that attaches `Authorization: Bearer {accessToken}` header when a token is available
     - Implement response interceptor that on 401 for non-auth endpoints (`/auth/*`) attempts one token refresh and retries the original request; if retry fails, clears session and redirects to `/signin`
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
 
-  - [~] 3.3 Implement auth service functions
+  - [-] 3.3 Implement auth service functions
     - Create `src/services/authService.ts` with `login()`, `refresh()`, and `logout()` functions
     - `login()` sends POST to `/auth/login` with `LoginRequest` payload
     - `refresh()` sends POST to `/auth/refresh` with `{ refreshToken }`
