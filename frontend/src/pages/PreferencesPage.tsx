@@ -1,6 +1,7 @@
-import { type CSSProperties, useCallback } from 'react';
+import { type CSSProperties, useCallback, useState } from 'react';
 import { usePreferencesStore } from '@/stores/preferencesStore';
 import { applyTheme, SUPPORTED_PALETTES, DARK_PALETTES } from '@/theme/themeEngine';
+import { useToast } from '@/components/common/Toast';
 
 // ---------------------------------------------------------------------------
 // PreferencesPage — User preferences for language, theme, layout, etc.
@@ -147,6 +148,24 @@ const toggleKnob = (active: boolean): CSSProperties => ({
   transition: 'left 0.2s',
 });
 
+const saveBtn: CSSProperties = {
+  padding: '0.625rem 1.5rem',
+  fontSize: '0.875rem',
+  fontWeight: 600,
+  borderRadius: '6px',
+  border: 'none',
+  backgroundColor: 'rgb(var(--tblr-primary-rgb, 254, 201, 92))',
+  color: '#1e293b',
+  cursor: 'pointer',
+  transition: 'opacity 0.15s',
+};
+
+const footerBar: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  padding: '1rem 0 0.5rem 0',
+};
+
 // ---------------------------------------------------------------------------
 // Palette preview colors (representative sidebar bg for each palette)
 // ---------------------------------------------------------------------------
@@ -178,28 +197,43 @@ const PALETTE_PREVIEW: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export default function PreferencesPage() {
-  const {
-    theme,
-    locale,
-    layoutMode,
-    timelineOrder,
-    itemsPerPage,
-    sidebarCollapsed,
-    setTheme,
-    setLocale,
-    setLayoutMode,
-    setTimelineOrder,
-    setItemsPerPage,
-    toggleSidebar,
-  } = usePreferencesStore();
+  const store = usePreferencesStore();
+  const { addToast } = useToast();
 
-  const handleThemeChange = useCallback(
-    (paletteName: string) => {
-      setTheme(paletteName);
-      applyTheme(paletteName);
-    },
-    [setTheme],
-  );
+  // Local draft state — initialised from the persisted store
+  const [draft, setDraft] = useState({
+    theme: store.theme,
+    locale: store.locale,
+    layoutMode: store.layoutMode,
+    timelineOrder: store.timelineOrder,
+    itemsPerPage: store.itemsPerPage,
+    sidebarCollapsed: store.sidebarCollapsed,
+  });
+
+  const isDirty =
+    draft.theme !== store.theme ||
+    draft.locale !== store.locale ||
+    draft.layoutMode !== store.layoutMode ||
+    draft.timelineOrder !== store.timelineOrder ||
+    draft.itemsPerPage !== store.itemsPerPage ||
+    draft.sidebarCollapsed !== store.sidebarCollapsed;
+
+  const handleThemePreview = useCallback((paletteName: string) => {
+    applyTheme(paletteName);
+    setDraft((d) => ({ ...d, theme: paletteName }));
+  }, []);
+
+  const handleSave = useCallback(() => {
+    store.setTheme(draft.theme);
+    store.setLocale(draft.locale);
+    store.setLayoutMode(draft.layoutMode);
+    store.setTimelineOrder(draft.timelineOrder);
+    store.setItemsPerPage(draft.itemsPerPage);
+    if (draft.sidebarCollapsed !== store.sidebarCollapsed) {
+      store.toggleSidebar();
+    }
+    addToast('success', 'Preferences saved successfully.');
+  }, [draft, store, addToast]);
 
   return (
     <div style={page}>
@@ -216,8 +250,8 @@ export default function PreferencesPage() {
           </div>
           <select
             style={selectStyle}
-            value={locale}
-            onChange={(e) => setLocale(e.target.value)}
+            value={draft.locale}
+            onChange={(e) => setDraft((d) => ({ ...d, locale: e.target.value }))}
             aria-label="Display language"
           >
             {LANGUAGES.map((lang) => (
@@ -235,8 +269,8 @@ export default function PreferencesPage() {
           </div>
           <select
             style={selectStyle}
-            value={itemsPerPage}
-            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            value={draft.itemsPerPage}
+            onChange={(e) => setDraft((d) => ({ ...d, itemsPerPage: Number(e.target.value) }))}
             aria-label="Items per page"
           >
             {ITEMS_PER_PAGE_OPTIONS.map((n) => (
@@ -252,12 +286,12 @@ export default function PreferencesPage() {
       <section style={card} aria-labelledby="pref-theme">
         <h2 id="pref-theme" style={sectionTitle}>Theme / Palette</h2>
         <p style={fieldDescription}>
-          Select a color palette. Changes apply immediately.
+          Select a color palette. A live preview is shown — click Save to keep your choice.
         </p>
 
         <div style={paletteGrid} role="radiogroup" aria-label="Theme palette selector">
           {SUPPORTED_PALETTES.map((name) => {
-            const active = name === theme;
+            const active = name === draft.theme;
             const isDark = DARK_PALETTES.includes(name);
             return (
               <button
@@ -267,7 +301,7 @@ export default function PreferencesPage() {
                 aria-checked={active}
                 aria-label={`${name} palette${isDark ? ' (dark)' : ''}`}
                 style={paletteBtn(active)}
-                onClick={() => handleThemeChange(name)}
+                onClick={() => handleThemePreview(name)}
               >
                 <span
                   style={{
@@ -298,8 +332,10 @@ export default function PreferencesPage() {
           </div>
           <select
             style={selectStyle}
-            value={layoutMode}
-            onChange={(e) => setLayoutMode(e.target.value as 'vertical' | 'horizontal')}
+            value={draft.layoutMode}
+            onChange={(e) =>
+              setDraft((d) => ({ ...d, layoutMode: e.target.value as 'vertical' | 'horizontal' }))
+            }
             aria-label="Layout mode"
           >
             <option value="vertical">Vertical sidebar</option>
@@ -314,8 +350,10 @@ export default function PreferencesPage() {
           </div>
           <select
             style={selectStyle}
-            value={timelineOrder}
-            onChange={(e) => setTimelineOrder(e.target.value as 'newest' | 'oldest')}
+            value={draft.timelineOrder}
+            onChange={(e) =>
+              setDraft((d) => ({ ...d, timelineOrder: e.target.value as 'newest' | 'oldest' }))
+            }
             aria-label="Timeline order"
           >
             <option value="newest">Newest first</option>
@@ -332,19 +370,36 @@ export default function PreferencesPage() {
             <button
               type="button"
               role="switch"
-              aria-checked={sidebarCollapsed}
+              aria-checked={draft.sidebarCollapsed}
               aria-label="Toggle sidebar collapsed state"
-              style={toggleSwitch(sidebarCollapsed)}
-              onClick={toggleSidebar}
+              style={toggleSwitch(draft.sidebarCollapsed)}
+              onClick={() => setDraft((d) => ({ ...d, sidebarCollapsed: !d.sidebarCollapsed }))}
             >
-              <span style={toggleKnob(sidebarCollapsed)} />
+              <span style={toggleKnob(draft.sidebarCollapsed)} />
             </button>
             <span style={{ fontSize: '0.75rem', color: 'var(--tblr-secondary, #606f91)' }}>
-              {sidebarCollapsed ? 'Collapsed' : 'Expanded'}
+              {draft.sidebarCollapsed ? 'Collapsed' : 'Expanded'}
             </span>
           </div>
         </div>
       </section>
+
+      {/* Save button */}
+      <div style={footerBar}>
+        <button
+          type="button"
+          style={{
+            ...saveBtn,
+            opacity: isDirty ? 1 : 0.5,
+            cursor: isDirty ? 'pointer' : 'default',
+          }}
+          disabled={!isDirty}
+          onClick={handleSave}
+          aria-label="Save preferences"
+        >
+          Save preferences
+        </button>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './router';
 import OfflineIndicator from './components/pwa/OfflineIndicator';
 import ServiceWorkerUpdateBanner from './components/pwa/ServiceWorkerUpdateBanner';
+import { ToastProvider } from './components/common/Toast';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,11 +19,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <OfflineIndicator />
-        <div id="glpi-app">
-          <AppRoutes />
-        </div>
-        <ServiceWorkerUpdateBanner />
+        <ToastProvider>
+          <OfflineIndicator />
+          <div id="glpi-app">
+            <AppRoutes />
+          </div>
+          <ServiceWorkerUpdateBanner />
+        </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

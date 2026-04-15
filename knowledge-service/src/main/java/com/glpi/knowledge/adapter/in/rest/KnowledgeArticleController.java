@@ -22,7 +22,7 @@ import java.util.List;
  * Requirements: 17.1, 19.1, 19.6
  */
 @RestController
-@RequestMapping("/knowledge/articles")
+@RequestMapping("/knowledge")
 @Tag(name = "Knowledge Articles", description = "Knowledge base article management")
 public class KnowledgeArticleController {
 
