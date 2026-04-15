@@ -6,7 +6,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
 
 ## Tasks
 
-- [ ] 1. Scaffold project structure from template
+- [x] 1. Scaffold project structure from template
   - [x] 1.1 Copy template foundation into `frontend/`
     - Copy `index.html`, `package.json`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `postcss.config.js`, `eslint.config.js`, `vite.config.ts`, and `.gitignore` from `.frontend-template/` into `frontend/`
     - Copy `src/main.tsx` entry point from template
@@ -34,7 +34,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Run `npm install` to generate `package-lock.json`
     - _Requirements: 1.2, 1.3_
 
-  - [-] 1.3 Strip unused template code and create MVP file structure
+  - [x] 1.3 Strip unused template code and create MVP file structure
     - Remove all pages not in MVP scope (Charts, Forms, Tables, UiElements, Calendar, Blank, UserProfiles, SignUp)
     - Remove unused components (charts, ecommerce, form, tables, UserProfile, avatar, badge, dropdown, images, modal, table, videos, ChartTab, ComponentCard, PageBreadCrumb, NotificationDropdown, SidebarWidget)
     - Remove unused SVG icons not referenced by MVP components
@@ -42,7 +42,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Create `frontend/.env.example` with `VITE_API_GATEWAY_URL=/api` and `VITE_APP_VERSION=1.2.0-SNAPSHOT`
     - _Requirements: 1.3, 1.4, 10.4_
 
-- [~] 2. Checkpoint — Verify scaffolding
+- [-] 2. Checkpoint — Verify scaffolding
   - Ensure the project compiles with `npm run build` (no TypeScript errors)
   - Ensure all tests pass, ask the user if questions arise
 
