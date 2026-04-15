@@ -46,7 +46,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
   - Ensure the project compiles with `npm run build` (no TypeScript errors)
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 3. Implement core infrastructure (types, API client, auth service)
+- [x] 3. Implement core infrastructure (types, API client, auth service)
   - [x] 3.1 Create TypeScript auth types
     - Create `src/types/auth.ts` with `LoginRequest`, `AuthResponse`, `RefreshRequest`, and `ApiError` interfaces as defined in the design document
     - _Requirements: 3.3, 4.1, 8.1_
@@ -58,7 +58,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Implement response interceptor that on 401 for non-auth endpoints (`/auth/*`) attempts one token refresh and retries the original request; if retry fails, clears session and redirects to `/signin`
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
 
-  - [-] 3.3 Implement auth service functions
+  - [x] 3.3 Implement auth service functions
     - Create `src/services/authService.ts` with `login()`, `refresh()`, and `logout()` functions
     - `login()` sends POST to `/auth/login` with `LoginRequest` payload
     - `refresh()` sends POST to `/auth/refresh` with `{ refreshToken }`
@@ -86,7 +86,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - **Validates: Requirements 8.3**
 
 - [ ] 4. Implement AuthContext and token management
-  - [~] 4.1 Create AuthContext provider
+  - [x] 4.1 Create AuthContext provider
     - Create `src/context/AuthContext.tsx` implementing `AuthState` and `AuthContextType` interfaces from the design
     - On mount, read tokens from `localStorage` keys (`glpi_access_token`, `glpi_refresh_token`, `glpi_expires_at`); if a valid non-expired access token exists, restore the session and set `isAuthenticated = true`
     - Implement `login()` method that calls `authService.login()`, stores tokens in memory + localStorage, and schedules refresh timer
@@ -95,14 +95,14 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Set `isLoading = true` during initial session restore, `false` once complete
     - _Requirements: 4.1, 4.3, 4.4, 4.6, 5.2, 5.3_
 
-  - [~] 4.2 Implement automatic token refresh timer
+  - [x] 4.2 Implement automatic token refresh timer
     - Schedule a refresh timer that fires 60 seconds before `expiresAt`
     - On refresh success, replace stored tokens in memory + localStorage and reschedule timer
     - On refresh failure (401), clear all tokens and set `isAuthenticated = false` (triggers redirect via ProtectedRoute)
     - Clean up timer on unmount
     - _Requirements: 4.2, 4.3, 4.4_
 
-  - [~] 4.3 Wire AuthContext into the Axios HTTP client
+  - [-] 4.3 Wire AuthContext into the Axios HTTP client
     - Connect the Axios request interceptor to read the access token from AuthContext via `getAccessToken()`
     - Connect the 401 response interceptor to call the refresh logic from AuthContext
     - _Requirements: 4.5, 8.2, 8.3, 8.4_
