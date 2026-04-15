@@ -253,8 +253,8 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Update `index.html` to include PWA meta tags: viewport, theme-color, apple-touch-icon, description
     - _Requirements: 2.1, 2.5_
 
-- [ ] 12. Implement Docker deployment
-  - [-] 12.1 Create Nginx configuration
+- [x] 12. Implement Docker deployment
+  - [x] 12.1 Create Nginx configuration
     - Create `frontend/nginx.conf` with:
       - `location /api/` proxying to `http://api-gateway:8080/` for backend API requests
       - `location /` with `try_files $uri $uri/ /index.html` for SPA client-side routing fallback
@@ -262,19 +262,19 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
       - Cache headers: `Cache-Control: no-cache, no-store, must-revalidate` for `index.html` and `sw.js`
     - _Requirements: 9.3, 9.5, 9.6_
 
-  - [~] 12.2 Create multi-stage Dockerfile
+  - [x] 12.2 Create multi-stage Dockerfile
     - Create `frontend/Dockerfile` with:
       - Stage 1 (build): Node.js image, copy source, accept `API_GATEWAY_URL`, `APP_VERSION`, `PUBLIC_URL` as build args, set them as `VITE_API_GATEWAY_URL` and `VITE_APP_VERSION` env vars, run `npm ci && npm run build`
       - Stage 2 (serve): Nginx image, copy built static files from stage 1, copy `nginx.conf`, expose port 80
     - _Requirements: 9.1, 9.2_
 
-  - [~] 12.3 Verify docker-compose frontend service configuration
+  - [x] 12.3 Verify docker-compose frontend service configuration
     - Verify the existing `frontend` service in `docker-compose.yml` matches the design: build context `./frontend`, Dockerfile `Dockerfile`, build args `API_GATEWAY_URL`, `APP_VERSION`, `PUBLIC_URL`, port mapping `${FRONTEND_PORT}:80`, depends on `api-gateway`
     - Update if any discrepancies exist
     - _Requirements: 9.4_
 
 - [ ] 13. Finalize build configuration and environment
-  - [~] 13.1 Update Vite configuration
+  - [-] 13.1 Update Vite configuration
     - Ensure `vite.config.ts` includes React plugin (`@vitejs/plugin-react`), SVGR plugin (`vite-plugin-svgr`), and PWA plugin
     - Configure dev server proxy: `/api` → `http://localhost:8080` for local development
     - Ensure production build produces hashed filenames for cache-busting
