@@ -1,59 +1,82 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
-import path from 'path';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import svgr from "vite-plugin-svgr";
+import { VitePWA } from "vite-plugin-pwa";
 
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    svgr({
+      svgrOptions: {
+        icon: true,
+        // This will transform your SVG to a React component
+        exportType: "named",
+        namedExport: "ReactComponent",
+      },
+    }),
     VitePWA({
-      registerType: 'prompt',
-      devOptions: { enabled: false },
-      includeAssets: ['icons/icon-192x192.svg', 'icons/icon-512x512.svg'],
-      manifest: false,
+      registerType: "autoUpdate",
+      strategies: "generateSW",
+      manifest: {
+        name: "GLPI",
+        short_name: "GLPI",
+        description: "GLPI IT Service Management",
+        start_url: "/",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#1D4ED8",
+        icons: [
+          {
+            src: "/icons/icon-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/icons/icon-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+        ],
+      },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2}'],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
         runtimeCaching: [
           {
-            urlPattern: /^https?:\/\/[^/]+\/(?:assets|icons|fonts)\//,
-            handler: 'CacheFirst',
+            urlPattern: /^https?:\/\/[^/]+\/$/,
+            handler: "NetworkFirst",
             options: {
-              cacheName: 'static-assets-v1',
-              expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              cacheName: "html-cache",
             },
           },
           {
-            urlPattern: /^https?:\/\/[^/]+\/api\//,
-            handler: 'NetworkFirst',
+            urlPattern: /\.(?:js|css)$/,
+            handler: "StaleWhileRevalidate",
             options: {
-              cacheName: 'api-cache-v1',
-              networkTimeoutSeconds: 10,
-              expiration: { maxEntries: 200, maxAgeSeconds: 24 * 60 * 60 },
+              cacheName: "static-resources",
             },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|gif|webp|svg)$/,
-            handler: 'StaleWhileRevalidate',
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|ico)$/,
+            handler: "CacheFirst",
             options: {
-              cacheName: 'images-v1',
-              expiration: { maxEntries: 60, maxAgeSeconds: 7 * 24 * 60 * 60 },
+              cacheName: "image-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
             },
           },
         ],
       },
     }),
   ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-  },
   server: {
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/api/, ''),
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },

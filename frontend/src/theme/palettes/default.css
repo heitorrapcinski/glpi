@@ -1,7 +1,0 @@
-/**
- * Default palette — the base GLPI light theme.
- * No overrides needed; tokens.css already defines default values.
- */
-[data-glpi-theme="default"] {
-  /* Uses base token values from tokens.css */
-}
