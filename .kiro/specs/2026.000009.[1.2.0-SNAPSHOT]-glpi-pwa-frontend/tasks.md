@@ -241,20 +241,20 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Test error pages render outside AppLayout (standalone layout)
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.9, 11.10_
 
-- [ ] 11. Configure PWA support
-  - [-] 11.1 Configure vite-plugin-pwa in Vite config
+- [x] 11. Configure PWA support
+  - [x] 11.1 Configure vite-plugin-pwa in Vite config
     - Update `vite.config.ts` to add the `VitePWA` plugin with manifest configuration: name "GLPI", short_name "GLPI", description "GLPI IT Service Management", start_url "/", display "standalone", background_color "#ffffff", theme_color "#1D4ED8"
     - Configure service worker to cache the application shell (HTML, CSS, JS, static assets)
     - Configure icon entries for 192x192 and 512x512 PNG icons
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [~] 11.2 Create PWA icons and update index.html meta tags
+  - [x] 11.2 Create PWA icons and update index.html meta tags
     - Create placeholder PWA icons at `public/icons/icon-192x192.png` and `public/icons/icon-512x512.png`
     - Update `index.html` to include PWA meta tags: viewport, theme-color, apple-touch-icon, description
     - _Requirements: 2.1, 2.5_
 
 - [ ] 12. Implement Docker deployment
-  - [~] 12.1 Create Nginx configuration
+  - [-] 12.1 Create Nginx configuration
     - Create `frontend/nginx.conf` with:
       - `location /api/` proxying to `http://api-gateway:8080/` for backend API requests
       - `location /` with `try_files $uri $uri/ /index.html` for SPA client-side routing fallback
