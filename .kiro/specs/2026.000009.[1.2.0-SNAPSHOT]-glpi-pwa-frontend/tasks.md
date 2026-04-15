@@ -177,14 +177,14 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Test that undefined routes render the 404 page
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 8. Implement Dashboard page
-  - [-] 8.1 Adapt Dashboard Home page
+- [x] 8. Implement Dashboard page
+  - [x] 8.1 Adapt Dashboard Home page
     - Adapt `src/pages/Dashboard/Home.tsx` to display a welcome message including the authenticated user context
     - Display placeholder widget cards in a responsive grid layout as a foundation for future ITSM dashboard content
     - Ensure the page uses the AppLayout structure (sidebar, header, content area)
     - _Requirements: 7.1, 7.2, 7.3_
 
-  - [~] 8.2 Adapt AppLayout, AppHeader, and AppSidebar for MVP
+  - [x] 8.2 Adapt AppLayout, AppHeader, and AppSidebar for MVP
     - Simplify `AppSidebar.tsx` to show only Dashboard navigation item (remove all template menu items not in MVP)
     - Adapt `AppHeader.tsx` to include the theme toggle and user dropdown with logout
     - Adapt `UserDropdown.tsx` to include a logout control that calls `AuthContext.logout()`
@@ -198,18 +198,18 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Test that theme toggle works (light/dark)
     - _Requirements: 7.1, 7.3, 7.4, 5.1_
 
-- [~] 9. Checkpoint — Verify authentication flow end-to-end
+- [x] 9. Checkpoint — Verify authentication flow end-to-end
   - Ensure all tests pass, ask the user if questions arise
 
 - [ ] 10. Implement error pages and Alert component
-  - [~] 10.1 Adapt Alert component for GLPI
+  - [x] 10.1 Adapt Alert component for GLPI
     - Adapt `src/components/ui/alert/Alert.tsx` to implement the `AlertProps` interface from the design (variant: success/error/warning/info, title, message, optional action link)
     - Add `role="alert"` ARIA attribute for accessibility
     - Ensure each variant has distinct icon, border color, and background color
     - Support light and dark themes via Tailwind dark classes
     - _Requirements: 11.5, 11.6, 11.7, 11.8, 11.10_
 
-  - [~] 10.2 Implement 404 Not Found error page
+  - [-] 10.2 Implement 404 Not Found error page
     - Adapt `src/pages/ErrorPages/NotFound.tsx` with illustrative SVG image (`404.svg` for light, `404-dark.svg` for dark), error heading, descriptive message, and link to navigate back to Dashboard
     - Render as full-page layout outside AppLayout
     - Add descriptive alt text for error images
