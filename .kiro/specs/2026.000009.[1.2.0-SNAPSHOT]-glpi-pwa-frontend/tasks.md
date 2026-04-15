@@ -152,8 +152,8 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Test that empty fields prevent form submission
     - _Requirements: 3.1, 3.2, 3.5, 3.6, 3.7, 3.8, 3.9_
 
-- [ ] 7. Implement route protection and routing
-  - [-] 7.1 Create ProtectedRoute component
+- [x] 7. Implement route protection and routing
+  - [x] 7.1 Create ProtectedRoute component
     - Create `src/components/routes/ProtectedRoute.tsx`
     - Read `isAuthenticated` and `isLoading` from AuthContext
     - While `isLoading`, render a loading spinner
@@ -161,7 +161,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - If authenticated, render `<Outlet />`
     - _Requirements: 6.1, 6.2_
 
-  - [~] 7.2 Configure React Router in App.tsx
+  - [x] 7.2 Configure React Router in App.tsx
     - Update `src/App.tsx` to define the routing table:
       - `/signin` → `SignIn` page (AuthPageLayout, no auth required, redirects to `/` if authenticated)
       - `/` → `Home` (Dashboard) wrapped in `ProtectedRoute` inside `AppLayout`
@@ -178,7 +178,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
 - [ ] 8. Implement Dashboard page
-  - [~] 8.1 Adapt Dashboard Home page
+  - [-] 8.1 Adapt Dashboard Home page
     - Adapt `src/pages/Dashboard/Home.tsx` to display a welcome message including the authenticated user context
     - Display placeholder widget cards in a responsive grid layout as a foundation for future ITSM dashboard content
     - Ensure the page uses the AppLayout structure (sidebar, header, content area)
