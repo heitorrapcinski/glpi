@@ -1,34 +1,28 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
-import AppRoutes from './router';
-import OfflineIndicator from './components/pwa/OfflineIndicator';
-import ServiceWorkerUpdateBanner from './components/pwa/ServiceWorkerUpdateBanner';
-import { ToastProvider } from './components/common/Toast';
+import { BrowserRouter as Router, Routes, Route } from "react-router";
+import SignIn from "./pages/AuthPages/SignIn";
+import NotFound from "./pages/ErrorPages/NotFound";
+import AppLayout from "./layout/AppLayout";
+import { ScrollToTop } from "./components/common/ScrollToTop";
+import Home from "./pages/Dashboard/Home";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-function App() {
+export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ToastProvider>
-          <OfflineIndicator />
-          <div id="glpi-app">
-            <AppRoutes />
-          </div>
-          <ServiceWorkerUpdateBanner />
-        </ToastProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <>
+      <Router>
+        <ScrollToTop />
+        <Routes>
+          {/* Dashboard Layout */}
+          <Route element={<AppLayout />}>
+            <Route index path="/" element={<Home />} />
+          </Route>
+
+          {/* Auth Layout */}
+          <Route path="/signin" element={<SignIn />} />
+
+          {/* Fallback Route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
-
-export default App;
