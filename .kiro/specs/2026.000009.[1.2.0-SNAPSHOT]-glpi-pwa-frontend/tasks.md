@@ -201,7 +201,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
 - [x] 9. Checkpoint — Verify authentication flow end-to-end
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 10. Implement error pages and Alert component
+- [x] 10. Implement error pages and Alert component
   - [x] 10.1 Adapt Alert component for GLPI
     - Adapt `src/components/ui/alert/Alert.tsx` to implement the `AlertProps` interface from the design (variant: success/error/warning/info, title, message, optional action link)
     - Add `role="alert"` ARIA attribute for accessibility
@@ -209,19 +209,19 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Support light and dark themes via Tailwind dark classes
     - _Requirements: 11.5, 11.6, 11.7, 11.8, 11.10_
 
-  - [-] 10.2 Implement 404 Not Found error page
+  - [x] 10.2 Implement 404 Not Found error page
     - Adapt `src/pages/ErrorPages/NotFound.tsx` with illustrative SVG image (`404.svg` for light, `404-dark.svg` for dark), error heading, descriptive message, and link to navigate back to Dashboard
     - Render as full-page layout outside AppLayout
     - Add descriptive alt text for error images
     - _Requirements: 11.1, 11.2, 11.9, 11.10_
 
-  - [~] 10.3 Implement 500 Server Error page
+  - [x] 10.3 Implement 500 Server Error page
     - Create `src/pages/ErrorPages/ServerError.tsx` with illustrative SVG image (`500.svg` / `500-dark.svg`), error heading, descriptive message, and link to navigate back to Dashboard
     - Render as full-page layout outside AppLayout
     - Add descriptive alt text for error images
     - _Requirements: 11.3, 11.9, 11.10_
 
-  - [~] 10.4 Implement 503 Service Unavailable page
+  - [x] 10.4 Implement 503 Service Unavailable page
     - Create `src/pages/ErrorPages/ServiceUnavailable.tsx` with illustrative SVG image (`503.svg` / `503-dark.svg`), error heading, descriptive message, and a retry action button
     - Render as full-page layout outside AppLayout
     - Add descriptive alt text for error images
@@ -242,7 +242,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.9, 11.10_
 
 - [ ] 11. Configure PWA support
-  - [~] 11.1 Configure vite-plugin-pwa in Vite config
+  - [-] 11.1 Configure vite-plugin-pwa in Vite config
     - Update `vite.config.ts` to add the `VitePWA` plugin with manifest configuration: name "GLPI", short_name "GLPI", description "GLPI IT Service Management", start_url "/", display "standalone", background_color "#ffffff", theme_color "#1D4ED8"
     - Configure service worker to cache the application shell (HTML, CSS, JS, static assets)
     - Configure icon entries for 192x192 and 512x512 PNG icons
