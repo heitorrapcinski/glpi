@@ -85,7 +85,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Generate random API request URLs; verify that non-auth URLs trigger exactly one refresh + retry on 401, while auth endpoints (`/auth/login`, `/auth/refresh`, `/auth/logout`) never trigger retry logic
     - **Validates: Requirements 8.3**
 
-- [ ] 4. Implement AuthContext and token management
+- [x] 4. Implement AuthContext and token management
   - [x] 4.1 Create AuthContext provider
     - Create `src/context/AuthContext.tsx` implementing `AuthState` and `AuthContextType` interfaces from the design
     - On mount, read tokens from `localStorage` keys (`glpi_access_token`, `glpi_refresh_token`, `glpi_expires_at`); if a valid non-expired access token exists, restore the session and set `isAuthenticated = true`
@@ -102,7 +102,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Clean up timer on unmount
     - _Requirements: 4.2, 4.3, 4.4_
 
-  - [-] 4.3 Wire AuthContext into the Axios HTTP client
+  - [x] 4.3 Wire AuthContext into the Axios HTTP client
     - Connect the Axios request interceptor to read the access token from AuthContext via `getAccessToken()`
     - Connect the 401 response interceptor to call the refresh logic from AuthContext
     - _Requirements: 4.5, 8.2, 8.3, 8.4_
@@ -117,11 +117,11 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Generate random `expiresIn` values greater than 60 seconds; verify the AuthContext schedules a refresh at exactly `(expiresIn − 60)` seconds after token storage
     - **Validates: Requirements 4.2**
 
-- [~] 5. Checkpoint — Verify core infrastructure
+- [x] 5. Checkpoint — Verify core infrastructure
   - Ensure all tests pass, ask the user if questions arise
 
 - [ ] 6. Implement Login page
-  - [~] 6.1 Adapt SignInForm component for GLPI authentication
+  - [x] 6.1 Adapt SignInForm component for GLPI authentication
     - Adapt `src/components/auth/SignInForm.tsx` from the template to include username, password, and optional TOTP code input fields
     - Add client-side validation: reject empty or whitespace-only username and password before sending the request
     - On submit, call `AuthContext.login(username, password, totpCode?)`
@@ -132,7 +132,7 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - On 5xx or network error, display an inline Alert (error variant) with server connectivity message
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 11.8_
 
-  - [~] 6.2 Adapt SignIn page and AuthPageLayout
+  - [-] 6.2 Adapt SignIn page and AuthPageLayout
     - Adapt `src/pages/AuthPages/SignIn.tsx` to use the modified SignInForm
     - Ensure `AuthPageLayout.tsx` provides the full-page auth layout with theme toggle support
     - If user is already authenticated, redirect to Dashboard (`/`)
