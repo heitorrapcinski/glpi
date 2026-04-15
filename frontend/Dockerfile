@@ -13,7 +13,7 @@ COPY . .
 
 # Accept build arguments and set as environment variables for Vite
 ARG API_GATEWAY_URL=/api
-ARG APP_VERSION=1.2.0-SNAPSHOT
+ARG APP_VERSION=1.2.0
 ARG PUBLIC_URL=/
 
 ENV VITE_API_GATEWAY_URL=$API_GATEWAY_URL

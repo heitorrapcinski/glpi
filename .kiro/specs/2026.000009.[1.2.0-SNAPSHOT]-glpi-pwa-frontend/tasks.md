@@ -273,24 +273,24 @@ Build the GLPI PWA Frontend MVP by copying and adapting the TailAdmin React v2.1
     - Update if any discrepancies exist
     - _Requirements: 9.4_
 
-- [ ] 13. Finalize build configuration and environment
-  - [-] 13.1 Update Vite configuration
+- [x] 13. Finalize build configuration and environment
+  - [x] 13.1 Update Vite configuration
     - Ensure `vite.config.ts` includes React plugin (`@vitejs/plugin-react`), SVGR plugin (`vite-plugin-svgr`), and PWA plugin
     - Configure dev server proxy: `/api` → `http://localhost:8080` for local development
     - Ensure production build produces hashed filenames for cache-busting
     - _Requirements: 10.1, 10.2, 10.3, 10.5_
 
-  - [~] 13.2 Configure Vitest for testing
+  - [x] 13.2 Configure Vitest for testing
     - Create or update `vitest.config.ts` with jsdom environment, globals enabled, and setup file at `src/test/setup.ts`
     - Create `src/test/setup.ts` with `@testing-library/jest-dom` imports and any MSW server setup
     - _Requirements: 10.1_
 
-- [~] 14. Final checkpoint — Ensure all tests pass
+- [x] 14. Final checkpoint — Ensure all tests pass
   - Run `npm run build` to verify production build succeeds
   - Run `npm run test` to verify all tests pass
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 15. Version control and release
+- [-] 15. Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
   - [ ] Commit the version bump: "release: 1.2.0 - glpi-pwa-frontend"
